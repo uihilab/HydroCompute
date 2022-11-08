@@ -3,6 +3,11 @@ import * as shade from './utils/shaderModules.js';
 import * as buffers from './utils/bufferCreators.js'
 import {matrixUtils} from './utils/gslCode/matrixUtils.js'
 
+
+/**
+ * @class
+ * @name webgpu
+ */
 export default class webgpu{
     constructor(){
         this.adapter = null;
@@ -91,7 +96,7 @@ export default class webgpu{
 
        var result = await shade.dispatchers(this.device, pipeline, bindgroup, [mat1, mat2], [rSize, rBuffer])
        
-       return Array.from(result)
+       return Array.from(result).slice(2)
     }
 }
 

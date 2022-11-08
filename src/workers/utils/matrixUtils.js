@@ -1,10 +1,10 @@
-var matrixUtils = matrixUtils || (() => {
-    const matrixMul = (d, sizes) => {
-        //sizes account for the following: 
-        //sizes[0]: rows of matrix 1
-        //sizes[1]: rows of matrix 2
-        //sizes [2]: columns of both matrices
+import * as helpers from "./helpers.js"
+
+export const matrixUtils = {
+    //Matrix multiplication. Accepts 2d arrays as [Arr1, Arr2]
+    matrixMul: (d, sizes) => {
         if (typeof sizes === "undefined") 
+        //This checks if the input matrices are of the same size
         sizes = (() => {
             if ((d[0].length % Math.sqrt(d[0].length) === 0) 
             && (d[1].length % Math.sqrt(d[1].length) === 0)) {
@@ -14,7 +14,7 @@ var matrixUtils = matrixUtils || (() => {
             } 
         })()
         d = d.slice()
-        d[0] = arrayChanger(d[0], sizes[2]); d[1] = arrayChanger(d[1], sizes[2])
+        d[0] = helpers.arrayChanger(d[0], sizes[2]); d[1] = helpers.arrayChanger(d[1], sizes[2])
         d.map(x => x.map(y => y))
         var res;
         !(d instanceof Array)
@@ -36,9 +36,10 @@ var matrixUtils = matrixUtils || (() => {
           )
         }})()
         return res
-    }
-
-    const matrixAdd = d => {
+    },
+    
+    //Matrix addition. Accepts 2d arrays like [Arr1, Arr2]
+    matrixAdd: d => {
         if (d.length === 1) {
             console.error("Please input array sizes nxm")
             return
@@ -49,19 +50,22 @@ var matrixUtils = matrixUtils || (() => {
             }
             return res
         }
-    }
+    },
 
-    //Any utils are going to come here
-    const arrayChanger = (arr, width) =>
-        arr.reduce((rows, key, index) =>
-            (index % width == 0 
-            ? rows.push([key])
-            : rows[rows.length-1].push(key)) && rows, []
-        )
+    sumAction: d => {
+        console.log(`This is working, right?`)
+    },
 
-    return {
-        main: (name,data) => {
-            return eval(name)(data)
+    backArray: d => {
+        return d
+    },
+
+    //Main function to run any of the functions described in the object.
+    main: (name,data) => {
+        if (typeof matrixUtils[name] === "undefined") {
+            return console.error("Function is not found in the given script.")
+        } else {
+            return matrixUtils[name](data)
+        }
         }
     }
-})
