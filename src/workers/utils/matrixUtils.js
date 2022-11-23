@@ -1,4 +1,4 @@
-import * as helpers from "./helpers.js"
+import { arrayChanger } from "../../core/utils/globalUtils.js"
 
 export const matrixUtils = {
     //Matrix multiplication. Accepts 2d arrays as [Arr1, Arr2]
@@ -14,7 +14,7 @@ export const matrixUtils = {
             } 
         })()
         d = d.slice()
-        d[0] = helpers.arrayChanger(d[0], sizes[2]); d[1] = helpers.arrayChanger(d[1], sizes[2])
+        d[0] = arrayChanger(d[0], sizes[2]); d[1] = arrayChanger(d[1], sizes[2])
         d.map(x => x.map(y => y))
         var res;
         !(d instanceof Array)
@@ -53,10 +53,11 @@ export const matrixUtils = {
     },
 
     sumAction: d => {
-        console.log(`This is working, right?`)
+        console.log(`Callback function for sumAction`)
     },
 
     backArray: d => {
+        console.log(`Callback function for backArray`)
         return d
     },
 

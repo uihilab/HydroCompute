@@ -34,7 +34,7 @@ export const DAG = (functions, dag) => {
 
             for (let j =0; j < N; j++) {
                 if(counts[j] < 1) continue;
-            }
+            
             if(dag[j].indexOf(i) >= 0 ) {
                 counts[j]--;
                 if(counts[j] === 0) {
@@ -49,6 +49,7 @@ export const DAG = (functions, dag) => {
                     )
                 }
             }
+            }
         }
 
         const handleError = (promise, i, error) => {
@@ -61,11 +62,12 @@ export const DAG = (functions, dag) => {
 }
 
 export const promisify = {
-    any: (v) => {
+    any: (v, t) => {
+        t = t | 1000
         return new Promise((resolve, reject) => {
             setTimeout(() =>{
                 resolve(v)
-            })
+            }, t)
         })
     },
     resolve: (v) => {
@@ -78,3 +80,17 @@ export const promisify = {
         return Promise.all(fns) 
     }
 }
+
+/**
+ * 
+ */
+
+//This is meant to be filled with any sort of helper functions for matricial purposes.
+//Similar approaches can be taken for other types of workloads diverted into a worker.
+
+export const arrayChanger = (arr, width) =>
+        arr.reduce((rows, key, index) =>
+            (index % width == 0 
+            ? rows.push([key])
+            : rows[rows.length-1].push(key)) && rows, []
+        )

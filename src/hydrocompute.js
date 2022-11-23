@@ -1,4 +1,5 @@
 import * as engines from "./core/core.js";
+import { splits } from "./core/utils/splits.js";
 
 class hydrocompute {
   constructor(...args) {
@@ -8,7 +9,6 @@ class hydrocompute {
     this.currentEngineName = null;
     this.engineFactory;
     this.kernels = {};
-    this.results = [];
     this.availableData = [];
     Object.entries(engines).forEach((engine) => {
       let propName = engine[0];
@@ -22,6 +22,8 @@ class hydrocompute {
     args.length !== 0
       ? this.setEngine(args[0])
       : (() => {
+          this.steps = 1;
+          this.callbacks = false;
           console.log("Web workers engine has been set as default.");
           this.setEngine("workers");
         })();
@@ -61,55 +63,99 @@ class hydrocompute {
   }
 
   async run(args = {}) {
-    this.callbacks = args.callbacks | false
-    this.functions = args.functions
-    var data = (()=>{
-        if (this.availableData.length === 1) {
-            if (this.availableData[0].id != args.dataId) {
-                return console.error(`There is no data with id:${args.dataId} stored.`)
-            } else {
-                return this.availableData[0].data
-            }
-        }
-        for (var i =0; i < this.availableData.length; i++){
-            if (this.availableData[i].id == args.dataId){
-            return this.availableData[i].data
-        }
-    }
-    })()
-    if (this.callbacks) {
-        this.engine.run({ data: data, splits: this.splits, callbacks: this.callbacks, functions: this.functions, dependencies: args.dependencies })
+    this.callbacks = args.callbacks;
+    this.functions = args.functions;
+    //Single data passed into the function.
+    //It is better if the split function does the legwork of data allocation per function instead.
+    var data = (() => {
+      for (var item in this.availableData) {
+        if (this.availableData[item].id === args.dataId)
+          return this.availableData[item].data;
+      }
+      console.error(
+        `Data with nametag: "${args.dataId}" not found in the storage.`
+      );
+      return;
+    })();
+    if (this.callbacks && this.data.length > 0) {
+      //Data passed in raw without splitting
+      this.engine.run({
+        data: data,
+        functions: this.functions,
+        dependencies: args.dependencies,
+        steps: this.steps
+      });
     } else {
-    this.engine.run({ data: this.availableData, splits: this.splits, callbacks: this.callbacks, functions: this.functions });
-}
+      console.error("There was an error pulling the data.");
+      return
+    }
   }
 
   currentEgine() {
     return this.currentEngineName;
   }
 
-  data(args) {
-    var container = {id: typeof args.id == "undefined" ? 0 : args.id, data: args.data}
-    this.splits = args.splits | 0;
-    if (this.splits === 0) {
-        this.availableData.push(container)
-    }
-    else {
-        //correct this
-      if (args.data[0].length % this.splits != 0) {
-        return console.error(
-          "Please select a correct number of splits for your data."
-        );
-      }
-      args.data.forEach((arr) => {
-        var r = [];
-        for (let i = args.splits; i > 0; i--) {
-          r.push(arr.splice(0, Math.ceil(arr.length / i)));
+  #dataCloner(data) {
+    //Deep copy of array data using recursion
+    const arrayCloner = (arr) => {
+      var temp = [];
+      arr.forEach((ob) => {
+        if (Array.isArray(ob)) {
+          temp.push(arrayCloner(ob));
+        } else {
+          if (typeof ob === "object") {
+            temp.push(objectCloner(ob));
+          } else {
+            temp.push(ob);
+          }
         }
-        container.data = r;
       });
-      this.availableData.push(container)
-      return console.log(`Data partitioned into ${this.splits} parts.`);
+      return temp;
+    };
+
+    const objectCloner = (inObject) => {
+      var tempOb = {};
+
+      for (let [key, value] of Object.entries(inObject)) {
+        if (Array.isArray(value)) {
+          tempOb[key] = arrayCloner(value);
+        } else {
+          if (typeof value === "object") {
+            tempOb[key] = objectCloner(value);
+          } else {
+            tempOb[key] = value;
+          }
+        }
+      }
+      return tempOb;
+    };
+
+    if (Array.isArray(data)) {
+      return arrayCloner(data);
+    } else {
+      return objectCloner(data);
+    }
+  }
+
+  data(args) {
+    var container = {
+      id:
+        typeof args.id === "undefined"
+          ? `${this.currentEngineName}.${
+              this.enginesCalled[this.currentEngineName]
+            }.${5 * Math.random().toPrecision(4)}`
+          : args.id,
+    };
+    if (typeof args.splits === "undefined") {
+      container.data = this.#dataCloner(args.data);
+      this.availableData.push(container);
+    } else {
+      var partition = splits.main(args.splits.function, {
+        ...args.splits,
+        data: this.#dataCloner(args.data),
+      });
+      container.data = partition;
+      this.availableData.push(container);
     }
   }
 
@@ -118,15 +164,16 @@ class hydrocompute {
       console.error(
         "Please set the required engine first before initializing!"
       );
-    return this.engine.results;
+    return this.engine.showResults();
   }
 
   availableEngines() {
     return Object.keys(this.kernels);
   }
 
-  config(...args) {
-    this.engine.initialize(args);
+  config(args) {
+    this.steps = args.steps ? args.steps : 0;
+    this.linked = args.linked ? args.linked : false
   }
 }
 

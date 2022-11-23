@@ -4,5 +4,7 @@
  * @module scripts
  */
 import { matrixUtils } from "./matrixUtils.js";
+import { timeSeries } from "./timeSeries.js";
 
-export { matrixUtils }
+
+export { matrixUtils, timeSeries }
