@@ -8,7 +8,7 @@ import { DAG, promisify } from "../core/utils/globalUtils.js";
 export default class workers {
   constructor(props = {}) {
     //defaults
-    this.workerCount = 0;
+    //this.workerCount = 0;
   }
 
   static initialize(args) {
@@ -24,11 +24,14 @@ export default class workers {
   }
 
   static run(args) {
+    if (args.data.length === 0) {
+      return;
+    }
     var instaceRun = {};
     instaceRun.id = `Run ${this.instanceCounter}`;
     instaceRun.values = [];
     this.functions = args.functions;
-    this.dependencies =
+    var dependencies =
       typeof args.dependencies === "undefined" ? [] : args.dependencies;
     //need to change this
     this.workerCount = this.functions.length;
@@ -41,20 +44,16 @@ export default class workers {
       var stepCounter = 0;
 
       while (stepCounter <= args.steps) {
-        //Counter for the simulation run
-        var someR = {};
-        someR.step = stepCounter;
-        someR.result = [];
-        instaceRun.values.push(someR);
+        this.results.push([]);
 
         //Sequential analysis
-        if (this.dependencies.length > 0) {
-          this.sequentialRun(args, stepCounter);
+        if (dependencies.length > 0) {
+          // this.sequentialRun(args, stepCounter, dependencies);
+          this.sequentialRun(args, stepCounter,dependencies)
         } else {
           //Parallel analysis
           this.parallelRun(args, stepCounter);
         }
-        this.results.push(instaceRun);
         stepCounter++;
       }
     }
@@ -66,50 +65,17 @@ export default class workers {
     this.instanceCounter++;
   }
 
-  static sequentialRun(args, step) {
-    const resolver = async (_args,j) => {
-      var args_data = [];
-      await this.dependencies[j].forEach((i) => {
-        if (this.workers[i].finished === true) {
-          args_data.push(this.results[j-1].values[step].result);
-        }
-        _args.data = args_data;
-        this.workerInit(j);
-        this.workerRun(j, _args);
-      });
+  static sequentialRun(args, step, dependencies) {
+    for (var i =0; i < this.functions.length; i++){
+    var _args = {
+       data: args.data,
+       id: i,
+       function: this.functions[i],
+       step: step,
     };
-    //this.executioner = [];
-    var r = this.dependencies.map((val) => val.length);
-    //var stopped = false;
-    //var remaining = this.workerCount
-    for (var j = 0; j < this.workerCount; j++) {
-      var _args = {
-        data: args.data,
-        id: j,
-        function: this.functions[j],
-        step: step,
-      };
-
-      //this.executioner.push(() => {
-      //return new Promise((resolve) => {
-      if (r[j] === 0) {
-        this.workerInit(j);
-        this.workerRun(j, _args);
-      } else {
-        resolver(_args,j);
-        // if (this.workers[j - 1].finished === true) {
-        //   for (var i = 0; i < this.results.length; i++) {
-        //     if (this.workers[j - 1].id === this.results[i].id) {
-        //       _args.data = this.results[j - 1].;
-        //     }
-        //   }
-        //   this.workerInit(j);
-        //   this.workerRun(j, _args);
-        // }
-      }
-      //});
-      //});
-    }
+    this.workerInit(i)
+  }
+  DAG(Object.keys(this.workers).map(key => {return this.workers[key].worker}), dependencies, _args)
   }
 
   static parallelRun(args, step) {
@@ -122,8 +88,7 @@ export default class workers {
           function: this.functions[i],
           step: step,
         };
-        this.workerInit(i);
-        this.workerRun(i, _args);
+        this.workerInit(i, _args);
       }
     } else {
       var counter = new Array(this.workerCount - this.maxWorkerCount)
@@ -137,24 +102,19 @@ export default class workers {
           function: this.functions[i],
           step: step,
         };
-        this.workerInit(i);
-        this.workerRun(i, _args);
+        this.workerInit(i, _args);
+        this.workers[i].worker()
       }
       //THIS NEEDS CHANGE!
-      var remainingBatch = counter.length;
       for (var j = this.maxWorkerCount + 1; j < this.workerCount; j++) {
-        //Object.keys(this.workers).forEach(id =>{
-        //if (this.workers[id].finished === true){
         var _args = {
           data: args.data,
           id: counter[j],
           function: this.functions[counter[j]],
           step: step,
         };
-        this.workerInit(counter[j]);
-        this.workerRun(counter[j], _args);
-        // }
-        //})
+        this.workerInit(counter[j], _args);
+        this.workers[j].worker()
       }
     }
   }
@@ -163,40 +123,30 @@ export default class workers {
     this.workers[i] = {};
     this.workers[i].finished = false;
     this.workers[i].worker = undefined;
-    //this.workers[i].result = undefined;
   }
 
   static workerInit(i) {
-    typeof this.workers[i].worker === "undefined"
-      ? (() => {
-          this.workers[i].worker = new Worker("./src/workers/worker.js", {
-            type: "module",
-          });
-          this.workers[i].worker.onmessage = (e) => {
-            //console.log(this.results[this.instanceCounter])
-            //this.workers[e.data.id].result = e.data.results;
-            this.results[this.instanceCounter].values[e.data.step].result.push(
-              e.data.results
-            );
-            this.workers[e.data.id].finished = true;
-            if (this.workers[e.data.id].finished) {
-              console.log(`Results from worker ${e.data.id} available.`);
-              //Always terminate the worker so another task can be run if required.
-              //this.workers[e.data.id].worker.terminate();
-            }
-          };
-          this.workers[i].worker.onerror = (e) => {
-            return e.error;
-          };
-        })()
-      : null;
+    this.workers[i].worker =
+    (args) => {
+      return new Promise((resolve, reject) => {
+      var w = new Worker("./src/workers/worker.js", {
+      type: "module",
+    });
+    w.postMessage(args);
+    w.onmessage = (e) => {
+      resolve(
+        e.data.results,
+        this.workers[i].finished = true,
+        this.results[args.step].push(e.data.results),
+        )
+    };
+    w.onerror = (e) => {
+      reject(e.error);
+    };
+  })
+}
   }
-
-  static workerRun(i, args) {
-    this.workers[i].worker.postMessage(args);
-  }
-
   static showResults() {
-
+    return this.results
   }
 }

@@ -1,6 +1,7 @@
 import * as engines from "./core/core.js";
 import { splits } from "./core/utils/splits.js";
 
+
 class hydrocompute {
   constructor(...args) {
     //this guy needs to be changed into something else afterwards
@@ -72,10 +73,9 @@ class hydrocompute {
         if (this.availableData[item].id === args.dataId)
           return this.availableData[item].data;
       }
-      console.error(
+      return console.error(
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
-      return;
     })();
     if (this.callbacks && this.data.length > 0) {
       //Data passed in raw without splitting

@@ -1,13 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+  />
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" src="./src/hydrocompute.js"></script>
+    <script type="module" onload = "initHydrocompute() "src="./src/hydrocompute.js"></script>
+    <!-- <script type="module" onload = "initHydroLang() " src="./hydrolang/hydro.js"></script> -->
     <title>HydroCompute Example</title>
 </head>
 <body>
+
+    <h2>HydroCompute Example</h2>
+    <label for="random">Select Random Data (1D array)</label>
+    <select name= "random" id="rGen">
+        <option value="100">100</option>
+        <option value="1000">1000</option>
+        <option value="5000">5000</option>
+        <option value="50000">50000</option>
+        <option value="100000">100000</option>
+    </select>
+    <input type="submit" value="Generate" onclick="generateRandom()">
+    <br></br>
+    <label for="steps">Select # of steps</label>
+    <select name= "steps" id="steps">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select>
+    <input type="submit" value="Submit" onclick="getSteps()">
+    <br></br>
+    <label for="functions"></label>
+    <select multiple size="3" name= "functions" id="functions">
+        <option value="simpleMovingAverage">Simple Moving Average</option>
+        <option value="expoMovingAverage">Exponential Moving Average</option>
+        <option value="backArray">Return Array Back</option>
+    </select>
+    <input type="submit" value="Submit" onclick="setFunctions()">
+    <br></br>  
+</form>
+    
+
+    <script>
+        var r
+        var step
+        var functions = []
+        function initHydrocompute(){
+            window.compute = new hydrocompute()
+        }
+
+        function initHydroLang(){
+            window.hydro = new Hydrolang()
+        }
+
+        const generateRandom = () => {
+            var e = document.getElementById("rGen").value
+            console.log(e)
+            r = (Array.from({length: e}, () => Math.floor(Math.random() * 5)))
+            console.log(r)
+        }
+
+        const getSteps = () => {
+            step = document.getElementById("steps").value
+            console.log(step)
+        }
+
+        const setFunctions = () => {
+            functions = []
+            functions = Array.prototype.slice.call(document.getElementById("functions"),0).map((v, i, a) => {return v.value})
+            console.log(functions)
+        }
+
+
+
+    </script>
     
 </body>
 </html>
