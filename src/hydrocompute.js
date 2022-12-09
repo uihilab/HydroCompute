@@ -1,6 +1,6 @@
 import * as engines from "./core/core.js";
 import { splits } from "./core/utils/splits.js";
-
+import * as scripts from "./workers/scripts/scripts.js";
 
 class hydrocompute {
   constructor(...args) {
@@ -64,8 +64,6 @@ class hydrocompute {
   }
 
   async run(args = {}) {
-    this.callbacks = args.callbacks;
-    this.functions = args.functions;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     var data = (() => {
@@ -77,17 +75,18 @@ class hydrocompute {
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
     })();
-    if (this.callbacks && this.data.length > 0) {
+    if (args.callbacks && this.data.length > 0) {
       //Data passed in raw without splitting
       this.engine.run({
         data: data,
-        functions: this.functions,
+        functions: args.functions,
         dependencies: args.dependencies,
-        steps: this.steps
+        steps: this.steps,
+        callbacks: args.callbacks
       });
     } else {
       console.error("There was an error pulling the data.");
-      return
+      return;
     }
   }
 
@@ -173,7 +172,24 @@ class hydrocompute {
 
   config(args) {
     this.steps = args.steps ? args.steps : 0;
-    this.linked = args.linked ? args.linked : false
+    this.linked = args.linked ? args.linked : false;
+  }
+
+  availableScripts() {
+    if (this.currentEngineName === "workers") {
+      var r = Object.keys(scripts).map((script) => {
+        return script;
+      });
+      var fun = [];
+      for (var func in r) {
+        for (var i = 0; i < Object.keys(r[func]).length; i++)
+          fun.push(Object.keys(scripts[r[func]])[i]);
+      }
+      fun = fun.filter((ele) =>
+        ele === undefined || ele === "main" ? null : ele
+      );
+      return fun;
+    }
   }
 }
 

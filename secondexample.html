@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" onload="initHydrocompute() " src="./src/hydrocompute.js"></script>
+    <script type="module" onload="initHydroLang() " src="./hydrolang/hydro.js"></script>
+    <title>HydroCompute Example</title>
+</head>
+
+<body>
+
+    <h2>HydroCompute Example</h2>
+    <div id="DataGen">
+    <label for="random">Select Random Data (1D array)</label>
+    <select name="random" id="rGen">
+    </select>
+    <input type="submit" value="Generate" onclick="generateRandom()">
+    <label for="steps">Select # of steps</label>
+    <select name="steps" id="steps">
+    </select>
+    <input type="submit" value="Submit" onclick="setSteps()">
+    <br>
+    </div>
+    <div id="functionGen">
+    <label for="functions">Please select the functions you want to run</label>
+    <br>
+    <select multiple name="functions" id="functions">
+    </select>
+    <input type="submit" value="Submit" onclick="setFunctions()">
+    </div>
+    <br>
+    <button onclick="run()">Run your simulation!</button>
+    <button onclick="removeChart()">Remove Chart</button>
+    <button onclick="vis()">Visualize results</button>
+    </form>
+
+
+    <script>
+        //Globals for data usage and implementation
+        var r
+        var formVals = []
+        var dependencies = []
+        var name
+        var step
+        var sim = 0
+        var functions = []
+        var results = []
+
+                //Initialize hydrolang module
+                const initHydroLang = async () => {
+            window.hydro = new Hydrolang()
+        }
+
+        //Initialize hydrocompute module
+        const initHydrocompute = () => {
+            window.compute = new hydrocompute()
+            var options = window.compute.availableScripts()
+            var select = document.getElementById("functions");
+            for (var fun in options) {
+                select.options[select.options.length] = new Option(`${options[fun]}`, `${options[fun]}`)
+            }
+            var steps = document.getElementById("steps") 
+            var size = document.getElementById("rGen")
+            var dtSize = Array.from(Array(8), (_, i) => i**8)
+            var numSteps = Array.from(Array(51).keys())
+            for (var step of numSteps){
+                steps.add(new Option(`${step}`, `${step}`))
+            }
+            for (var s of dtSize){
+                size.add(new Option(`${s}`, `${s}`))
+            }
+        }
+
+        const generateRandom = () => {
+            var e = document.getElementById("rGen").value
+            console.log(e)
+            r = (Array.from({ length: e }, () => Math.floor(Math.random() * 5)))
+            //console.log(r)
+        }
+
+        const setSteps = () => {
+            step = JSON.parse(document.getElementById("steps").value)
+            //console.log(step)
+        }
+
+        const setFunctions = () => {
+            var par = document.getElementById("functionGen")
+            dependencies = []
+            functions = []
+            var select = document.getElementById("functions")
+            var options = select && select.options;
+            var opt;
+
+            for (var i = 0, iLen = options.length; i < iLen; i++) {
+                opt = options[i]
+
+                if (opt.selected) {
+                //     if (!par.hasChildNodes("depBool")){
+                //     var dep = document.createElement("select");
+                //     select.id = "depBool"
+                //     par.appendChild(dep)
+                    
+                //     dep.add(new Option(true, "true"))
+                //     dep.add(new Option(false, "false"))
+                // }
+
+                    functions.push(opt.value || opt.text)
+                }
+            }
+            name = `Step_${step}_D_${r.length}`
+            //console.log(functions, name)
+        }
+
+        const run = async () => {
+            window.compute.engine.results = []
+            results = []
+            window.compute.data({ data: r, id: name })
+            window.compute.config({ steps: step })
+            var start = performance.now()
+            window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies })
+            var end = performance.now()
+            results = await window.compute.results()
+            if (results.length > 0) {
+                alert("Your simulation results are ready!")
+                alert("Click on visualize to see your results")
+                console.log(`Running time for the compute module was: ${end - start} ms for ${functions.length} functions and ${step} steps or ${functions.length * step} total processes!`)
+                removeChart()
+            }
+        }
+
+        const removeChart = () => {
+            var div = document.getElementById('visualize')
+            if (div) {
+                div.parentNode.removeChild(div)
+            }
+        }
+
+        const vis = () => {
+            results[0].unshift(Array.from(Array(r.length).keys()))
+            console.log(results)
+            window.hydro.visualize.draw({
+                params: { type: "chart", divID: `${name}` },
+                args: { charttype: "line", names: functions },
+                data: results[0],
+            });
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>

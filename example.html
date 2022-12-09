@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-  />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="module" onload = "initHydrocompute() "src="./src/hydrocompute.js"></script>
-    <!-- <script type="module" onload = "initHydroLang() " src="./hydrolang/hydro.js"></script> -->
+    <script type="module" onload="initHydrocompute() " src="./src/hydrocompute.js"></script>
+    <script type="module" onload="initHydroLang() " src="./hydrolang/hydro.js"></script>
     <title>HydroCompute Example</title>
 </head>
+
 <body>
 
     <h2>HydroCompute Example</h2>
     <label for="random">Select Random Data (1D array)</label>
-    <select name= "random" id="rGen">
+    <select name="random" id="rGen">
         <option value="100">100</option>
         <option value="1000">1000</option>
         <option value="5000">5000</option>
@@ -24,61 +23,298 @@
         <option value="100000">100000</option>
     </select>
     <input type="submit" value="Generate" onclick="generateRandom()">
+    <p>OR</p>
+    <form id="dataRet">
+        <label for="start">
+            Start Date
+            <input name="startDate" type="date" />
+        </label>
+        <label for="end">
+            End Date
+            <input name="endDate" type="date" />
+        </label>
+        <label for="source">
+            Source
+            <select name="sourceType" id="sourceType" onclick="dataTypeOps()">
+                <option disabled selected value>Select a source</option>
+                <option value="MOPEX">MOPEX</option>
+                <option value="NOAA GHCN">NOAA GHCN</option>
+                <option value="Global Rivers">Global Rivers</option>
+            </select>
+        </label>
+        <label for="location">
+            Location
+            <select name="location" id="location">
+            </select>
+        </label>
+        <label for="dataType">
+            Data type
+            <select name="dataType" id="dataType">
+            </select>
+        </label>
+        <input type="submit" value="Submit">
+    </form>
     <br></br>
     <label for="steps">Select # of steps</label>
-    <select name= "steps" id="steps">
+    <select name="steps" id="steps">
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
         <option value="4">4</option>
         <option value="5">5</option>
     </select>
-    <input type="submit" value="Submit" onclick="getSteps()">
+    <input type="submit" value="Submit" onclick="setSteps()">
     <br></br>
-    <label for="functions"></label>
-    <select multiple size="3" name= "functions" id="functions">
-        <option value="simpleMovingAverage">Simple Moving Average</option>
-        <option value="expoMovingAverage">Exponential Moving Average</option>
-        <option value="backArray">Return Array Back</option>
+    <label for="functions">Please select the functions you want to run</label>
+    <br></br>
+    <select multiple name="functions" id="functions">
     </select>
+    <br></br>
     <input type="submit" value="Submit" onclick="setFunctions()">
-    <br></br>  
-</form>
-    
+    <br></br>
+    <button onclick="run()">Run your simulation!</button>
+    <button onclick="vis()">Visualize results</button>
+    </form>
+
 
     <script>
+        //Globals for data usage and implementation
         var r
+        var formVals = []
+        var name
         var step
+        var sim = 0
         var functions = []
-        function initHydrocompute(){
-            window.compute = new hydrocompute()
+        var results = []
+        var resQuery = {}
+        var qu = []
+        var qvar = []
+
+        const customFilter = (object, result, key) => {
+            if (object.hasOwnProperty(key))
+                result.push(object);
+
+            for (var i = 0; i < Object.keys(object).length; i++) {
+                if (typeof object[Object.keys(object)[i]] == "object") {
+                    customFilter(object[Object.keys(object)[i]], result, key);
+                }
+            }
         }
 
-        function initHydroLang(){
+        //Initialize hydrocompute module
+        const initHydrocompute = () => {
+            window.compute = new hydrocompute()
+            var options = window.compute.availableScripts()
+            var select = document.getElementById("functions");
+            for (var fun in options) {
+                select.options[select.options.length] = new Option(`${options[fun]}`, `${options[fun]}`)
+            }
+        }
+
+        //Initialize hydrolang module
+        const initHydroLang = async () => {
             window.hydro = new Hydrolang()
+            //var options = ['MOPEX', 'NOAA GHCN', 'USGS GroundWater']
+            options = ['NOAA GHCN']
+
+            for (var i = 0; i < options.length; i++) {
+
+                params = {
+                    source: "waterOneFlow",
+                    datatype: "GetSitesByBoxObject", //Change the method to the type you require 
+                    proxyServer: "local-proxy" //or it can be any of the available proxies or user-tailored
+                },
+                    //Search queries directly from Iowa
+                    args = {
+                        sourceType: options[i],
+                        west: "-96.639704",
+                        south: "40.375501",
+                        east: "-90.140061",
+                        north: "43.501196"
+                    }
+
+                formVals.push(await hydro.data.retrieve({ params: params, args: args }))
+            }
+            setTimeout(() => {
+                cleanFormData()
+            }, options.length * 10000);
+        }
+
+        const cleanFormData = () => {
+            for (var i = 0; i < formVals.length; i++) {
+                var stg = []
+                var stg2 = []
+                var sites = []
+                var vars = []
+                customFilter(formVals[i], sites, "siteName")
+                customFilter(formVals[i], vars, "series")
+                for (var j = 0; j < sites.length; j++) {
+                    stg.push({
+                        siteName: sites[j].siteName,
+                        siteCode: sites[j].siteCode,
+                        // (()=>{
+                        //     var stgArr = []
+                        //     for(var v in vars[j].series){
+                        //         stgArr.push(
+                        //             {
+                        //                 variable: vars[j].series[v].variableName,
+                        //                 variableCode: vars[j].series[v].variableCode,
+                        //                 //startDate: vars[j].series[v].variableTimeInterval.beginDateTime,
+                        //                 //endDate: vars[j].series[v].variableTimeInterval.endDateTime,
+                        //             }
+                        //         )
+                        //     }
+                        //     return stgArr
+                        // })()
+                        // .map(v => {
+                        //     return {
+                        //         variable: v.variableName,
+                        //         variableCode: v.variableCode,
+                        //         startDate: v.variableTimeInterval.beginDateTime,
+                        //         endDate: v.variableTimeInterval.endDateTime,                      
+                        //     }
+                        // })
+                    })
+                    stg2.push(vars[j].series)
+                }
+                qu.push(stg)
+                qvar.push(stg2)
+            }
+        }
+
+        const formData = (form) => {
+            resQuery = {}
+            var formData = new FormData(form);
+
+            for (var pair of formData.entries()) {
+                resQuery[pair[0]] = pair[1];
+            }
+            console.log(resQuery)
+        }
+
+        document.getElementById("dataRet").addEventListener("submit", (e) => {
+            e.preventDefault()
+            formData(e.target)
+            downloadData()
+        })
+
+        const dataTypeOps = () => {
+            clearOptions("#location")
+            clearOptions("#dataType")
+            var e = document.getElementById("sourceType")
+            var value = e.value
+            var locations = document.querySelector("#location")
+            var dataTypes = document.querySelector("#dataType")
+            for (var i = 0; i < qu[0].length; i++){
+                locations.add(new Option(`${qu[0][i].siteName}`, `${qu[0][i].siteCode}`), undefined)
+            }
+            for (var j =0; j < qvar[0].length; j++){
+                for (var k =0; k < qvar[0][j].length; k++){
+                    dataTypes.add(new Option(`${qvar[0][j][k].variable.variableName}`, `${qvar[0][j][k].variable.variableCode}`), undefined)
+                }
+            }
+        }
+
+        const clearOptions = (select) => {
+            var options = document.querySelectorAll(select);
+            options.innerHTML = ''
+        }
+
+
+        //Control functions for the compute and HydroLang
+        const downloadData = async () => {
+            general_config = {
+                source: "waterOneFlow",
+                datatype: "GetValuesObject",
+                proxyServer: "local-proxy",
+            },
+                args_1 = {
+                    sourceType: resQuery.sourceType,
+                    location: resQuery.location,
+                    variable: resQuery.dataType,
+                    startDate: resQuery.startDate,
+                    endDate: resQuery.endDate,
+                }
+            r = await hydro.data.retrieve({ params: general_config, args: args_1 })
+            setTimeout(() => {
+                cleanData()
+            }, 3000);
+        }
+
+        const cleanData = () => {
+            if (r.length > 0) {
+                r = r[0].TimeSeriesResponse.timeSeriesResponse.timeSeries.values.value.map(
+                    (x) => JSON.parse(x))
+                alert("Data has been retrieved!")
+            } else {
+                alert("There was an error with the request. Please check the console.")
+            }
         }
 
         const generateRandom = () => {
             var e = document.getElementById("rGen").value
             console.log(e)
-            r = (Array.from({length: e}, () => Math.floor(Math.random() * 5)))
-            console.log(r)
+            r = (Array.from({ length: e }, () => Math.floor(Math.random() * 5)))
+            //console.log(r)
         }
 
-        const getSteps = () => {
+        const setSteps = () => {
             step = document.getElementById("steps").value
-            console.log(step)
+            //console.log(step)
         }
 
         const setFunctions = () => {
             functions = []
-            functions = Array.prototype.slice.call(document.getElementById("functions"),0).map((v, i, a) => {return v.value})
-            console.log(functions)
+            var select = document.getElementById("functions")
+            var options = select && select.options;
+            var opt;
+
+            for (var i = 0, iLen = options.length; i < iLen; i++) {
+                opt = options[i]
+
+                if (opt.selected) {
+                    functions.push(opt.value || opt.text)
+                }
+            }
+            name = `Step_${step}_D_${r.length}`
+            //console.log(functions, name)
+        }
+
+        const run = async () => {
+            window.compute.engine.results = []
+            results = []
+            window.compute.data({ data: r, id: name })
+            window.compute.config({ steps: step })
+            var start = performance.now()
+            window.compute.run({ callbacks: true, functions: functions, dataId: name })
+            var end = performance.now()
+            results = await window.compute.results()
+            if (results.length > 0) {
+                alert("Your simulation results are ready!")
+                alert("Click on visualize to see your results")
+                alert(`Running time for the compute module was: ${end - start} ms for ${functions.length} functions and ${step} steps or ${functions.length * step} total processes!`)
+            }
+        }
+
+        const vis = () => {
+            var div = document.getElementById('visualize')
+            if (div) {
+                div.parentNode.removeChild(div)
+            }
+
+            results[0].unshift(Array.from(Array(r.length).keys()))
+            console.log(results)
+            window.hydro.visualize.draw({
+                params: { type: "chart", divID: `${name}` },
+                args: { charttype: "line", names: functions },
+                data: results[0],
+            });
         }
 
 
 
     </script>
-    
+
 </body>
+
 </html>

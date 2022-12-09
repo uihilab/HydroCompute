@@ -34,8 +34,50 @@ export const timeSeries = {
         return res
     },
 
-    sumAction: d => {
-        console.log(`This is working, right?`)
+    //Adopted from https://github.com/26medias/timeseries-analysis/blob/master/timeseries-analysis.js
+    linearWeightedAverage: (d, period = 12) => {
+        var buffer = d.slice(0, period);
+        for (var i =period; i < data.length; i++){
+            var sum = 0, n = 0;
+            for (var j = period; j > 0; i++){
+                sum += d[i-j]*j;
+                n+=j;
+            }
+            buffer[i] = [d[i], sum / n]
+        }
+        return buffer
+    },
+
+    dspItrend: (d, alpha = 0.7) => {
+        var trigger = d.slice(0, 3), buffer = d.slice(0, 3)
+        for (var i =3; i < d.length; i++){
+            buffer[i] = [
+                d[i], (alpha - (alpha * alpha) / 4) * d[i] + 
+                0.5*(alpha * alpha) * d[i-1] - 
+                (alpha - 0.75 * (alpha * alpha)) *
+                d[i-2] + 
+                2 * (1 - alpha) * buffer[i-1] - 
+                (1 - alpha) * (1 - alpha) * buffer[i-2]
+            ];
+            trigger[i] = [
+                d[i], 2* buffer[i] - buffer[i-2]
+            ];
+        }
+        return [buffer, trigger]
+    },
+
+    noiseSmoother: (d, period = 1) => {
+        var buffer = d.slice(0)
+
+        for (var j = 0; j < period; j++){
+            for ( var i =3; i < d.length; i++){
+                buffer[i-1] = [
+                    buffer[i-1],
+                    (buffer[i-2] + buffer[i]) / 2
+                ]
+            }
+        }
+        return buffer
     },
 
     //Main function to run any of the functions described in the object.

@@ -1,5 +1,5 @@
 //Single worker instance that goes through the whike process of data digestion/ingestion
-import * as scripts from './utils/scripts.js';  
+import * as scripts from './scripts/scripts.js';  
 
 self.onmessage = e => {
     var data = e.data.data, funcName = e.data.function;
@@ -18,6 +18,8 @@ self.onmessage = e => {
         console.error("Please place your script with correct name in the /utils folder");
         return
     })() :
-    (()=> {return e})()
+    (()=> {
+        //console.log(`There was an error with function id: ${e.data.id}`)
+        return e})()
     }
 }

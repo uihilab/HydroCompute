@@ -57,15 +57,10 @@ export default class workers {
         stepCounter++;
       }
     }
-    //TODO: terminate all workers
-    // Object.keys(this.workers).forEach(worker =>{
-    //   this.workers[`${worker}`].worker.terminate()
-    // })
-
     this.instanceCounter++;
   }
 
-  static sequentialRun(args, step, dependencies) {
+  static sequentialRun(args, step, dependencies) {``
     for (var i =0; i < this.functions.length; i++){
     var _args = {
        data: args.data,
@@ -88,7 +83,8 @@ export default class workers {
           function: this.functions[i],
           step: step,
         };
-        this.workerInit(i, _args);
+        this.workerInit(i);
+        this.workers[i].worker(_args)
       }
     } else {
       var counter = new Array(this.workerCount - this.maxWorkerCount)
@@ -102,8 +98,8 @@ export default class workers {
           function: this.functions[i],
           step: step,
         };
-        this.workerInit(i, _args);
-        this.workers[i].worker()
+        this.workerInit(i);
+        this.workers[i].worker(_args)
       }
       //THIS NEEDS CHANGE!
       for (var j = this.maxWorkerCount + 1; j < this.workerCount; j++) {
@@ -113,8 +109,8 @@ export default class workers {
           function: this.functions[counter[j]],
           step: step,
         };
-        this.workerInit(counter[j], _args);
-        this.workers[j].worker()
+        this.workerInit(counter[j]);
+        this.workers[j].worker(_args)
       }
     }
   }
@@ -138,6 +134,7 @@ export default class workers {
         e.data.results,
         this.workers[i].finished = true,
         this.results[args.step].push(e.data.results),
+        w.terminate()
         )
     };
     w.onerror = (e) => {

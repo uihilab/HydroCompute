@@ -52,10 +52,6 @@ export const matrixUtils = {
         }
     },
 
-    sumAction: d => {
-        console.log(`Callback function for sumAction`)
-    },
-
     backArray: d => {
         console.log(`Callback function for backArray`)
         return d
