@@ -14,7 +14,7 @@ export const DAG = (functions, dag, args) => {
         var remaining = N;
         var values = [];
 
-        function handleResolution(promise, i, value) {
+        const handleResolution = (promise, i, value) => {
             values[i] = value;
             if(stopped) {
                 return;
@@ -44,7 +44,7 @@ export const DAG = (functions, dag, args) => {
             }
         }
 
-        function handleRejection(promise, i, error) {
+        const handleRejection = (promise, i, error) => {
             stopped = true;
             reject(error);
         }

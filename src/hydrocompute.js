@@ -75,14 +75,14 @@ class hydrocompute {
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
     })();
-    if (args.callbacks && this.data.length > 0) {
+    if (this.data.length > 0) {
       //Data passed in raw without splitting
       this.engine.run({
         data: data,
         functions: args.functions,
         dependencies: args.dependencies,
         steps: this.steps,
-        callbacks: args.callbacks
+        linked: this.linked
       });
     } else {
       console.error("There was an error pulling the data.");
@@ -173,6 +173,10 @@ class hydrocompute {
   config(args) {
     this.steps = args.steps ? args.steps : 0;
     this.linked = args.linked ? args.linked : false;
+  }
+
+  executionTime(){
+    return this.engine.getexecTime()
   }
 
   availableScripts() {

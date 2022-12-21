@@ -15,43 +15,63 @@
 
     <h2>HydroCompute Example</h2>
     <div id="DataGen">
-    <label for="random">Select Random Data (1D array)</label>
-    <select name="random" id="rGen">
-    </select>
-    <input type="submit" value="Generate" onclick="generateRandom()">
-    <label for="steps">Select # of steps</label>
-    <select name="steps" id="steps">
-    </select>
-    <input type="submit" value="Submit" onclick="setSteps()">
-    <br>
+        <label for="random">Select Random Data (1D array)</label>
+        <select name="random" id="rGen">
+        </select>
+        <input type="submit" value="Generate" onclick="generateRandom()">
+        <label for="steps">Select # of steps</label>
+        <select name="steps" id="steps">
+        </select>
+        <label for="linkBool">Steps Linked?</label>
+        <select name="linkBool" id="linkBool">
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </select>
+        <input type="submit" value="Submit" onclick="setSteps()">
+        <br>
     </div>
     <div id="functionGen">
-    <label for="functions">Please select the functions you want to run</label>
-    <br>
-    <select multiple name="functions" id="functions">
-    </select>
-    <input type="submit" value="Submit" onclick="setFunctions()">
+        <label for="functions">Please select the functions you want to run</label>
+        <br>
+        <select multiple name="functions" id="functions">
+        </select>
+        <br>
+        <label for="mult">Multiplier?</label>
+        <input type="number" id="mult" name="mult" min="0">
+        <br>
+        <label for="depBool">Dependencies?</label>
+        <select name="depBool" id="depBool">
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </select>
+        <br>
+        <label for="dep">List</label>
+        <input type="text" id="dep" name="dep" placeholder="Input as [[]]">
+        <input type="submit" value="Submit" onclick="setFunctions()">
     </div>
     <br>
     <button onclick="run()">Run your simulation!</button>
     <button onclick="removeChart()">Remove Chart</button>
     <button onclick="vis()">Visualize results</button>
     </form>
+    <div id="counter"></div>
 
 
     <script>
         //Globals for data usage and implementation
-        var r
-        var formVals = []
-        var dependencies = []
-        var name
-        var step
-        var sim = 0
-        var functions = []
-        var results = []
+        var r,
+        formVals = [],
+        dependencies = [],
+        name,
+        step,
+        sim = 0,
+        functions = [],
+        results = [],
+        linked = false,
+        exT = -1
 
-                //Initialize hydrolang module
-                const initHydroLang = async () => {
+        //Initialize hydrolang module
+        const initHydroLang = async () => {
             window.hydro = new Hydrolang()
         }
 
@@ -63,27 +83,27 @@
             for (var fun in options) {
                 select.options[select.options.length] = new Option(`${options[fun]}`, `${options[fun]}`)
             }
-            var steps = document.getElementById("steps") 
+            var steps = document.getElementById("steps")
             var size = document.getElementById("rGen")
-            var dtSize = Array.from(Array(8), (_, i) => i**8)
+            var dtSize = Array.from(Array(8), (_, i) => i ** 7)
             var numSteps = Array.from(Array(51).keys())
-            for (var step of numSteps){
+            for (var step of numSteps) {
                 steps.add(new Option(`${step}`, `${step}`))
             }
-            for (var s of dtSize){
+            for (var s of dtSize) {
                 size.add(new Option(`${s}`, `${s}`))
             }
         }
 
         const generateRandom = () => {
             var e = document.getElementById("rGen").value
-            console.log(e)
             r = (Array.from({ length: e }, () => Math.floor(Math.random() * 5)))
             //console.log(r)
         }
 
         const setSteps = () => {
             step = JSON.parse(document.getElementById("steps").value)
+            linked = JSON.parse(document.getElementById("linkBool").value)
             //console.log(step)
         }
 
@@ -92,6 +112,8 @@
             dependencies = []
             functions = []
             var select = document.getElementById("functions")
+            var depBool = JSON.parse(document.getElementById("depBool").value)
+            var multiplier = JSON.parse(document.getElementById("mult").value)
             var options = select && select.options;
             var opt;
 
@@ -99,17 +121,32 @@
                 opt = options[i]
 
                 if (opt.selected) {
-                //     if (!par.hasChildNodes("depBool")){
-                //     var dep = document.createElement("select");
-                //     select.id = "depBool"
-                //     par.appendChild(dep)
-                    
-                //     dep.add(new Option(true, "true"))
-                //     dep.add(new Option(false, "false"))
-                // }
+                    //     if (!par.hasChildNodes("depBool")){
+                    //     var dep = document.createElement("select");
+                    //     select.id = "depBool"
+                    //     par.appendChild(dep)
+
+                    //     dep.add(new Option(true, "true"))
+                    //     dep.add(new Option(false, "false"))
+                    // }
 
                     functions.push(opt.value || opt.text)
                 }
+            }
+
+            if (multiplier > 0){
+                for (var i = 0 ; i < multiplier; i++){
+                    functions.push(functions[0])
+                }
+            }
+
+            
+            
+
+            if (depBool){
+                var dep = document.getElementById("dep").value
+                dep !== "" ? dependencies = JSON.parse(dep) ://This really should change!!
+                    (dependencies = Array.from({length: functions.length}, (_, i) => [i-1]), dependencies[0] = [])
             }
             name = `Step_${step}_D_${r.length}`
             //console.log(functions, name)
@@ -117,18 +154,30 @@
 
         const run = async () => {
             window.compute.engine.results = []
+            window.compute.availableData = []
+            window.compute.engine.execTime = 0
             results = []
             window.compute.data({ data: r, id: name })
-            window.compute.config({ steps: step })
-            var start = performance.now()
+            window.compute.config({ steps: step, linked: linked })
+            //var start = performance.now()
             window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies })
-            var end = performance.now()
+            //var end = performance.now()
+            counter()
             results = await window.compute.results()
-            if (results.length > 0) {
-                alert("Your simulation results are ready!")
-                alert("Click on visualize to see your results")
-                console.log(`Running time for the compute module was: ${end - start} ms for ${functions.length} functions and ${step} steps or ${functions.length * step} total processes!`)
+            resultViewer()
+        }
+
+        const resultViewer = async () => {
+                if (await results.length > 0) {
+                // if (results.length === functions.length * (step === 0 ? 1 : step)) {
+                // alert("Your simulation results are ready!")
+                // alert("Click on visualize to see your results")
+                console.log(`Running time for the compute module was: ${window.compute.executionTime()} ms for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes!`)
                 removeChart()
+                console.log(results)
+                return;
+            // } else {
+            //     resultViewer()
             }
         }
 
@@ -136,6 +185,7 @@
             var div = document.getElementById('visualize')
             if (div) {
                 div.parentNode.removeChild(div)
+                results = []
             }
         }
 
@@ -147,6 +197,20 @@
                 args: { charttype: "line", names: functions },
                 data: results[0],
             });
+        }
+
+        const counter = () => {
+            max = compute.executionTime()+1
+            ctr = document.getElementById("counter")
+            if (exT+1 === max){
+                return
+            }
+            if (exT < max){
+                ctr.innerHTML = `Running time: ${max} ms`
+                setTimeout(()=>{
+                    exT=compute.executionTime()-1
+                    counter()}, 1);
+            }
         }
 
 
