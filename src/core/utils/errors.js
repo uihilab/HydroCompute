@@ -15,3 +15,4 @@ export class NotImplemented extends Error {
         Object.setPrototypeOf(this, NotImplemented.prototype)
     }
 }
+

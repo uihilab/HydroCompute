@@ -1,7 +1,7 @@
 export const matrixUtils = {
-    //Multiplication of 2 matrices
-    matrixMul: (()=>{
-        return `
+  //Multiplication of 2 matrices
+  matrixMul: () => {
+    return `
         struct Matrix {
           size: vec2<f32>,
           numbers: array<f32>,
@@ -31,10 +31,10 @@ export const matrixUtils = {
           let index = resultCell.y + resultCell.x * u32(mat2.size.y);
           resultMatrix.numbers[index] = result;
         };
-      `
-    }),
-    matrixAdd: (()=>{
-        return  `
+      `;
+  },
+  matrixAdd: () => {
+    return `
         struct Matrix {
           size: vec2<f32>,
           numbers: array<f32>,
@@ -64,6 +64,6 @@ export const matrixUtils = {
           let index = resultCell.y + resultCell.x + u32(mat2.size.y);
           resultMatrix.numbers[index] = result;
         };
-      `
-    })
-}
+      `;
+  },
+};
