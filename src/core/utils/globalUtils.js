@@ -63,6 +63,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 
     const handleRejection = (promise, i, error) => {
       stopped = true;
+      console.log(error)
       reject(error);
     };
 

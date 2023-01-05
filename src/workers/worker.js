@@ -2,9 +2,11 @@ import * as scripts from "./scripts/scripts.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = (e) => {
+  console.log("why is it not working?")
   const st = performance.now();
   var data = e.data.data,
     funcName = e.data.function;
+
   try {
     Object.keys(scripts).forEach((script) => {
       if (Object.keys(scripts[script]).includes(funcName)) {

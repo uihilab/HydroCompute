@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" /> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <!-- <link href="random.css" rel="stylesheet"> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" onload="initHydrocompute() " src="../../src/hydrocompute.js"></script>
+    <!-- <script type="module" onload="initHydroLang() " src="./hydrolang/hydro.js"></script> -->
+    <title>HydroCompute Example</title>
+</head>
+<style>
+    .modal {
+        /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0, 0.4);
+        /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4);
+        /* Black w/ opacity */
+    }
+</style>
+
+<body>
+    <div id="examplePages" class="carousel carousel-dark slide">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="container py-2">
+                    <header class="pb-3 mb-4 border-bottom text-center lead"><b>Data Setup</b></header>
+                    <div class="row align-items-md-stretch">
+                        <div class="col-md-6">
+                            <div class="container p-3 bg-light rounded" id="DataGen">
+                                <h1 class="display-8">Data</h1>
+                                <p class="lead">Random Data Generator</p>
+                                <hr class="my-4">
+                                <label for="arraySel" class="form-label">Array size:</label>
+                                <select class="form-select" name="arraySel" id="arraySel">
+                                    <option value="1D">1D array</option>
+                                    <option value="2D">2D array</option>
+                                </select>
+                                <label for="random">Size of array</label>
+                                <select class="form-select" name="random" id="rGen">
+                                </select>
+                                <br>
+                                <button type="button" class="btn btn-outline-secondary" data-toggle="modal"
+                                    data-target="#dataModal" onclick="generateRandom()">Generate Data</button>
+                            </div>
+                            <div class="modal" id="dataModal" tabindex="-1" role="dialog"
+                                aria-labelledby="dataModalTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLongTitle">Splits</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <label for="splitF" class="form-label">Select splitting function or
+                                                none</label>
+                                            <select name="splitF" id="splitF" class="form-select"></select>
+                                            <br>
+                                            <label for="splitArgs" class="form-label">Add parameters as key:value pairs
+                                                or empty</label>
+                                            <input type="text" id="splitArgs" class="form-control" name="dep"
+                                                placeholder="Enter key:value arguments.">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-primary"
+                                                onclick="setSplits()">Save
+                                                changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="container p-3 bg-dark rounded text-bg-dark" id="stepGen">
+                                <h1 class="display-8">Steps</h1>
+                                <p class="lead"> Step Connectivity</p>
+                                <hr class="my-4">
+                                <label for="steps" class="form-label">Select # of steps</label>
+                                <select class="form-select text-bg-dark" name="steps" id="steps">
+                                </select>
+                                <label for="linkBool">Steps Linked?</label>
+                                <select class="form-select text-bg-dark" name="linkBool" id="linkBool">
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                </select>
+                                <br>
+                                <button type="button" class="btn btn-outline-light" onclick="setSteps()">Generate
+                                    Steps</button>
+                            </div>
+                        </div>
+                        <div class="col-md-12 py-4">
+                            <div class="container p-3 bg-white border rounded" id="FunctionGen">
+                                <h1 class="display-10">Functions</h1>
+                                <p class="lead">Selection of Functions to Run</p>
+                                <hr class="my-4">
+                                <label for="scriptName" class="form-label">Change scripts to see specific
+                                    functions</label>
+                                <select class="form-select" name="scriptName" id="scriptName"
+                                    onclick="genFunctions()"></select>
+                                <label for="functions" class="form-label">Select one or multiple functions from the list
+                                    below</label>
+                                <select class="form-select" multiple name="functions" id="functions">
+                                </select>
+                                <br>
+                                <button type="button" class="btn btn-outline-secondary" id="func-modal-submit"
+                                    value="Submit" onclick="funcModal()">Generate Functions</button>
+                                <button type="button" class="btn btn-outline-primary float-end" onclick="run()">Run
+                                    Simulation</button>
+                                <br>
+                                <div class="modal modal-xl" id="funcModal" tabindex="-1" role="dialog"
+                                    aria-labelledby="dataModalTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLongTitle">Functions</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body overflow-auto">
+                                                <div class="col-md-12" id="func-table">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-primary"
+                                                    onclick="setFunctions()">Save
+                                                    changes</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <!-- <button onclick="removeChart()">Remove Chart</button>
+    <button onclick="vis()">Visualize results</button> -->
+                            </div>
+                            <!-- </div> -->
+                        </div>
+                        <!-- <div class="col-xl-8 offset-sm-2 col-md-6 offset-md-0" id="results">
+                <div class="col-xl-6">
+                    <div class="jumbotron">
+                        <div id="counter">
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="container py-2">
+                    <div class="container rounded">
+                        <header class="pb-3 mb-4 border-bottom text-center lead"><b>Results</b></header>
+                        <div class="col-md-12 py-2">
+                            <div class="container p-2 bg-white border rounded">
+                                <h1 class="display-10">Current Parametrization</h1>
+                                <p class="lead">Overview of the parameters</p>
+                                <hr class="my-4">
+                                <br>
+                            </div>
+                        </div>
+                        <div class="col-md-12 py-2">
+                            <div class="container p-3 bg-white border rounded" id="resultViewer">
+                                <h1 class="display-11">Results</h1>
+                                <p class="lead">Overview of results</p>
+                                <hr class="my-4">
+                                <div class="container rounded">
+                                    <div class="row align-items-md-stretch">
+                                        <div class="col-md-6 py-2">
+                                            <h3 class="display-11 text-center">Performance</h3>
+                                            <label for="counter" class="form-label">Overall running time</label>
+                                            <div id="counter">
+                                            </div>
+                                            <button class="btn btn-outline-secondary float-start">Clear Data</button>
+                                            <button class="btn btn-outline-secondary float-end">Download
+                                                Results</button>
+                                        </div>
+                                        <div class="col-md-6 py-2">
+                                            <h3 class="display-8 text-center">Graphical output</h3>
+                                        </div>
+                                        <br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#examplePages" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#examplePages" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+
+    <script>
+        //Globals for data usage and implementation
+        var r,
+            formVals = [],
+            dependencies = [],
+            name,
+            step,
+            sim = 0,
+            functions = [],
+            fnConfigs = [],
+            results = [],
+            linked = false,
+            exT = -1,
+            prev = null,
+            ops = [],
+            splits = [];
+
+        // //Initialize hydrolang module
+        // const initHydroLang = async () => {
+        //     window.hydro = new Hydrolang()
+        // }
+
+        //Initialize hydrocompute module
+        const initHydrocompute = () => {
+            var select = document.getElementById("functions");
+            select.options.length = 0
+            window.compute = new hydrocompute()
+            ops = window.compute.availableScripts()
+            splits = window.compute.availableSplits()
+            let keys = Array.from(ops.keys())
+            var scripts = document.getElementById("scriptName")
+            for (let sc of keys) {
+                scripts.options[scripts.options.length] = new Option(`${sc}`, `${sc}`)
+            }
+            scripts.add(new Option("all", "all"))
+            Array.from(ops.values()).forEach(sc => sc.forEach(fn => select.add(new Option(`${fn}`, `${fn}`))))
+            var steps = document.getElementById("steps")
+            var size = document.getElementById("rGen")
+            var dtSize = Array.from(Array(8), (_, i) => i ** 7)
+            var numSteps = Array.from(Array(51).keys())
+            for (var step of numSteps) {
+                steps.add(new Option(`${step}`, `${step}`))
+            }
+            for (var s of dtSize) {
+                size.add(new Option(`${s}`, `${s}`))
+            }
+        }
+
+        const genFunctions = () => {
+            var select = document.getElementById("functions");
+            var sub = document.getElementById("func-modal-submit")
+            select.options.length = 0
+            var scripts = document.getElementById("scriptName").value
+            var ar = ops.get(scripts)
+            select.style.visibility = "visible"
+            sub.style.visibility = "visible"
+            if (scripts === "all") {
+                Array.from(ops.values()).forEach(sc => sc.forEach(fn => select.add(new Option(`${fn}`, `${fn}`))))
+            }
+            else {
+                for (let fun of ar) {
+                    select.add(new Option(`${fun}`, `${fun}`))
+                }
+            }
+        }
+
+        const generateRandom = () => {
+            var type = document.getElementById("arraySel").value
+            var e = document.getElementById("rGen").value
+            var select = document.getElementById("splitF");
+            var modal = document.getElementById("dataModal");
+            var span = document.getElementsByClassName("close-button")[0];
+            type === "1D" ?
+                r = (Array.from({ length: e }, () => Math.floor(Math.random() * 5)))
+                : r = [(Array.from({ length: e }, () => Math.floor(Math.random() * 5))), (Array.from({ length: e }, () => Math.floor(Math.random() * 5)))]
+            select.options.length = 0
+            for (let f of splits) {
+                select.add(new Option(`${f}`, `${f}`))
+            }
+            select.add(new Option("none", "None"))
+
+            modal.style.display = "block";
+
+            window.onclick = (e) => {
+                if (e.target == modal) {
+                    modal.style.display = "none"
+                }
+            }
+            name = `Run_${makeid(5)}_DSize_${r.length}`
+        }
+
+        function makeid(length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+
+        const setSplits = () => {
+            var modal = document.getElementById("dataModal");
+            modal.style.display = "none"
+            var sp = document.getElementById("splitF").value
+            var args = document.getElementById("splitArgs").value
+            let ob = new Object()
+            if (sp !== "None") {
+                let args2 = JSON.stringify(args)
+                args2 = args2.split(",")
+                for (let ops of args2) {
+                    let [key, val] = ops.split(":")
+                    ob[(key.replace(/[^a-z.]/g, ''))]
+                        = JSON.parse(val.replace(/[^0-9.]/g, ''))
+                }
+                compute.data({ id: name, data: r, splits: { function: sp, ...ob } })
+            } else {
+                compute.data({ id: name, data: r })
+                return
+            }
+            console.log(`Data configuration\n Splits: ${sp !== 'None' ? sp : 'None'}\nParameters: ${sp !== 'None' ? args : 'None'}\nData length: ${r.length}\nType: Random`)
+        }
+
+        const setSteps = () => {
+            step = JSON.parse(document.getElementById("steps").value)
+            linked = JSON.parse(document.getElementById("linkBool").value)
+            //console.log(step)
+            console.log(`Step configuration\n#Steps: ${step}\nSteps are linked: ${linked}`)
+        }
+
+        const funcModal = () => {
+            var select = document.getElementById("functions")
+            var modal = document.getElementById("funcModal");
+            var dv = document.getElementById("func-table");
+            var dp = []
+            var fn = []
+            var colNames = ['Function\nName', 'Multiplier', 'Add\nConfig', 'Dependencies', 'Dependency\nList']
+            var options = select && select.options;
+            var opt;
+
+            modal.style.display = "block";
+
+            window.onclick = (e) => {
+                if (e.target == modal) {
+                    modal.style.display = "none"
+                }
+            }
+
+            for (var i = 0, iLen = options.length; i < iLen; i++) {
+                opt = options[i]
+
+                if (opt.selected) {
+                    fn.push(opt.value || opt.text)
+                }
+            }
+
+            //Columns: Function Name, Multiplier, Dependencies, Dep List
+            var rows = fn.length;
+            var columns = colNames.length;
+
+            (() => { while (dv.firstChild) dv.removeChild(dv.firstChild) })()
+
+            var table = document.createElement('table')
+            table.classList.add('table');
+
+            var thead = document.createElement('thead');
+            var headRow = document.createElement('tr');
+            headRow.className = "text-center"
+
+            for (var i = 0; i < columns; i++) {
+                var th = document.createElement('th');
+                th.appendChild(document.createTextNode(colNames[i]));
+                headRow.appendChild(th)
+            }
+            thead.appendChild(headRow);
+
+            var tbody = document.createElement('tbody');
+
+            for (var i = 0; i < rows; i++) {
+                var tr = document.createElement('tr')
+                for (var j = 0; j < columns; j++) {
+                    var td = document.createElement('td')
+                    switch (j) {
+                        case 0:
+                            td.appendChild(document.createTextNode(fn[i]));
+                            break;
+                        case 1:
+                            var inp = document.createElement('input');
+                            inp.type = 'number'
+                            inp.min = 0
+                            inp.className = "form-control"
+                            inp.defaultValue = 1
+                            //inp.placeholder = "Change if more than 1 required."
+                            // td.innerHTML = "0";
+                            td.appendChild(inp);
+                            //td.addEventListener('mousedown', editInput);
+                            tr.appendChild(td);
+                            break;
+                        case 2:
+                            var inp = document.createElement('input');
+                            inp.type = 'text'
+                            inp.defaultValue = ""
+                            inp.className = "form-control"
+                            inp.placeholder = "Input as keys:values,"
+                            //td.addEventListener('mousedown', editInput);
+                            //td.innerHTML = "As array [[]] or empty"
+                            td.appendChild(inp);
+                            tr.appendChild(td);
+                            break;
+                        case 3:
+                            var sl = document.createElement('select')
+                            sl.className = "form-select"
+                            sl.add(new Option("true", "true"))
+                            sl.add(new Option("false", "false"))
+                            td.appendChild(sl)
+                            break;
+                        case 4:
+                            var inp = document.createElement('input');
+                            inp.type = 'text'
+                            inp.defaultValue = ""
+                            inp.className = "form-control"
+                            inp.placeholder = "Input as [[0],[1]] or leave empty."
+                            //td.addEventListener('mousedown', editInput);
+                            //td.innerHTML = "As array [[]] or empty"
+                            td.appendChild(inp);
+                            tr.appendChild(td);
+                            break;
+                        default:
+                            break;
+                    }
+                    tr.appendChild(td)
+                }
+                tbody.appendChild(tr)
+            }
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            table.id = "funcTable"
+            table.className = "table"
+            dv.appendChild(table);
+        }
+
+        const setFunctions = () => {
+            //Close the modal
+            var modal = document.getElementById("funcModal");
+            modal.style.display = "none"
+
+            //setting function arrays as empty
+            dependencies = []
+            functions = []
+            fnConfigs = []
+            var dep = [],
+                fn = [],
+                fnParam = [],
+                mul = [],
+                depArr = [];
+            d = document.getElementById("funcTable").children[1].children
+            for (var i of d) {
+                for (var j = 0; j < i.children.length; j++) {
+                    switch (j) {
+                        case 0:
+                            fn.push(i.firstChild.innerHTML);
+                            break;
+                        case 1:
+                            mul.push(JSON.parse(i.children[j].firstChild.value));
+                            break;
+                        case 2:
+                            fnParam.push(JSON.stringify(i.children[j].firstChild.value));
+                            break;
+                        case 3:
+                            dep.push(JSON.parse(i.children[j].firstChild.value));
+                            break;
+                        case 4:
+                            depArr.push(JSON.stringify(i.children[j].firstChild.value));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            for (var i = 0; i < fn.length; i++) {
+                for (var j = 0; j < mul[i]; j++) {
+                    functions.push(fn[i])
+                    fnConfigs.push(fnParam[i])
+                }
+            }
+
+            for (var j = 0; j < dep.length; j++) {
+
+                if (dep[j]) {
+                    let stgArr = []
+                    depArr[j] !== ""
+                        ? dependencies.push(JSON.parse(JSON.parse(depArr[j])))
+                        : (() => {
+                            stgArr.push(Array.from({ length: functions.length }, (_, k) => [k - 1]));
+                            stgArr[0] = [];
+                            dependencies.push(stgArr)
+                        })()
+                }
+            }
+            console.log(`Function configuration\nFunction runs: ${functions}\nMultipliers per function: ${mul}\nAdditional configurations per function: ${fnConfigs}\nDependency boolean: ${dep}\nDependency list: ${dependencies}`)
+        }
+
+        const run = async () => {
+            results = []
+            //Setting the 
+            window.compute.engine.results = []
+            //window.compute.availableData = []
+            window.compute.engine.execTime = 0
+            //window.compute.data({ data: r, id: name })
+            window.compute.config({ steps: step, linked: linked })
+            //Initiate with the computations.
+            window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies })
+            counter()
+
+            results = await window.compute.results()
+            await resultViewer()
+        }
+
+        const resultViewer = async () => {
+            if (await results.length > 0) {
+                //console.log(`Running time for the compute module was: ${window.compute.executionTime()} ms for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes!`)
+                removeChart()
+                console.log(await results)
+                return;
+                // } else {
+                //     resultViewer()
+            }
+        }
+
+        const removeChart = () => {
+            var div = document.getElementById('visualize')
+            if (div) {
+                div.parentNode.removeChild(div)
+                results = []
+            }
+        }
+
+        const vis = () => {
+            results[0].unshift(Array.from(Array(r.length).keys()))
+            console.log(results)
+            window.hydro.visualize.draw({
+                params: { type: "chart", divID: `${name}` },
+                args: { charttype: "line", names: functions },
+                data: results[0],
+            });
+        }
+
+        const counter = () => {
+            max = compute.executionTime() + 1
+            ctr = document.getElementById("counter")
+            if (exT + 1 === max) {
+                return
+            }
+            if (exT < max) {
+                ctr.innerHTML = `Running time: ${max.toPrecision(4)} ms for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes`
+                setTimeout(() => {
+                    exT = compute.executionTime() - 1
+                    counter()
+                }, 1);
+            }
+        }
+
+        const editInput = (e) => {
+            var cell = e.target;
+            if (cell.dataset.editing !== 'true') {
+                cell.dataset.editing = true;
+                var text = cell.innerHTML;
+                cell.innerHTML = '';
+                var input = document.createElement('input');
+                input.addEventListener('blur', nonEditInput);
+                input.type = "text";
+                input.value = text;
+                cell.appendChild(input)
+            }
+        }
+
+
+        const nonEditInput = (e) => {
+            var input = e.target;
+            var text = input.value;
+            var cell = input.parentElement;
+            if (cell.dataset.editing !== 'true') {
+                cell.dataset.editing = false;
+                cell.innerHTML = text;
+            }
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 export default class webgl{
     static initialize() {
-        console.log("Web workers scripts called!!")
+        console.log("Future releases of hydrocompute will include the implementation of webgl.")
     }
 }

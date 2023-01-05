@@ -42,13 +42,14 @@ export default class workers {
     instaceRun.values = [];
     this.functions = args.functions;
     let dependencies =
-      typeof args.dependencies === "undefined" ? [] : args.dependencies;
+      (typeof args.dependencies === "undefined") || (args.dependencies[0] === "") ? [] : args.dependencies;
     //This still needs improvement
     this.workerCount = Array.isArray(args.data[0])
       ? //assuming the main driver for the workers scope is the length of the data
         args.data.length
       : //assuming that the data is a 1D array run or passed by n functions
-        this.functions.length;
+      //args.linked === true ? this.functions.length * args.steps : 
+      this.functions.length;
 
     for (var i = 0; i < this.workerCount; i++) {
       this.workerSpanner(i);
@@ -116,54 +117,6 @@ export default class workers {
     return res;
   }
 
-  // static async parallelRun(args, step) {
-  //   var r = [];
-  //   //instead of running the function by spanning new workers, create a dependency DAG with 0 dependencies
-  //   //for each worker.
-  //   //let dependencies = Array.from({ length: functions.length }, (_, i) => []);
-  //   //Parallel analysis
-  //   //r = await this.concurrentRun(args, step, dependencies);
-  //   //This is in case the number of workers available are bigger than the required simulations.
-  //   if (this.workerCount < this.maxWorkerCount) {
-  //     for (var i = 0; i < this.workerCount; i++) {
-  //       var _args = {
-  //         data: args.data[i],
-  //         id: i,
-  //         function: this.functions[i],
-  //         step: step,
-  //       };
-  //       this.workerInit(i);
-  //       r.push(await this.workers[i].worker(_args));
-  //     }
-  //   } else {
-  //     var counter = new Array(this.workerCount - this.maxWorkerCount)
-  //       .fill()
-  //       .map((d, i) => this.maxWorkerCount + i);
-  //     //first batch
-  //     for (var i = 0; i < this.maxWorkerCount; i++) {
-  //       var _args = {
-  //         data: args.data[i],
-  //         id: i,
-  //         function: this.functions[i],
-  //         step: step,
-  //       };
-  //       this.workerInit(i);
-  //       r.push(await this.workers[i].worker(_args));
-  //     }
-  //     //THIS NEEDS CHANGE!
-  //     for (var j = this.maxWorkerCount + 1; j < this.workerCount; j++) {
-  //       var _args = {
-  //         data: args.data[j],
-  //         id: counter[j],
-  //         function: this.functions[counter[j]],
-  //         step: step,
-  //       };
-  //       this.workerInit(counter[j]);
-  //       r.push(await this.workers[j].worker(_args));
-  //     }
-  //   }
-  //   return r;
-  // }
   /**
    * 
    * @param {*} args 
@@ -173,20 +126,21 @@ export default class workers {
   static async parallelRun(args, step) {
     let results = [];
 
-    const counter =
-      this.workerCount < this.maxWorkerCount
-        ? new Array(Math.abs(this.workerCount - this.maxWorkerCount))
-            .fill()
-            .map((d, i) => this.maxWorkerCount + i)
-        : [];
+    // const counter =
+    //   this.workerCount < this.maxWorkerCount
+    //     ? new Array(Math.abs(this.workerCount - this.maxWorkerCount))
+    //         .fill()
+    //         .map((d, i) => this.maxWorkerCount + i)
+    //     : [];
 
-    for (let i = 0; i < this.workerCount; i++) {
+    for (var i = 0; i < this.workerCount; i++) {
       const workerArgs = {
         data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         id: i,
         function: this.functions[i],
         step: step,
       };
+      console.log(workerArgs)
       this.workerInit(i);
       results.push(await this.workers[i].worker(workerArgs));
     }
@@ -211,10 +165,10 @@ export default class workers {
   static workerInit(i) {
     this.workers[i].worker = (args) => {
       return new Promise((resolve, reject) => {
-        var w = new Worker("./src/workers/worker.js", {
+        //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
+        var w = new Worker("../../src/workers/worker.js", {
           type: "module",
         });
-        w.postMessage(args);
         w.onmessage = (e) => {
           const r = e.data.results;
           resolve(
@@ -226,8 +180,10 @@ export default class workers {
           );
         };
         w.onerror = (e) => {
+          console.log(e)
           reject(e.error);
         };
+        w.postMessage(args);
       });
     };
   }
