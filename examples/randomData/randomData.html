@@ -166,7 +166,27 @@
                                 <h1 class="display-10">Current Parametrization</h1>
                                 <p class="lead">Overview of the parameters</p>
                                 <hr class="my-4">
-                                <br>
+                                <div class="container rounded">
+                                    <div class="row align-items-md-stretch">
+                                        <div class="col-md-6 py-2">
+                                            <h3 class="display-8 text-center">Parameter Settings</h3>
+                                        </div>
+                                        <div class="col-md-6 py-2">
+                                            <h3 class="display-8 text-center">Engine Settings</h3>
+                                            <div class="col-md-3">
+                                                <label for="engine-change" class="form-label">Change Engine</label>
+                                                <select class="form-select" id="engine-change"
+                                                    onchange="changeEngine()">
+                                                    <option value="workers">workers</option>
+                                                    <option value="webgpu">webgpu</option>
+                                                    <option value="wasm">wasm</option>
+                                                    <option value="webrtc">webrtc</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <br>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-12 py-2">
@@ -202,7 +222,8 @@
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#examplePages" data-bs-slide="next">
+        <button class="carousel-control-next" id="next-btn" type="button" data-bs-target="#examplePages"
+            data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
         </button>
@@ -273,6 +294,13 @@
                     select.add(new Option(`${fun}`, `${fun}`))
                 }
             }
+        }
+
+        const changeEngine = () => {
+            var changed = document.getElementById("engine-change").value
+            var currentEngine = window.compute.currentEngineName
+            changed !== currentEngine ? window.compute.setEngine(changed) : null
+            return
         }
 
         const generateRandom = () => {
@@ -500,14 +528,14 @@
             for (var j = 0; j < dep.length; j++) {
 
                 if (dep[j]) {
-                    let stgArr = []
-                    depArr[j] !== ""
-                        ? dependencies.push(JSON.parse(JSON.parse(depArr[j])))
-                        : (() => {
-                            stgArr.push(Array.from({ length: functions.length }, (_, k) => [k - 1]));
+                    let N = functions.length
+                    JSON.parse(depArr[j]) === ""
+                        ? ((N) => {
+                            let stgArr = Array.from({ length: N }, (_, k) => [k - 1]);
                             stgArr[0] = [];
                             dependencies.push(stgArr)
-                        })()
+                        })(N)
+                        : dependencies.push(JSON.parse(JSON.parse(depArr[j])))
                 }
             }
             console.log(`Function configuration\nFunction runs: ${functions}\nMultipliers per function: ${mul}\nAdditional configurations per function: ${fnConfigs}\nDependency boolean: ${dep}\nDependency list: ${dependencies}`)
@@ -521,8 +549,10 @@
             window.compute.engine.execTime = 0
             //window.compute.data({ data: r, id: name })
             window.compute.config({ steps: step, linked: linked })
-            //Initiate with the computations.
-            window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies })
+            //Initiate with the computations.The dependencies needs to change
+            window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies[0] })
+
+            document.getElementById('next-btn').click()
             counter()
 
             results = await window.compute.results()

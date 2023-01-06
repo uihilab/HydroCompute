@@ -140,7 +140,6 @@ export default class workers {
         function: this.functions[i],
         step: step,
       };
-      console.log(workerArgs)
       this.workerInit(i);
       results.push(await this.workers[i].worker(workerArgs));
     }

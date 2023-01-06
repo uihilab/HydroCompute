@@ -15,6 +15,7 @@ class hydrocompute {
     this.currentEngineName = null;
     this.engineFactory;
     this.kernels = {};
+    this.instanceRun = 0
     this.availableData = [];
     Object.entries(engines).forEach((engine) => {
       let [propName, propModule] = engine;
@@ -87,7 +88,7 @@ class hydrocompute {
    * @param {*} args 
    * @returns 
    */
-  async run(args = {}) {
+  async run(args) {
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -99,7 +100,7 @@ class hydrocompute {
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
     })();
-    if (this.data.length > 0) {
+    if (data.length > 0) {
       //Data passed in raw without splitting
       this.engine.run({
         data: data,
@@ -213,11 +214,9 @@ class hydrocompute {
    * @returns {Object{}} map containing the available split functions in the engines
    */
   availableSplits() {
-    if (this.currentEngineName === "workers") {
       let r = Object.keys(splits)
       r = r.filter((ele) => ele === undefined || ele === "main" ? null : ele)   
       return r;
-    }
   }
 }
 

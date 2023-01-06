@@ -2,7 +2,6 @@ import * as scripts from "./scripts/scripts.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = (e) => {
-  console.log("why is it not working?")
   const st = performance.now();
   var data = e.data.data,
     funcName = e.data.function;
@@ -31,7 +30,7 @@ self.onmessage = (e) => {
         })()
       : (() => {
           //console.log(`There was an error with function id: ${e.data.id}`)
-          return e;
+          console.log(`There was an error with executing:\nfunction:${funcName}\nid:${e.data.id}`)
         })();
   }
 };

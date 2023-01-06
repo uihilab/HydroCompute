@@ -4,6 +4,8 @@ import * as buffers from "./utils/bufferCreators.js";
 import { matrixUtils } from "./utils/gslCode/matrixUtils.js";
 
 /**
+ * WebGPU engine for general computing purposes using the device's GPU.
+ * It is bounded by the availability of the WebGPU API on the current browser.
  * @class
  * @name webgpu
  */
@@ -11,11 +13,13 @@ export default class webgpu {
   constructor() {
     this.adapter = null;
     this.device = null;
+    this.execTime = 0;
+    this.results = [];
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   static async initialize() {
     await this.deviceCall();
@@ -27,13 +31,12 @@ export default class webgpu {
       await this.deviceCall();
       if (!this.adapter) return false;
     }
-
     return true;
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   static async deviceCall() {
     if (!this.adapter) {
@@ -51,12 +54,14 @@ export default class webgpu {
       console.error("Device was lost: ", info);
       this.initialize();
     });
-    return console.log("web gpu called!!");
+    console.log(
+      `WebGPU engine called.\nMax cumulative size: ${this.device.limits.maxComputeWorkgroupStorageSize}\n`
+    );
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   //This method might not be as helpful as it seems
   static setDevice() {
@@ -65,13 +70,10 @@ export default class webgpu {
 
   /**
    *
-   * @param  {Object} args containing
-   * @returns
+   * @param {*} args
    */
-  static async digestData(...args) {
-    //data will be kept in the initial position
-    args = args[0];
 
+  static async run(args) {
     //assuming that the matrices are square, no need to input sizes
     if (typeof args[1].sizes === "undefined")
       args[1].sizes = (() => {
@@ -125,6 +127,14 @@ export default class webgpu {
       [rSize, rBuffer]
     );
 
-    return Array.from(result).slice(2);
+    this.results.push(Array.from(result).slice(2));
+  }
+
+  static showResults() {
+    return this.results;
+  }
+
+  static getexecTime() {
+    return this.execTime;
   }
 }
