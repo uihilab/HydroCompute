@@ -218,7 +218,7 @@
             </div>
 
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#examplePages" data-bs-slide="prev">
+        <button class="carousel-control-prev" id="prev-btn" type="button" data-bs-target="#examplePages" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
         </button>
@@ -254,21 +254,12 @@
 
         //Initialize hydrocompute module
         const initHydrocompute = () => {
-            var select = document.getElementById("functions");
-            select.options.length = 0
             window.compute = new hydrocompute()
-            ops = window.compute.availableScripts()
             splits = window.compute.availableSplits()
-            let keys = Array.from(ops.keys())
-            var scripts = document.getElementById("scriptName")
-            for (let sc of keys) {
-                scripts.options[scripts.options.length] = new Option(`${sc}`, `${sc}`)
-            }
-            scripts.add(new Option("all", "all"))
-            Array.from(ops.values()).forEach(sc => sc.forEach(fn => select.add(new Option(`${fn}`, `${fn}`))))
+            changeFunctionScript()
             var steps = document.getElementById("steps")
             var size = document.getElementById("rGen")
-            var dtSize = Array.from(Array(8), (_, i) => i ** 7)
+            var dtSize = Array.from(Array(11), (_, i) => i ** 7)
             var numSteps = Array.from(Array(51).keys())
             for (var step of numSteps) {
                 steps.add(new Option(`${step}`, `${step}`))
@@ -276,6 +267,21 @@
             for (var s of dtSize) {
                 size.add(new Option(`${s}`, `${s}`))
             }
+        }
+
+        const changeFunctionScript = async () => {
+            ops = []
+            var select = document.getElementById("functions");
+            select.options.length = 0
+            var scripts = document.getElementById("scriptName")
+            scripts.options.length = 0
+            ops = await window.compute.engineScripts()
+            let keys = Array.from(ops.keys())
+            for (let sc of keys) {
+                scripts.options[scripts.options.length] = new Option(`${sc}`, `${sc}`)
+            }
+            scripts.add(new Option("all", "all"))
+            Array.from(ops.values()).forEach(sc => sc.forEach(fn => select.add(new Option(`${fn}`, `${fn}`))))
         }
 
         const genFunctions = () => {
@@ -300,6 +306,8 @@
             var changed = document.getElementById("engine-change").value
             var currentEngine = window.compute.currentEngineName
             changed !== currentEngine ? window.compute.setEngine(changed) : null
+            changeFunctionScript()
+            document.getElementById('prev-btn').click()
             return
         }
 
@@ -540,6 +548,8 @@
             }
             console.log(`Function configuration\nFunction runs: ${functions}\nMultipliers per function: ${mul}\nAdditional configurations per function: ${fnConfigs}\nDependency boolean: ${dep}\nDependency list: ${dependencies}`)
         }
+
+        const perf = (inp) => {let start = performance.now(); const res = compute.engine.liftTypedArray(Float32Array, currentMod.simpleMovingAverage(inp, 7) >>> 0, currentMod); let finish = performance.now(); console.log(`total time: ${finish - start} ms`); return res}
 
         const run = async () => {
             results = []

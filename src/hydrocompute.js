@@ -1,6 +1,5 @@
 import * as engines from "./core/core.js";
 import { splits } from "./core/utils/splits.js";
-import * as scripts from "./workers/scripts/scripts.js";
 import { dataCloner } from "./core/utils/globalUtils.js";
 
 /**
@@ -186,27 +185,8 @@ class hydrocompute {
     return this.engine.getexecTime()
   }
 
-  /**
-   * 
-   * @returns {Object[]} string concatenation of the available scripts for each script.
-   */
-  availableScripts() {
-    if (this.currentEngineName === "workers") {
-      let r = Object.keys(scripts).map((script) => {
-        return script;
-      });
-      let fun = new Map();
-      for (let func of r) {
-        let fn = []
-        for (var i = 0; i < Object.keys(func).length; i++){
-          fn.push(Object.keys(scripts[func])[i])
-        }
-
-        fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
-        fun.set(func, fn)
-      }
-      return fun;
-    }
+  engineScripts(){
+    return this.engine.availableScripts()
   }
 
   /**

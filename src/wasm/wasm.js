@@ -1,31 +1,26 @@
-import {assemblyModule} from './modules/modules.js'
+import {assemblyModule, availableModules} from './modules/modules.js'
+import { NotFound } from '../core/utils/errors.js';
 
-//class that instantiates the wasm modules
 
+/**
+ * Imports modules from different web assembly compilations for usage
+ * @class wasm
+ */
 export default class wasm{
 
     /**
      * Initialize the method with the same parameters available from all other engines
      */
     static initialize() {
-        console.log("Web assembly scripts called.")
-        this.wasm = undefined
+        this.wasmMods = {}
         this.functions = [];
         this.results = [];
         this.execTime = 0;
-
-    }
-
-    /**
-     * Instatiating the modules available from modules folder.
-     * All modules are saved in the modules folder.
-     * @param {*} module 
-     * @param {*} imports 
-     * @returns 
-     */
-    async instantiate(module, imports = {}) {
-        const {exports} = await WebAssembly.instantiate(module, imports);
-        return exports
+        this.dataview = undefined;
+        this.memory = undefined;
+        this.refCounts = new Map()
+        this.getAllModules()
+        console.log(`Web assembly scripts called.\nModules available: ${Object.keys(availableModules)}`)
     }
 
     /**
@@ -34,31 +29,189 @@ export default class wasm{
      * @param {*} location - parameter will change
      * @returns 
      */
-    static async loadModule(mem = 1, module) {
-        const memory = new WebAssembly.Memory({initial: mem, shared: true})
-        this.wasm = await WebAssembly.instantiateStreaming(fetch(module), {
-            env:
-            {
-                memory,
-                abort: (_msg, _file, line, column) => console.error(`Abort at ${line}: ${column}`),
-                //seed: () => new Date().getTime()
-            }
+    static async loadModule(moduleName) {
+        try {
+        const myCurrentModule = await new Promise((resolve, reject) => {
+          resolve(assemblyModule(moduleName));
         });
-        return this.wasm.instance.exports
-    }
+            return myCurrentModule
+        } catch (e) {
+            throw new Error(e)
+        }
+      }
 
+    /**
+     * 
+     * @param {*} args 
+     */
     static async run(args){
-        let d = []
+        args.funArgs === undefined || args.funArgs === null ? args.funArgs = null : args.funArgs
+        //Need change to adopt to the functions from other scripts
+        Object.keys(this.wasmMods).forEach((module) => {
+            if (Object.keys(this.wasmMods[module]).includes(args.functions[0])) {
+                let ref = this.wasmMods[module][args.functions[0]]
+                if (module === "matrixUtils") {
+                    let mat1 = this.retainP(this.lowerTypedArray(Float32Array, 4, 2, args.data[0], this.wasmMods[module]))
+                    let mat2 = this.lowerTypedArray(Float32Array, 4, 2, args.data[1], this.wasmMods[module])
+                    try {
+                        this.results.push(this.liftTypedArray(Float32Array, ref(mat1, mat2, {...args.funArgs}) >>> 0, this.wasmMods[module]))
+                    } finally {
+                        this.releaseP(mat1, this.wasmMods[module])
+                    }
+                } else {
+                    let arr = this.lowerTypedArray(Float32Array, 4, 2, args.data, this.wasmMods[module])
+                    this.wasmMods[module].__setArgumentsLength(arguments.length);
+                    this.results.push(this.liftTypedArray(Float32Array, ref(arr, {...args.funArgs}) >>> 0, this.wasmMods[module]))
+                }
+            }
+        })
 
-        for (var i of args.data){
-            d.push(new Float32Array(i))
-        };
     }
 
+    /**
+     * 
+     * @param {*} constructor 
+     * @param {*} pointer 
+     * @param {*} module 
+     * @returns 
+     */
+    static liftTypedArray(constructor, pointer, module) {
+        if (!pointer) return null;
+        return new constructor(
+            module.memory.buffer,
+            this.getU32(pointer+4, module),
+            this.dataview.getUint32(pointer + 8, true) / constructor.BYTES_PER_ELEMENT
+        ).slice()
+    }
+
+    /**
+     * 
+     * @param {*} constructor 
+     * @param {*} id 
+     * @param {*} align 
+     * @param {*} values 
+     * @param {*} module 
+     * @returns 
+     */
+    static lowerTypedArray(constructor, id, align, values, module){
+        if (values == null) return 0;
+
+        const length = values.length,
+        buffer = module.__pin(module.__new(length << align, 1)) >>> 0,
+        header = module.__new(12, id) >>> 0;
+
+        this.setU32(header + 0, buffer, module);
+        this.dataview.setUint32(header + 4, buffer, true)
+        this.dataview.setUint32(header + 8, length << align, true);
+        new constructor(module.memory.buffer, buffer, length).set(values);
+        module.__unpin(buffer);
+        return header
+    }
+
+    /**
+     * 
+     * @param {*} pointer 
+     * @param {*} value 
+     * @param {*} module 
+     */
+    static setU32(pointer, value, module) {
+        try{
+            this.dataview.setUint32(pointer, value, true)
+        } catch {
+            this.dataview = new DataView(module.memory.buffer);
+            this.dataview.setInt32(pointer, value, true)
+        }
+    }
+
+    /**
+     * 
+     * @param {*} pointer 
+     * @param {*} module 
+     * @returns 
+     */
+    static getU32(pointer, module) {
+        try{
+            return this.dataview.getUint32(pointer, true)
+        } catch {
+            this.dataview = new DataView(module.memory.buffer);
+            return this.dataview.getUint32(pointer, true)
+
+        }
+    }
+
+    /**
+     * 
+     */
+    static async getAllModules() {
+        for (var mod of Object.keys(availableModules)) {
+            let stgMod = await this.loadModule(mod)
+            this.wasmMods[mod] = stgMod
+        }
+    }
+
+    /**
+     * 
+     * @param {*} pointer 
+     * @param {*} module 
+     * @returns 
+     */
+    static retainP(pointer, module) {
+        if (pointer) {
+            const refcount = this.refCounts.get(pointer);
+            if (refcount) this.refCounts.set(pointer, refcount+1)
+            else this.refCounts.set(module.__pin(pointer), 1)
+        }
+        return pointer
+    }
+
+    /**
+     * 
+     * @param {*} pointer 
+     * @param {*} module 
+     */
+    static releaseP(pointer, module) {
+        if (pointer) {
+            const refcount = this.refCounts.get(pointer);
+            if (refcount === 1) module.__unpin(pointer), this.refCounts.delete(pointer);
+            else if (refcount) this.refCounts.set(pointer, refcount-1);
+            else throw Error(`no refcounter "${refcount}" for the reference "${pointer}"`)
+        }
+    }
+
+    /**
+     * 
+     * @returns 
+     */
+    static async availableScripts() {
+        await this.getAllModules()
+        let r = Object.keys(this.wasmMods).map((module) => {
+          return module;
+        });
+        let fun = new Map();
+        for (let func of r) {
+          let fn = []
+          for (var i = 0; i < Object.keys(func).length; i++){
+            fn.push(Object.keys(this.wasmMods[func])[i])
+          }
+  
+          fn = fn.filter((ele) => ele === undefined || ele === "memory" || ele === "__collect" || ele === "__new" || ele === "__pin" || ele === "__rtti_base" || ele === "__unpin" || ele === "__setArgumentsLength" ? null : ele)
+          fun.set(func, fn)
+        }
+        return fun;
+    }
+
+    /**
+     * 
+     * @returns 
+     */
     static showResults(){
         return this.results;
     }
 
+    /**
+     * 
+     * @returns 
+     */
     static getexecTime(){
         return this.execTime;
     }

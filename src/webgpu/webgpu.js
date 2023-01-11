@@ -2,7 +2,7 @@ import * as bind from "./utils/bindgroups.js";
 import * as shade from "./utils/shaderModules.js";
 import * as buffers from "./utils/bufferCreators.js";
 import { matrixUtils } from "./utils/gslCode/matrixUtils.js";
-
+import * as scripts from "./utils/gslCode/gslScripts.js"
 /**
  * WebGPU engine for general computing purposes using the device's GPU.
  * It is bounded by the availability of the WebGPU API on the current browser.
@@ -130,10 +130,39 @@ export default class webgpu {
     this.results.push(Array.from(result).slice(2));
   }
 
+  /**
+   * 
+   */
+  static availableScripts(){
+    let r = Object.keys(scripts).map((script) => {
+      return script;
+    });
+    let fun = new Map();
+    for (let func of r) {
+      let fn = []
+      for (var i = 0; i < Object.keys(func).length; i++){
+        fn.push(Object.keys(scripts[func])[i])
+      }
+
+      fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
+      fun.set(func, fn)
+    }
+    return fun;
+
+  }
+
+  /**
+   * 
+   * @returns 
+   */
   static showResults() {
     return this.results;
   }
 
+  /**
+   * 
+   * @returns 
+   */
   static getexecTime() {
     return this.execTime;
   }

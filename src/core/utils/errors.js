@@ -16,3 +16,10 @@ export class NotImplemented extends Error {
     }
 }
 
+export class NotFound extends Error {
+    constructor(message){
+        super(message)
+        Object.setPrototypeOf(this, NotFound)
+    }
+}
+

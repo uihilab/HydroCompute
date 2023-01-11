@@ -8,22 +8,13 @@ export const timeSeries = {
    * @param {*} window
    * @returns
    */
-  expoMovingAverage: (d, window = 5) => {
-    if (!d || d.length < window) return [];
-
-    let index = window - 1;
-    let previosIndex = 0;
-    const smoothingFactor = 2 / (window + 1);
-    const res = [];
-    const [sma] = timeSeries["simpleMovingAverage"](d, (window = 1), 1);
-    res.push(sma);
-    while (++index < d.length) {
-      const value = d[index];
-      const previousEma = res[previosIndex++];
-      const currentEma = (value - previousEma) * smoothingFactor + previousEma;
-      res.push(currentEma);
+  expoMovingAverage: (d, alpha = 0.5) => {
+    const result = new Array(d.length);
+    result[0] = d[0];
+    for (let i = 1; i < d.length; i++) {
+      result[i] = alpha * d[i] + (1 - alpha) * result[i - 1];
     }
-    return res;
+    return result;
   },
 
   //simple moving average analysis for time series analysis
@@ -47,25 +38,28 @@ export const timeSeries = {
     return res;
   },
 
-  //Adopted from https://github.com/26medias/timeseries-analysis/blob/master/timeseries-analysis.js
   /**
    *
    * @param {*} d
    * @param {*} period
    * @returns
    */
-  linearWeightedAverage: (d, period = 12) => {
-    var buffer = d.slice(0, period);
-    for (var i = period; i < data.length; i++) {
-      var sum = 0,
-        n = 0;
-      for (var j = period; j > 0; i++) {
-        sum += d[i - j] * j;
-        n += j;
+
+  linearWeightedAverage: (d, windowSize = 12) => {
+    let weightedData = [];
+    for (let i = 0; i < d.length; i++) {
+      let sum = 0;
+      let weightSum = 0;
+      for (let j = i - windowSize; j <= i + windowSize; j++) {
+        if (j >= 0 && j < d.length) {
+          let weight = Math.abs(i - j);
+          sum += data[j] * weight;
+          weightSum += weight;
+        }
       }
-      buffer[i] = [d[i], sum / n];
+      weightedData[i] = sum / weightSum;
     }
-    return buffer;
+    return weightedData;
   },
 
   /**
@@ -74,21 +68,22 @@ export const timeSeries = {
    * @param {*} alpha
    * @returns
    */
-  dspItrend: (d, alpha = 0.7) => {
-    var trigger = d.slice(0, 3),
-      buffer = d.slice(0, 3);
-    for (var i = 3; i < d.length; i++) {
-      buffer[i] = [
-        d[i],
-        (alpha - (alpha * alpha) / 4) * d[i] +
-          0.5 * (alpha * alpha) * d[i - 1] -
-          (alpha - 0.75 * (alpha * alpha)) * d[i - 2] +
-          2 * (1 - alpha) * buffer[i - 1] -
-          (1 - alpha) * (1 - alpha) * buffer[i - 2],
-      ];
-      trigger[i] = [d[i], 2 * buffer[i] - buffer[i - 2]];
+  dspItrend: (d, period = 7) => {
+    let output = new Array(d.length);
+    let sum = 0;
+    let avg;
+
+    for (let i = 0; i < period; i++) {
+      sum += d[i];
     }
-    return [buffer, trigger];
+    avg = sum / period;
+    output[0] = avg;
+
+    for (let i = 1; i < d.length; i++) {
+      avg = (d[i] - avg) * (2 / (period + 1)) + avg;
+      output[i] = avg;
+    }
+    return output;
   },
 
   /**
@@ -97,15 +92,20 @@ export const timeSeries = {
    * @param {*} period
    * @returns
    */
-  noiseSmoother: (d, period = 1) => {
-    var buffer = d.slice(0);
-
-    for (var j = 0; j < period; j++) {
-      for (var i = 3; i < d.length; i++) {
-        buffer[i - 1] = [buffer[i - 1], (buffer[i - 2] + buffer[i]) / 2];
+  noiseSmoother: (d, windowSize = 1) => {
+    let smoothedData = [];
+    for (let i = 0; i < d.length; i++) {
+      let sum = 0;
+      let count = 0;
+      for (let j = i - windowSize; j <= i + windowSize; j++) {
+        if (j >= 0 && j < d.length) {
+          sum += d[j];
+          count++;
+        }
       }
+      smoothedData[i] = sum / count;
     }
-    return buffer;
+    return smoothedData;
   },
 
   //Main function to run any of the functions described in the object.
