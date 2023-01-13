@@ -185,6 +185,11 @@ class hydrocompute {
     return this.engine.getexecTime()
   }
 
+  /**
+   * 
+   * @returns 
+   */
+
   engineScripts(){
     return this.engine.availableScripts()
   }
@@ -198,6 +203,21 @@ class hydrocompute {
       r = r.filter((ele) => ele === undefined || ele === "main" ? null : ele)   
       return r;
   }
+
+  /**
+   * Generates random name conventions for data storage
+   * @param {*} length 
+   * @returns 
+   */
+  makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 }
 
 typeof window !== "undefined" ? (window.hydrocompute = hydrocompute) : null;

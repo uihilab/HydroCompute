@@ -86,6 +86,7 @@ export default class workers {
       }
     }
     this.instanceCounter++;
+    console.log(this.execTime)
   }
 
   /**
@@ -126,14 +127,6 @@ export default class workers {
    */
   static async parallelRun(args, step) {
     let results = [];
-
-    // const counter =
-    //   this.workerCount < this.maxWorkerCount
-    //     ? new Array(Math.abs(this.workerCount - this.maxWorkerCount))
-    //         .fill()
-    //         .map((d, i) => this.maxWorkerCount + i)
-    //     : [];
-
     for (var i = 0; i < this.workerCount; i++) {
       const workerArgs = {
         data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
@@ -144,7 +137,6 @@ export default class workers {
       this.workerInit(i);
       results.push(await this.workers[i].worker(workerArgs));
     }
-
     return results;
   }
 

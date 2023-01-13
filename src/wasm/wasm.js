@@ -48,11 +48,14 @@ export default class wasm{
         args.funArgs === undefined || args.funArgs === null ? args.funArgs = null : args.funArgs
         //Need change to adopt to the functions from other scripts
         Object.keys(this.wasmMods).forEach((module) => {
-            if (Object.keys(this.wasmMods[module]).includes(args.functions[0])) {
-                let ref = this.wasmMods[module][args.functions[0]]
+            let start = performance.now()
+            for (var func of args.functions) {
+            if (Object.keys(this.wasmMods[module]).includes(func)) {
+                let ref = this.wasmMods[module][func]
                 if (module === "matrixUtils") {
                     let mat1 = this.retainP(this.lowerTypedArray(Float32Array, 4, 2, args.data[0], this.wasmMods[module]))
                     let mat2 = this.lowerTypedArray(Float32Array, 4, 2, args.data[1], this.wasmMods[module])
+                    this.wasmMods[module].__setArgumentsLength(arguments.length);
                     try {
                         this.results.push(this.liftTypedArray(Float32Array, ref(mat1, mat2, {...args.funArgs}) >>> 0, this.wasmMods[module]))
                     } finally {
@@ -64,6 +67,10 @@ export default class wasm{
                     this.results.push(this.liftTypedArray(Float32Array, ref(arr, {...args.funArgs}) >>> 0, this.wasmMods[module]))
                 }
             }
+            }
+            let end = performance.now()
+            console.log(`Execution time: ${end-start} ms`)
+            this.execTime += (end-start)
         })
 
     }
