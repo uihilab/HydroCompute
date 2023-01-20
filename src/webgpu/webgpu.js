@@ -1,27 +1,25 @@
 import * as bind from "./utils/bindgroups.js";
 import * as shade from "./utils/shaderModules.js";
 import * as buffers from "./utils/bufferCreators.js";
-import { matrixUtils } from "./utils/gslCode/matrixUtils.js";
+import { matrixUtils, matrixSize } from "./utils/gslCode/matrixUtils.js";
 import * as scripts from "./utils/gslCode/gslScripts.js"
 /**
  * WebGPU engine for general computing purposes using the device's GPU.
  * It is bounded by the availability of the WebGPU API on the current browser.
+ * If the API is not available, then the engine will be set to the default one.
  * @class
  * @name webgpu
  */
 export default class webgpu {
-  constructor() {
-    this.adapter = null;
-    this.device = null;
-    this.execTime = 0;
-    this.results = [];
+  constructor(props = {}){
+    //defaults, if any
   }
-
   /**
    *
    * @returns
    */
   static async initialize() {
+    this.setEngine()
     await this.deviceCall();
 
     if (!this.adapter) return false;
@@ -74,30 +72,22 @@ export default class webgpu {
    */
 
   static async run(args) {
-    //assuming that the matrices are square, no need to input sizes
-    if (typeof args[1].sizes === "undefined")
-      args[1].sizes = (() => {
-        if (
-          args[0][0].length % Math.sqrt(args[0][0].length) === 0 &&
-          args[0][1].length % Math.sqrt(args[0][1].length) === 0
-        ) {
-          return [
-            [Math.sqrt(args[0][0].length), Math.sqrt(args[0][0].length)],
-            [Math.sqrt(args[0][1].length), Math.sqrt(args[0][0].length)],
-          ];
-        } else {
-          return console.error("Please input the sizes of your matrices.");
-        }
-      })();
+    this.results === undefined ? this.results = [] : null
+    let start = performance.now()
+    let {data, functions, dependencies, steps, linked, funcArgs} = args
+    funcArgs = funcArgs === undefined ? {} : funcArgs
 
-    const mat1 = buffers.matrixChanger(args[0][0], args[1].sizes[0]),
-      mat2 = buffers.matrixChanger(args[0][1], args[1].sizes[1]),
+    //Change this
+    let matSize0 = matrixSize(data[0], funcArgs), matSize1 = matrixSize(data[1], funcArgs)
+
+    const mat1 = buffers.matrixChanger(data[0], matSize0),
+      mat2 = buffers.matrixChanger(data[1], matSize1),
       matBuf1 = buffers.bufferCreator(true, this.device, mat1),
       matBuf2 = buffers.bufferCreator(true, this.device, mat2),
       [rSize, rBuffer] = buffers.resultHolder(
         this.device,
         [mat1, mat2],
-        args[1].function
+        functions[0]
       ),
       lay1 = bind.layoutEntry(0, "read-only-storage"),
       lay2 = bind.layoutEntry(1, "read-only-storage"),
@@ -113,7 +103,7 @@ export default class webgpu {
       ]),
       shader = shade.shaderModule(
         this.device,
-        args[1].function === "matrixMul"
+        functions[0] === "matrixMul"
           ? matrixUtils.matrixMul()
           : matrixUtils.matrixAdd()
       ),
@@ -126,8 +116,10 @@ export default class webgpu {
       [mat1, mat2],
       [rSize, rBuffer]
     );
-
     this.results.push(Array.from(result).slice(2));
+    let end = performance.now()
+    console.log(`Execution time: ${end-start} ms`)
+    this.execTime += (end-start)
   }
 
   /**
@@ -151,12 +143,11 @@ export default class webgpu {
 
   }
 
-  /**
-   * 
-   * @returns 
-   */
-  static showResults() {
-    return this.results;
+  static setEngine() {
+    this.adapter = null;
+    this.device = null;
+    this.execTime = 0;
+    this.results = [];
   }
 
   /**

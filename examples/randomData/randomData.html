@@ -177,7 +177,7 @@
                                                 <label for="engine-change" class="form-label">Change Engine</label>
                                                 <select class="form-select" id="engine-change"
                                                     onchange="changeEngine()">
-                                                    <option value="workers">workers</option>
+                                                    <option value="jsworkers">jsworkers</option>
                                                     <option value="webgpu">webgpu</option>
                                                     <option value="wasm">wasm</option>
                                                     <option value="webrtc">webrtc</option>
@@ -218,7 +218,8 @@
             </div>
 
         </div>
-        <button class="carousel-control-prev" id="prev-btn" type="button" data-bs-target="#examplePages" data-bs-slide="prev">
+        <button class="carousel-control-prev" id="prev-btn" type="button" data-bs-target="#examplePages"
+            data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
         </button>
@@ -306,7 +307,8 @@
             var changed = document.getElementById("engine-change").value
             var currentEngine = window.compute.currentEngineName
             changed !== currentEngine ? window.compute.setEngine(changed) : null
-            changeFunctionScript()
+            if (changed !== "webrtc") changeFunctionScript()
+            else null
             document.getElementById('prev-btn').click()
             return
         }
@@ -489,11 +491,11 @@
             fnConfigs = []
             var dep = [],
                 fn = [],
-                fnParam = [],
                 mul = [],
                 depArr = [];
             d = document.getElementById("funcTable").children[1].children
             for (var i of d) {
+                var fnParam = []
                 for (var j = 0; j < i.children.length; j++) {
                     switch (j) {
                         case 0:
@@ -503,7 +505,7 @@
                             mul.push(JSON.parse(i.children[j].firstChild.value));
                             break;
                         case 2:
-                            fnParam.push(JSON.stringify(i.children[j].firstChild.value));
+                            fnParam.push(i.children[j].firstChild.value);
                             break;
                         case 3:
                             dep.push(JSON.parse(i.children[j].firstChild.value));
@@ -515,11 +517,17 @@
                             break;
                     }
                 }
+                fnConfigs.push(fnParam[0] !== ''
+                    ?
+                    fnParam[0].includes(',')
+                        ?
+                        fnParam[0].split(',').map(Number)
+                        : JSON.parse(fnParam[0])
+                    : null)
             }
             for (var i = 0; i < fn.length; i++) {
                 for (var j = 0; j < mul[i]; j++) {
                     functions.push(fn[i])
-                    fnConfigs.push(fnParam[i])
                 }
             }
 
@@ -535,22 +543,29 @@
                         })(N)
                         : dependencies.push(JSON.parse(JSON.parse(depArr[j])))
                 }
+                else {
+                    dependencies.push(null)
+                }
             }
             console.log(`Function configuration\nFunction runs: ${functions}\nMultipliers per function: ${mul}\nAdditional configurations per function: ${fnConfigs}\nDependency boolean: ${dep}\nDependency list: ${dependencies}`)
         }
 
-        const perf = (inp) => {let start = performance.now(); const res = compute.engine.liftTypedArray(Float32Array, currentMod.simpleMovingAverage(inp, 7) >>> 0, currentMod); let finish = performance.now(); console.log(`total time: ${finish - start} ms`); return res}
+        //const perf = (inp) => {let start = performance.now(); const res = compute.engine.liftTypedArray(Float32Array, currentMod.simpleMovingAverage(inp, 7) >>> 0, currentMod); let finish = performance.now(); console.log(`total time: ${finish - start} ms`); return res}
 
         const run = async () => {
             results = []
-            //Setting the 
-            window.compute.engine.results = []
-            //window.compute.availableData = []
-            window.compute.engine.execTime = 0
-            //window.compute.data({ data: r, id: name })
-            window.compute.config({ steps: step, linked: linked })
+            window.compute.config({
+                steps: step,
+                linked: linked
+            })
             //Initiate with the computations.The dependencies needs to change
-            window.compute.run({ callbacks: true, functions: functions, dataId: name, dependencies: dependencies[0] })
+            window.compute.run({
+                callbacks: true,
+                functions: functions,
+                dataId: name,
+                dependencies: dependencies[0],
+                funcArgs: fnConfigs
+            })
 
             document.getElementById('next-btn').click()
             counter()
@@ -589,15 +604,15 @@
         }
 
         const counter = () => {
-            max = compute.executionTime() + 1
+            max = window.compute.getexecTime() + 1
             ctr = document.getElementById("counter")
             if (exT + 1 === max) {
                 return
             }
             if (exT < max) {
-                ctr.innerHTML = `Running time: ${max.toPrecision(4)} ms for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes`
+                ctr.innerHTML = `Running time: ${max.toPrecision(10)} ${max < 1000 ? 'ms' : 's'} for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes`
                 setTimeout(() => {
-                    exT = compute.executionTime() - 1
+                    exT = window.compute.getexecTime() - 1
                     counter()
                 }, 1);
             }

@@ -49,6 +49,7 @@ export const dispatchers = async (
   passEncoder.setBindGroup(0, bindgroup);
   //This will need modifications to extend the matrices and or new data types
   passEncoder.dispatchWorkgroups(
+    
     Math.ceil(data[0][0] / 8),
     Math.ceil(data[1][0] / 8)
   );

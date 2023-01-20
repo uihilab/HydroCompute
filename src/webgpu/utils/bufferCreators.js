@@ -4,7 +4,7 @@
  * @param {*} device
  * @param {*} matrix
  * @returns
- */
+ */ 
 export const bufferCreator = (mapped, device, matrix) => {
   const matrixBuffer = device.createBuffer({
     mappedAtCreation: mapped,

@@ -7,17 +7,15 @@ import { NotFound } from '../core/utils/errors.js';
  * @class wasm
  */
 export default class wasm{
+    constructor(props = {}){
+        //defaults, if any
+    }
 
     /**
      * Initialize the method with the same parameters available from all other engines
      */
     static initialize() {
-        this.wasmMods = {}
-        this.functions = [];
-        this.results = [];
-        this.execTime = 0;
-        this.dataview = undefined;
-        this.memory = undefined;
+        this.setEngine()
         this.refCounts = new Map()
         this.getAllModules()
         console.log(`Web assembly scripts called.\nModules available: ${Object.keys(availableModules)}`)
@@ -36,19 +34,22 @@ export default class wasm{
         });
             return myCurrentModule
         } catch (e) {
-            throw new Error(e)
+            throw new NotFound(`Module not found in available scripts.`)
         }
       }
+
 
     /**
      * 
      * @param {*} args 
      */
     static async run(args){
-        args.funArgs === undefined || args.funArgs === null ? args.funArgs = null : args.funArgs
+        this.results === []
+        args.funArgs === undefined || args.funArgs === null || args.funArgs[0] === null ? args.funArgs = null : args.funArgs
         //Need change to adopt to the functions from other scripts
         Object.keys(this.wasmMods).forEach((module) => {
             let start = performance.now()
+            let r;
             for (var func of args.functions) {
             if (Object.keys(this.wasmMods[module]).includes(func)) {
                 let ref = this.wasmMods[module][func]
@@ -57,14 +58,16 @@ export default class wasm{
                     let mat2 = this.lowerTypedArray(Float32Array, 4, 2, args.data[1], this.wasmMods[module])
                     this.wasmMods[module].__setArgumentsLength(arguments.length);
                     try {
-                        this.results.push(this.liftTypedArray(Float32Array, ref(mat1, mat2, {...args.funArgs}) >>> 0, this.wasmMods[module]))
+                        r = this.liftTypedArray(Float32Array, ref(mat1, mat2, ...args.funArgs) >>> 0, this.wasmMods[module])
+                        this.results.push(r.slice())
                     } finally {
                         this.releaseP(mat1, this.wasmMods[module])
                     }
                 } else {
                     let arr = this.lowerTypedArray(Float32Array, 4, 2, args.data, this.wasmMods[module])
                     this.wasmMods[module].__setArgumentsLength(arguments.length);
-                    this.results.push(this.liftTypedArray(Float32Array, ref(arr, {...args.funArgs}) >>> 0, this.wasmMods[module]))
+                    r = this.liftTypedArray(Float32Array, ref(arr, ...args.funArgs) >>> 0, this.wasmMods[module])
+                    this.results.push(r.slice())
                 }
             }
             }
@@ -211,9 +214,21 @@ export default class wasm{
      * 
      * @returns 
      */
-    static showResults(){
+    static getResults(){
         return this.results;
     }
+
+    /**
+     * 
+     */
+    static setEngine() {
+        this.wasmMods = {}
+        this.functions = [];
+        this.results = [];
+        this.execTime = 0;
+        this.dataview = undefined;
+        this.memory = undefined;
+      }
 
     /**
      * 

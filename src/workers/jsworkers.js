@@ -3,10 +3,10 @@ import * as scripts from "./scripts/scripts.js";
 
 /**
  * @class
- * @name workers
+ * @name jsworkers
  * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
-export default class workers {
+export default class jsworkers {
   constructor(props = {}) {
     //defaults, if any
   }
@@ -166,7 +166,8 @@ export default class workers {
           resolve(
             r,
             (this.workers[i].finished = true),
-            this.results.push(r),
+            i === this.workerCount ? 
+            this.results.push(r) : null,
             (this.execTime = this.execTime + e.data.exec),
             w.terminate()
           );
