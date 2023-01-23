@@ -260,7 +260,7 @@
             changeFunctionScript()
             var steps = document.getElementById("steps")
             var size = document.getElementById("rGen")
-            var dtSize = Array.from(Array(11), (_, i) => i ** 7)
+            var dtSize = Array.from(Array(11), (_, i) => i ** 8)
             var numSteps = Array.from(Array(51).keys())
             for (var step of numSteps) {
                 steps.add(new Option(`${step}`, `${step}`))

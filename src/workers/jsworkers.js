@@ -16,11 +16,7 @@ export default class jsworkers {
    * @param {*} args 
    */
   static initialize(args) {
-    this.execTime = 0;
-    this.instanceCounter = 0;
-    this.maxWorkerCount = navigator.hardwareConcurrency;
-    this.results = [];
-    this.workers = {};
+    this.setEngine();
     window.Worker
       ? (() => {
           console.log("Web workers engine set.");
@@ -166,8 +162,10 @@ export default class jsworkers {
           resolve(
             r,
             (this.workers[i].finished = true),
-            i === this.workerCount ? 
-            this.results.push(r) : null,
+            // i === this.workerCount ? 
+            this.results.push(r) 
+            // : null
+            ,
             (this.execTime = this.execTime + e.data.exec),
             w.terminate()
           );
@@ -220,6 +218,14 @@ export default class jsworkers {
           fun.set(func, fn)
         }
         return fun;
+    }
+
+    static setEngine() {
+      this.execTime = 0;
+      this.instanceCounter = 0;
+      this.maxWorkerCount = navigator.hardwareConcurrency;
+      this.results = [];
+      this.workers = {};
     }
 
   /**

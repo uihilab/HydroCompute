@@ -92,6 +92,49 @@ export const matrixUtils = {
     }    
     `;
   },
+
+  LUDecomposition: () => {
+    return `
+    struct Matrix {
+      size: vec2<f32>,
+      numbers: array<f32>,
+    };
+    
+    @group(0) @binding(0) var<storage, read> mat: Matrix;
+    @group(0) @binding(1) var<storage, read_write> L: Matrix;
+    @group(0) @binding(2) var<storage, read_write> U: Matrix;
+    
+    @compute @workgroup_size(8,8)
+    fn luDecomposition(@builtin(global_invocation_id) global_id : vec3<u32>) {
+        if (global_id.x >= u32(mat.size.x) || global_id.y >= u32(mat.size.y)){
+        return;
+      };
+      
+      L.size = mat.size;
+      U.size = mat.size;
+    
+      for(var i = 0; i < mat.size.x; i++) {
+        for(var j = 0; j < mat.size.y; j++) {
+            if(i <= j) {
+              let index = i + j * u32(mat.size.x);
+              U.numbers[index] = mat.numbers[index];
+              for(var k = 0; k < i; k++) {
+                U.numbers[index] = U.numbers[index] - L.numbers[i + k * u32(mat.size.x)] * U.numbers[k + j * u32(mat.size.x)];
+              }
+            }
+            if(i > j) {
+              let index = i + j * u32(mat.size.x);
+              L.numbers[index] = mat.numbers[index];
+              for(var k = 0; k < j; k++) {
+                L.numbers[index] = L.numbers[index] - L.numbers[i + k * u32(mat.size.x)] * U.numbers[k + j * u32(mat.size.x)];
+              }
+              L.numbers[index] = L.numbers[index] / U.numbers[j + j * u32(mat.size.x)];
+            }
+        }
+      }
+    }    
+    `
+  }
 };
 
 /**

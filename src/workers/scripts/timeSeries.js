@@ -45,7 +45,7 @@ export const timeSeries = {
    * @returns
    */
 
-  linearWeightedAverage: (d, windowSize = 12) => {
+  linearWeightedAverage: (d, windowSize = 2) => {
     let weightedData = [];
     for (let i = 0; i < d.length; i++) {
       let sum = 0;

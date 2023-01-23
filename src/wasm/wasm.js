@@ -45,28 +45,38 @@ export default class wasm{
      */
     static async run(args){
         this.results === []
-        args.funArgs === undefined || args.funArgs === null || args.funArgs[0] === null ? args.funArgs = null : args.funArgs
+        console.log(args)
+        let {funcArgs, data, functions} = args
+
+        Array.isArray(funcArgs[0]) ? funcArgs = funcArgs[0] : funcArgs = []
+
+        console.log(funcArgs)
         //Need change to adopt to the functions from other scripts
         Object.keys(this.wasmMods).forEach((module) => {
             let start = performance.now()
             let r;
-            for (var func of args.functions) {
+            for (var func of functions) {
             if (Object.keys(this.wasmMods[module]).includes(func)) {
-                let ref = this.wasmMods[module][func]
+                let mod = this.wasmMods[module]
+                let ref = mod[func]
                 if (module === "matrixUtils") {
-                    let mat1 = this.retainP(this.lowerTypedArray(Float32Array, 4, 2, args.data[0], this.wasmMods[module]))
-                    let mat2 = this.lowerTypedArray(Float32Array, 4, 2, args.data[1], this.wasmMods[module])
-                    this.wasmMods[module].__setArgumentsLength(arguments.length);
+                    let mat1 = this.retainP(this.lowerTypedArray(Float32Array, 4, 2, data[0], mod), mod)
+                    let mat2 = this.lowerTypedArray(Float32Array, 4, 2, data[1], mod)
+                    Object.keys(mod).includes('__setArgumentsLength') ? mod.__setArgumentsLength(arguments.length) : null
                     try {
-                        r = this.liftTypedArray(Float32Array, ref(mat1, mat2, ...args.funArgs) >>> 0, this.wasmMods[module])
+                        funcArgs.unshift(mat2)
+                        funcArgs.unshift(mat1)
+                        console.log(funcArgs)
+                        r = this.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod)
                         this.results.push(r.slice())
                     } finally {
-                        this.releaseP(mat1, this.wasmMods[module])
+                        this.releaseP(mat1, mod)
                     }
                 } else {
-                    let arr = this.lowerTypedArray(Float32Array, 4, 2, args.data, this.wasmMods[module])
-                    this.wasmMods[module].__setArgumentsLength(arguments.length);
-                    r = this.liftTypedArray(Float32Array, ref(arr, ...args.funArgs) >>> 0, this.wasmMods[module])
+                    let arr = this.lowerTypedArray(Float32Array, 4, 2, data, mod)
+                    mod.__setArgumentsLength(arguments.length);
+                    args.funcArgs.unshift(arr)
+                    r = this.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod)
                     this.results.push(r.slice())
                 }
             }
@@ -75,7 +85,6 @@ export default class wasm{
             console.log(`Execution time: ${end-start} ms`)
             this.execTime += (end-start)
         })
-
     }
 
     /**

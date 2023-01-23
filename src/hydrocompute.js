@@ -31,6 +31,11 @@ class hydrocompute {
           console.log("Web workers engine has been set as default.");
           this.setEngine(args.engine || "jsworkers");
         })();
+
+        this.engineResults[`Run_${this.instanceRun}`] = {}
+        this.engineResults[`Run_${this.instanceRun}`].results = []
+        this.engineResults[`Run_${this.instanceRun}`].executionTime = 0
+
   }
 
   /**
@@ -94,6 +99,7 @@ class hydrocompute {
    * @returns
    */
   async run(args) {
+
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -116,11 +122,8 @@ class hydrocompute {
           linked: this.linked,
         });
         //setting results to be saved in main class
-        this.engineResults[`Run_${this.instanceRun}`] = {}
         this.engineResults[`Run_${this.instanceRun}`].engineName = this.currentEngineName
         this.engineResults[`Run_${this.instanceRun}`].dataId = args.dataId
-        this.engineResults[`Run_${this.instanceRun}`].results = []
-        this.engineResults[`Run_${this.instanceRun}`].executionTime = 0
         this.instanceRun++
       } catch (error) {
         return error;
