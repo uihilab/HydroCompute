@@ -180,6 +180,7 @@
                                                     <option value="jsworkers">jsworkers</option>
                                                     <option value="webgpu">webgpu</option>
                                                     <option value="wasm">wasm</option>
+                                                    <option value="wasmWorkers">wasmWorkers</option>
                                                     <option value="webrtc">webrtc</option>
                                                 </select>
                                             </div>
@@ -260,7 +261,7 @@
             changeFunctionScript()
             var steps = document.getElementById("steps")
             var size = document.getElementById("rGen")
-            var dtSize = Array.from(Array(11), (_, i) => i ** 8)
+            var dtSize = Array.from(Array(100), (_, i) => i ** 4)
             var numSteps = Array.from(Array(51).keys())
             for (var step of numSteps) {
                 steps.add(new Option(`${step}`, `${step}`))
@@ -521,8 +522,8 @@
                     ?
                     fnParam[0].includes(',')
                         ?
-                        fnParam[0].split(',').map(Number)
-                        : JSON.parse(fnParam[0])
+                        [fnParam[0].split(',').map(Number)]
+                        : [JSON.parse(fnParam[0])]
                     : null)
             }
             for (var i = 0; i < fn.length; i++) {
@@ -571,7 +572,7 @@
             counter()
 
             results = await window.compute.results()
-            await resultViewer()
+            console.log(results)
         }
 
         const resultViewer = async () => {

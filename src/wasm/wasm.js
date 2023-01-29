@@ -4,6 +4,8 @@ import { NotFound } from '../core/utils/errors.js';
 
 /**
  * Imports modules from different web assembly compilations for usage
+ * This class will not be released, but rather serves as a comparison between
+ * other methods.
  * @class wasm
  */
 export default class wasm{
@@ -16,7 +18,6 @@ export default class wasm{
      */
     static initialize() {
         this.setEngine()
-        this.refCounts = new Map()
         this.getAllModules()
         console.log(`Web assembly scripts called.\nModules available: ${Object.keys(availableModules)}`)
     }
@@ -45,12 +46,10 @@ export default class wasm{
      */
     static async run(args){
         this.results === []
-        console.log(args)
         let {funcArgs, data, functions} = args
 
         Array.isArray(funcArgs[0]) ? funcArgs = funcArgs[0] : funcArgs = []
 
-        console.log(funcArgs)
         //Need change to adopt to the functions from other scripts
         Object.keys(this.wasmMods).forEach((module) => {
             let start = performance.now()
@@ -75,7 +74,7 @@ export default class wasm{
                 } else {
                     let arr = this.lowerTypedArray(Float32Array, 4, 2, data, mod)
                     mod.__setArgumentsLength(arguments.length);
-                    args.funcArgs.unshift(arr)
+                    funcArgs.unshift(arr)
                     r = this.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod)
                     this.results.push(r.slice())
                 }
@@ -221,19 +220,12 @@ export default class wasm{
 
     /**
      * 
-     * @returns 
-     */
-    static getResults(){
-        return this.results;
-    }
-
-    /**
-     * 
      */
     static setEngine() {
         this.wasmMods = {}
         this.functions = [];
         this.results = [];
+        this.refCounts = new Map()
         this.execTime = 0;
         this.dataview = undefined;
         this.memory = undefined;

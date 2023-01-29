@@ -23,10 +23,12 @@ export const bufferCreator = (mapped, device, matrix) => {
  * @param {*} size
  * @returns
  */
-export const matrixChanger = (mat, size) => {
+export const matrixChanger = (mat, sizes) => {
   var matrix = mat.slice();
   //this needs to be resolved. Having a matrix like this is unuseful
-  matrix.unshift(size[0], size[1]);
+  matrix.unshift(...sizes);
+  mat = [];
+  sizes = [];
   return new Float32Array(matrix);
 };
 
@@ -46,6 +48,14 @@ export const resultHolder = (device, matrices, type) => {
       return (
         Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] + matrices[1][0])
       );
+    if (type === "matrixExpo")
+    return (
+      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0])
+    )
+    if (type === "LUDecomposition")
+    return (
+      Float32Array.BYTES_PER_ELEMENT
+    )
   })();
   const resultBuffer = device.createBuffer({
     size: resultMatSize,

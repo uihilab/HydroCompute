@@ -1,22 +1,22 @@
 import { DAG } from "../core/utils/globalUtils.js";
-import * as scripts from "./scripts/scripts.js";
+import workerScope from "../core/utils/workers.js";
+import {avScripts} from './modules/modules.js'
 
 /**
  * @class
- * @name jsworkers
+ * @name wasmWorkers
  * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
-export default class jsworkers {
-  constructor(props = {}) {
-    //defaults, if any
-  }
-
+export default class wasmWorkers {
+    constructor(params = {}){
+    }
   /**
    * 
    * @param {*} args 
    */
   static initialize(args) {
     this.setEngine();
+    this.workers = new workerScope('wasmWorkers', this.workerLocation)
   }
 
   /**
@@ -25,27 +25,26 @@ export default class jsworkers {
    * @returns
    */
   static async run(args) {
+    this.workers.results = []
     if (args.data.length === 0) {
       return;
     }
-    this.workers = {};
-    const instaceRun = {};
-    instaceRun.id = `Run ${this.instanceCounter}`;
-    instaceRun.values = [];
-    this.functions = args.functions;
+
+    let { funcArgs, data, functions} = args
+
     let dependencies =
-      (typeof args.dependencies === "undefined") || (args.dependencies === null) || (args.dependencies[0] === null) ? [] : args.dependencies;
+      (typeof args.dependencies === "undefined") || (args.dependencies === null) || (args.dependencies[0] === "") ? [] : args.dependencies;
     //This still needs improvement
-    this.workerCount = 
+    this.workers.workerCount = 
     //Array.isArray(args.data[0])
       //? //assuming the main driver for the workers scope is the length of the data
         // args.data.length
       //: //assuming that the data is a 1D array run or passed by n functions
       //args.linked === true ? this.functions.length * args.steps : 
-      this.functions.length;
+      functions.length;
 
-    for (var i = 0; i < this.workerCount; i++) {
-      this.workerSpanner(i);
+    for (var i = 0; i < this.workers.workerCount; i++) {
+      this.workers.workerSpanner(i);
     }
 
     //Need to change the dependencies. They can be different for each
@@ -63,8 +62,9 @@ export default class jsworkers {
               //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
               data : args.data,
               id: i,
-              funcName: this.functions[i],
+              funcName: args.functions[i],
               step: i,
+              funcArgs: args.funcArgs[i]
             };
             let p = this.taskRunner(_args, i, dependencies);
             resolve(p);
@@ -78,8 +78,6 @@ export default class jsworkers {
         stepCounter++;
       }
     }
-    this.instanceCounter++;
-    console.log(this.execTime)
   }
 
   /**
@@ -92,19 +90,20 @@ export default class jsworkers {
    * @returns
    */
   static async concurrentRun(args, step, dependencies) {
-    for (var i = 0; i < this.workerCount; i++) {
+    for (var i = 0; i < this.workers.workerCount; i++) {
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         data: args.data,
         id: i,
-        funcName: this.functions[i],
+        funcName: args.functions[i],
         step: step,
+        funcArgs: args.funcArgs[i]
       };
-      this.workerInit(i);
+      this.workers.workerInit(i);
     }
     let res = DAG({
-      functions: Object.keys(this.workers).map((key) => {
-        return this.workers[key].worker;
+      functions: Object.keys(this.workers.workerThreads).map((key) => {
+        return this.workers.workerThreads[key].worker;
       }),
       dag: dependencies,
       args: _args,
@@ -121,62 +120,22 @@ export default class jsworkers {
    */
   static async parallelRun(args, step) {
     let results = [];
-    for (var i = 0; i < this.workerCount; i++) {
-      const workerArgs = {
+    for (var i = 0; i < this.workers.workerCount; i++) {
+      let workerArgs = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         //This data can be partitioned so that the worker can access either a 
         data: args.data,
         id: i,
-        funcName: this.functions[i],
+        funcName: args.functions[i],
+        funcArgs: args.funcArgs[i],
         step: step,
       };
-      this.workerInit(i);
-      results.push(await this.workers[i].worker(workerArgs));
+      this.workers.workerInit(i);
+      results.push(
+        await this.workers.workerThreads[i].worker(workerArgs)
+        );
     }
     return results;
-  }
-
-  /**
-   * 
-   * @param {*} i 
-   */
-  static workerSpanner(i) {
-    this.workers[i] = {};
-    this.workers[i].finished = false;
-    this.workers[i].worker = undefined;
-  }
-
-  /**
-   * 
-   * @param {*} i 
-   */
-  static workerInit(i) {
-    this.workers[i].worker = (args) => {
-      return new Promise((resolve, reject) => {
-        //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
-        var w = new Worker("../../src/workers/worker.js", {
-          type: "module",
-        });
-        w.onmessage = (e) => {
-          const r = e.data.results;
-          resolve(
-            r,
-            (this.workers[i].finished = true),
-            // i === this.workerCount ? 
-            this.results.push(r) 
-            // : null
-            ,
-            (this.execTime = this.execTime + e.data.exec),
-            w.terminate()
-          );
-        };
-        w.onerror = (e) => {
-          console.log(e)
-          reject(e.error);
-        };
-        w.postMessage(args);
-      });
-    };
   }
 
   /**
@@ -187,7 +146,7 @@ export default class jsworkers {
    * @returns 
    */
   static async taskRunner(args, stepCounter, dependencies) {
-    this.results.push([]);
+    //this.workers.results.push([]);
     let x;
     if (dependencies.length > 0) {
       // Sequential Execution
@@ -196,6 +155,7 @@ export default class jsworkers {
       //Parallel analysis
       x = await this.parallelRun(args, stepCounter);
     }
+    this.workers.finished = true
     return x;
   }
 
@@ -203,37 +163,27 @@ export default class jsworkers {
    * 
    * @returns {Object[]} string concatenation of the available scripts for each script.
    */
-    static availableScripts() {
-        let r = Object.keys(scripts).map((script) => {
-          return script;
-        });
-        let fun = new Map();
-        for (let func of r) {
-          let fn = []
-          for (var i = 0; i < Object.keys(func).length; i++){
-            fn.push(Object.keys(scripts[func])[i])
-          }
-  
-          fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
-          fun.set(func, fn)
-        }
-        return fun;
+    static async availableScripts() { 
+        return await avScripts()
     }
 
+
     static setEngine() {
-      this.execTime = 0;
-      this.instanceCounter = 0;
-      this.maxWorkerCount = navigator.hardwareConcurrency;
-      this.results = [];
-      this.workers = {};
-    }
+        this.wasmMods = {}
+        this.functions = [];
+        this.execTime = 0;
+        this.dataview = undefined;
+        this.memory = undefined;
+        this.workerLocation = "../../src/wasm/worker.js"
+      }
 
   /**
    * 
    * @returns 
    */
-  static showResults() {
-    return this.results;
+  static async showResults() {
+    const r = await this.workers.raiseResults()
+    return r
   }
 
   /**
@@ -241,6 +191,6 @@ export default class jsworkers {
    * @returns 
    */
   static getexecTime() {
-    return this.execTime;
+    return this.workers.execTime;
   }
 }

@@ -10,6 +10,9 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
   dag = dag || [];
   return new Promise((resolve, reject) => {
     const N = functions.length;
+    //A DAG can be both stepwise or functionwise. The next definition
+    //asserts that there is a dag ready for each step linearly
+    //e.g. step0->step1->step2...
     dag =
       type === "steps"
         ? (() => {
@@ -19,9 +22,9 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
           })()
         : dag;
     const counts = dag.map((x) => x.length);
-    let stopped = false;
-    let remaining = N;
-    let values = [];
+    let stopped = false,
+    remaining = N,
+    values = [];
 
     const handleResolution = (promise, i, value) => {
       values[i] = value;
@@ -41,6 +44,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
           if (counts[j] == 0) {
             let _args = [];
             for (let k = 0; k < dag[j].length; k++) {
+              //Goes on a stepwise execution manner.
               _args =
                 type === "steps"
                   ? values[dag[j][k]][args.functions.length - 1]
@@ -147,3 +151,25 @@ export const arrayChanger = (arr, width) =>
         : rows[rows.length - 1].push(key)) && rows,
     []
   );
+
+//Check if shared array buffer is available.
+export const checkSharedArrays = () => {
+  try{
+    var sab = new SharedArrayBuffer(1024);
+    if (sab !== undefined) return true
+  }
+  catch(e) {
+    console.log(`Shared Array Buffer not supported.\nPleasee use another type of data partition.`);
+    return false
+  }
+}
+
+export const waitFor = (conditionFunction) => {
+
+  const poll = resolve => {
+    if(conditionFunction()) resolve();
+    else setTimeout(_ => poll(resolve), 10);
+  }
+
+  return new Promise(poll);
+}

@@ -1,6 +1,6 @@
 import * as engines from "./core/core.js";
 import { splits } from "./core/utils/splits.js";
-import { dataCloner } from "./core/utils/globalUtils.js";
+import { dataCloner, waitFor } from "./core/utils/globalUtils.js";
 
 /**
  * Main class for the compute modules.
@@ -26,8 +26,6 @@ class hydrocompute {
     args.length !== 0
       ? this.setEngine(args[0])
       : (() => {
-          this.steps = 1;
-          this.callbacks = false;
           console.log("Web workers engine has been set as default.");
           this.setEngine(args.engine || "jsworkers");
         })();
@@ -171,9 +169,13 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-    let r = this.engine.results;
-    let ex = this.engine.execTime;
-    return [r,ex]
+    if (this.engine.workers !== undefined && this.engine !== "jsworkers"){
+      await waitFor(() => {this.engine.workers.finished === true})
+      return this.engine.workers.results
+    } else {
+      await waitFor(() => {this.engine.finished === true})
+      return this.engine.results
+    }
   }
 
   /**
@@ -231,7 +233,11 @@ class hydrocompute {
   }
 
   getexecTime() {
-    return this.engine.execTime
+    if (this.engine.workers !== undefined && this.engine !== "jsworkers") {
+      return this.engine.workers.execTime
+    } else {
+      return this.engine.execTime
+    }
   }
 }
 

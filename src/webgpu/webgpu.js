@@ -72,35 +72,41 @@ export default class webgpu {
    */
 
   static async run(args) {
+    //defaults for removing any faulty behavior
     this.results === undefined ? this.results = [] : null
+    this.execTime = 0
+
+    //start of performance time analysis
     let start = performance.now()
+
+    //argument extraction
     let {data, functions, dependencies, steps, linked, funcArgs} = args
     funcArgs = funcArgs === undefined ? {} : funcArgs
 
-    //Change this
-    let matSize0 = matrixSize(data[0], funcArgs), matSize1 = matrixSize(data[1], funcArgs)
+    let matData = [],
+    matSize = [],
+    matBuffers = [],
+    lays = [],
+    groups = [];
+    
+    for (var i =0; i < data.length; i++){
+      matSize.push(matrixSize(data[i], funcArgs))
+      matData.push(buffers.matrixChanger(data[i], matSize[i]))
+      matBuffers.push(buffers.bufferCreator(true, this.device,matData[i]))
+    }
 
-    const mat1 = buffers.matrixChanger(data[0], matSize0),
-      mat2 = buffers.matrixChanger(data[1], matSize1),
-      matBuf1 = buffers.bufferCreator(true, this.device, mat1),
-      matBuf2 = buffers.bufferCreator(true, this.device, mat2),
-      [rSize, rBuffer] = buffers.resultHolder(
+    const [rSize, rBuffer] = buffers.resultHolder(
         this.device,
-        [mat1, mat2],
+        matData,
         functions[0]
-      ),
-      lay1 = bind.layoutEntry(0, "read-only-storage"),
-      lay2 = bind.layoutEntry(1, "read-only-storage"),
-      lay3 = bind.layoutEntry(2, "storage"),
-      group1 = bind.groupEntry(0, matBuf1),
-      group2 = bind.groupEntry(1, matBuf2),
-      group3 = bind.groupEntry(2, rBuffer),
-      bindGroupLayout = bind.bindLayout(this.device, [lay1, lay2, lay3]),
-      bindgroup = bind.bindGroup(this.device, bindGroupLayout, [
-        group1,
-        group2,
-        group3,
-      ]),
+      );
+
+      for (var j=0; j < matData.length; j++){
+        lays.push(bind.layoutEntry(j, j === matData.length ? "storage" : "read-only-storage"))
+        groups.push(bind.groupEntry(j, j === matData.length ? rBuffer : matBuffers[j]))
+      }
+      const bindGroupLayout = bind.bindLayout(this.device, lays),
+      bindgroup = bind.bindGroup(this.device, bindGroupLayout, groups),
       shader = shade.shaderModule(
         this.device,
         functions[0] === "matrixMul"
@@ -109,17 +115,18 @@ export default class webgpu {
       ),
       pipeline = shade.computingPipelines(this.device, shader, bindGroupLayout);
 
-    var result = await shade.dispatchers(
+    let result = await shade.dispatchers(
       this.device,
       pipeline,
       bindgroup,
-      [mat1, mat2],
+      matData,
       [rSize, rBuffer]
     );
     this.results.push(Array.from(result).slice(2));
     let end = performance.now()
     console.log(`Execution time: ${end-start} ms`)
     this.execTime += (end-start)
+    this.finished = true;
   }
 
   /**
@@ -148,6 +155,7 @@ export default class webgpu {
     this.device = null;
     this.execTime = 0;
     this.results = [];
+    this.finished = false
   }
 
   /**
