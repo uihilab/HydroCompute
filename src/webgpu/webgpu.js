@@ -101,7 +101,7 @@ export default class webgpu {
         functions[0]
       );
 
-      for (var j=0; j < matData.length; j++){
+      for (var j=0; j <= matData.length; j++){
         lays.push(bind.layoutEntry(j, j === matData.length ? "storage" : "read-only-storage"))
         groups.push(bind.groupEntry(j, j === matData.length ? rBuffer : matBuffers[j]))
       }

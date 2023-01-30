@@ -167,7 +167,6 @@ export default class wasmWorkers {
         return await avScripts()
     }
 
-
     static setEngine() {
         this.wasmMods = {}
         this.functions = [];

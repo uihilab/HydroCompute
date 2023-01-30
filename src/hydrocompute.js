@@ -27,7 +27,7 @@ class hydrocompute {
       ? this.setEngine(args[0])
       : (() => {
           console.log("Web workers engine has been set as default.");
-          this.setEngine(args.engine || "jsworkers");
+          this.setEngine(args.engine || "vanillajs");
         })();
 
         this.engineResults[`Run_${this.instanceRun}`] = {}
@@ -169,7 +169,7 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-    if (this.engine.workers !== undefined && this.engine !== "jsworkers"){
+    if (Object.keys(this.engine).includes('workers')){
       await waitFor(() => {this.engine.workers.finished === true})
       return this.engine.workers.results
     } else {
