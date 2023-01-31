@@ -54,7 +54,8 @@ export const resultHolder = (device, matrices, type) => {
     )
     if (type === "LUDecomposition")
     return (
-      Float32Array.BYTES_PER_ELEMENT
+      [Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0]),
+      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0])]
     )
   })();
   const resultBuffer = device.createBuffer({

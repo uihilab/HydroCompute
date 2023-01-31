@@ -173,3 +173,17 @@ export const waitFor = (conditionFunction) => {
 
   return new Promise(poll);
 }
+
+export const concatArrays = (arrays) => {
+  if (arrays.length === 1) return arrays[0]
+  let totalLength = arrays.reduce((sum, array) => 
+  sum + array.length, 0
+  ),
+  finalArray = new Float32Array(totalLength),
+  offset = 0;
+  for (let array of arrays){
+    finalArray.set(array, offset);
+    offset += array.length;
+  };
+  return finalArray
+}

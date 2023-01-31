@@ -2,20 +2,21 @@ import * as scripts from "./scripts/scripts.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = (e) => {
-  const st = performance.now();
-  let {data, funcName} = e.data
+  let {funcName, id, step} = e.data
+  let data = new Float32Array(e.data.data)
   try {
     Object.keys(scripts).forEach((script) => {
       if (Object.keys(scripts[script]).includes(funcName)) {
+        const st = performance.now();
         var result = scripts[script].main(funcName, data);
         typeof result === "undefined" ? (result = "") : result;
         const end = performance.now();
         self.postMessage({
-          id: e.data.id,
+          id: id,
           results: result,
-          step: e.data.step,
+          step: step,
           exec: end - st,
-        });
+        }, [result.buffer]);
       }
     });
   } catch (e) {

@@ -45,7 +45,7 @@ export const splits = {
    * @param {*} param0 
    * @returns 
    */
-  splitMatrix: ({data: data, n: n, m: m}) => {
+  splitMatrix: ({data: data, n: n, m:m}) => {
     const matrix1 = [];
     const matrix2 = [];
     for (let i = 0; i < n; i++) {
@@ -69,6 +69,20 @@ export const splits = {
       }
     }
     return submatrices;
+  },
+
+  /**
+   * Ordered chunks of data that are to be joined together
+   * @param {*} chunks 
+   */
+
+  join: ({chunks: chunks}) => {
+    let firstChunk = chunks[0].slice()
+    for (var i = 1; i < chunks.length; i++){
+      firstChunk.push(...chunks[i])
+    }
+    chunks = undefined
+    return firstChunk
   },
 
   //Main function to run any of the functions described in the object.

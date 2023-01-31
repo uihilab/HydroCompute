@@ -1,6 +1,7 @@
 import { DAG } from "../core/utils/globalUtils.js";
 import workerScope from "../core/utils/workers.js";
 import {avScripts} from './modules/modules.js'
+import { splits } from "../core/utils/splits.js";
 
 /**
  * @class
@@ -26,6 +27,7 @@ export default class wasmWorkers {
    */
   static async run(args) {
     this.workers.results = []
+    this.workers.execTime = 0
     if (args.data.length === 0) {
       return;
     }
@@ -109,6 +111,7 @@ export default class wasmWorkers {
       args: _args,
       type: "functions",
     });
+    this.finished = true
     return res;
   }
 
@@ -135,6 +138,7 @@ export default class wasmWorkers {
         await this.workers.workerThreads[i].worker(workerArgs)
         );
     }
+    this.finished = true;
     return results;
   }
 
@@ -155,7 +159,7 @@ export default class wasmWorkers {
       //Parallel analysis
       x = await this.parallelRun(args, stepCounter);
     }
-    this.workers.finished = true
+    !this.finished ? this.finished = true : null
     return x;
   }
 

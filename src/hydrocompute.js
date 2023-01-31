@@ -233,11 +233,11 @@ class hydrocompute {
   }
 
   getexecTime() {
-    if (this.engine.workers !== undefined && this.engine !== "jsworkers") {
-      return this.engine.workers.execTime
-    } else {
+    // if (this.engine.workers !== undefined && this.engine !== "jsworkers") {
+    //   return this.engine.workers.execTime
+    // } else {
       return this.engine.execTime
-    }
+    // }
   }
 }
 

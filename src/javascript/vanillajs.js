@@ -1,6 +1,7 @@
-import { DAG } from "../core/utils/globalUtils.js";
+import { DAG, concatArrays } from "../core/utils/globalUtils.js";
 import workerScope from "../core/utils/workers.js";
 import * as scripts from "./scripts/scripts.js";
+import { splits } from "../core/utils/splits.js";
 
 /**
  * @class
@@ -25,15 +26,17 @@ export default class vanillajs {
    * @returns
    */
   static async run(args) {
-    this.workers.results = []
+
     if (args.data.length === 0) {
-      return;
+      return console.error(`Problem with data.`);
     }
 
-    let { funcArgs, data, functions} = args
+    let { funcArgs, functions, dependencies, linked, steps} = args
 
-    let dependencies =
-      (typeof args.dependencies === "undefined") || (args.dependencies === null) || (args.dependencies[0] === "") ? [] : args.dependencies;
+    let data = new Float32Array(args.data)
+
+    dependencies =
+      (typeof dependencies === "undefined") || (dependencies === null) || (dependencies[0] === "") ? [] : dependencies;
     //This still needs improvement
     this.workers.workerCount = 
     //Array.isArray(args.data[0])
@@ -47,24 +50,35 @@ export default class vanillajs {
       this.workers.workerSpanner(i);
     }
 
+    //EXAMPLE CASE: If there are multiple functions that do not depend of each other
+    //assume that the work can be parallelized
+    if (functions.length > 1 && dependencies.length === 0){
+      this.dataSplits = splits.main('split1DArray', {data: data, n: functions.length})
+      this.splitting = true
+    } else {
+      this.dataSplits = data.slice()
+    }
+    data = []
+
     //Need to change the dependencies. They can be different for each
     //of the steps linked, or the functions per step.
 
-    var stepCounter = 0;
+    let stepCounter = 0;
 
-    if (args.linked) {
+    if (linked) {
       var stepPromise = [];
 
-      for (var i = 0; i < args.steps; i++) {
+      for (var i = 0; i < steps; i++) {
         stepPromise.push((args) => {
           return new Promise((resolve) => {
+            //this could be changed
             var _args = {
               //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-              data : args.data,
+              data : this.dataSplits,
               id: i,
-              funcName: args.functions[i],
+              funcName: functions,
               step: i,
-              funcArgs: args.funcArgs[i]
+              funcArgs: funcArgs
             };
             let p = this.taskRunner(_args, i, dependencies);
             resolve(p);
@@ -73,7 +87,7 @@ export default class vanillajs {
       }
       DAG({ functions: stepPromise, args: args, type: "steps" });
     } else {
-      while (stepCounter <= args.steps) {
+      while (stepCounter <= steps) {
         this.taskRunner(args, stepCounter, dependencies);
         stepCounter++;
       }
@@ -109,6 +123,7 @@ export default class vanillajs {
       args: _args,
       type: "functions",
     });
+    this.workers.finished = true
     return res;
   }
 
@@ -120,11 +135,16 @@ export default class vanillajs {
    */
   static async parallelRun(args, step) {
     let results = [];
+    let p = []
+    let data = this.dataSplits
     for (var i = 0; i < this.workers.workerCount; i++) {
-      let workerArgs = {
+      let d = this.splitting 
+      ? data[i].buffer 
+      : data.buffer
+    let workerArgs = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         //This data can be partitioned so that the worker can access either a 
-        data: args.data,
+        data: d,
         id: i,
         funcName: args.functions[i],
         funcArgs: args.funcArgs[i],
@@ -132,9 +152,10 @@ export default class vanillajs {
       };
       this.workers.workerInit(i);
       results.push(
-        await this.workers.workerThreads[i].worker(workerArgs)
+        await this.workers.workerThreads[i].worker(workerArgs, d)
         );
-    }
+    };
+    this.workers.finished = true
     return results;
   }
 
@@ -155,7 +176,13 @@ export default class vanillajs {
       //Parallel analysis
       x = await this.parallelRun(args, stepCounter);
     }
-    this.workers.finished = true
+    if (this.workers.workerCount === this.workers.results.length)
+      {
+        this.results.push(concatArrays(this.workers.results))
+        this.execTime = this.workers.execTime
+        console.log(`Execution time: ${this.execTime} ms`)
+        this.workers.resetWorkers()
+      }
     return x;
   }
 
@@ -182,10 +209,11 @@ export default class vanillajs {
 
     static setEngine() {
         this.execTime = 0;
+        this.splitting = false
         this.instanceCounter = 0;
-        this.maxWorkerCount = navigator.hardwareConcurrency;
         this.results = [];
         this.workers = {};
+        this.dataSplits;
         this.workerLocation = "../../src/javascript/worker.js"
       }
 
@@ -194,8 +222,7 @@ export default class vanillajs {
    * @returns 
    */
   static async showResults() {
-    const r = await this.workers.raiseResults()
-    return r
+    return this.results
   }
 
   /**
@@ -203,6 +230,6 @@ export default class vanillajs {
    * @returns 
    */
   static getexecTime() {
-    return this.workers.execTime;
+    return this.execTime;
   }
 }

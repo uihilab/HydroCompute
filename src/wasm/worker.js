@@ -5,7 +5,7 @@ import {
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
-  const st = performance.now();
+  let st = 0, end = 0;
   let {data, funcName, funcArgs} = e.data
   let wasmMods = await getAllModules()
   try {
@@ -29,9 +29,11 @@ self.onmessage = async (e) => {
             Object.keys(mod).includes('__setArgumentsLength') ? mod.__setArgumentsLength(funcArgs.length) : null
             try{
                 funcArgs.unshift(mat2), funcArgs.unshift(mat1);
+                st = performance.now()
                 result = views.liftTypedArray(
                     Float32Array, ref(...funcArgs)>>> 0, mod
                 )
+                end = performance.now()
             } finally{
                 views.releaseP(mat1, mod)
 
@@ -43,13 +45,14 @@ self.onmessage = async (e) => {
             )
             mod.__setArgumentsLength(funcArgs.length === 0 ? 1 : funcArgs.length);
             funcArgs.unshift(arr)
+            st = performance.now()
             result = views.liftTypedArray(
                 Float32Array, 
                 ref(...funcArgs) >>> 0, mod
             )
         }
         typeof result === "undefined" ? (result = "") : result;
-        const end = performance.now();
+        //end = performance.now();
         self.postMessage({
           id: e.data.id,
           results: result,
@@ -59,17 +62,6 @@ self.onmessage = async (e) => {
       }
     });
   } catch (e) {
-    // e instanceof DOMException || typeof scripts === "undefined"
-    //   ? (() => {
-    //       console.error(
-    //         "Please place your script with correct name in the /utils folder"
-    //       );
-    //       return;
-    //     })()
-    //   : (() => {
-    //       //console.log(`There was an error with function id: ${e.data.id}`)
-    //       console.log(`There was an error with executing:\nfunction:${funcName}\nid:${e.data.id}`)
-    //     })();
     console.error(e)
   }
 };
