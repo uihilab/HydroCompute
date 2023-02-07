@@ -97,20 +97,12 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 export const dataCloner = (data) => {
   //Deep copy of array data using recursion
   const arrayCloner = (arr) => {
-    let temp = [];
-    arr.forEach((ob) => {
-      if (Array.isArray(ob)) {
-        temp.push(arrayCloner(ob));
-      } else {
-        if (typeof ob === "object") {
-          temp.push(objectCloner(ob));
-        } else {
-          temp.push(ob);
-        }
-      }
-    });
-    return temp;
-  };
+    if (Array.isArray(arr[0])) {
+      return arr.map(subArr => arrayCloner(subArr));
+    } else {
+      return new Float32Array(arr);
+    }
+  }; 
 
   const objectCloner = (inObject) => {
     let tempOb = {};
@@ -130,7 +122,7 @@ export const dataCloner = (data) => {
   };
 
   if (Array.isArray(data)) {
-    return arrayCloner(data);
+    return flattenFloat32Array(arrayCloner(data));
   } else {
     return objectCloner(data);
   }
@@ -186,4 +178,13 @@ export const concatArrays = (arrays) => {
     offset += array.length;
   };
   return finalArray
+}
+
+export const flattenFloat32Array = (arr) => {
+  if(typeof arr[0] !== 'object') return arr
+  let flatArray = [];
+  arr.forEach(function(subArray) {
+    flatArray = flatArray.concat(Array.from(subArray));
+  });
+  return new Float32Array(flatArray);
 }

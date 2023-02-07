@@ -2,6 +2,8 @@ import { DAG } from "../core/utils/globalUtils.js";
 import workerScope from "../core/utils/workers.js";
 import {avScripts} from './modules/modules.js'
 import { splits } from "../core/utils/splits.js";
+import Module from "./modules/C/another_examples.js"
+
 
 /**
  * @class
@@ -18,6 +20,12 @@ export default class wasmWorkers {
   static initialize(args) {
     this.setEngine();
     this.workers = new workerScope('wasmWorkers', this.workerLocation)
+    this.extMod = undefined
+    this.loadExt()
+  }
+
+  static async loadExt(){
+    this.extMod = await Module() 
   }
 
   /**
@@ -159,7 +167,7 @@ export default class wasmWorkers {
       //Parallel analysis
       x = await this.parallelRun(args, stepCounter);
     }
-    !this.finished ? this.finished = true : null
+    this.workers.finished = true
     return x;
   }
 

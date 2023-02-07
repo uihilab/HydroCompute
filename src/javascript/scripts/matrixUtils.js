@@ -8,48 +8,34 @@ export const matrixUtils = {
    * @param {*} sizes
    * @returns
    */
-  matrixMul: (d, sizes) => {
-    if (typeof sizes === "undefined")
-      //This checks if the input matrices are of the same size
-      sizes = (() => {
-        if (
-          d[0].length % Math.sqrt(d[0].length) === 0 &&
-          d[1].length % Math.sqrt(d[1].length) === 0
-        ) {
-          return [
-            Math.sqrt(d[0].length),
-            Math.sqrt(d[1].length),
-            Math.sqrt(d[0].length),
-          ];
+  matrixMultiply: (d, sizes) => {
+
+    d = [d.slice(0, d.length/2), d.slice(d.length/2, d.length)]
+        
+    if (!sizes) {
+        const n = Math.sqrt(d[0].length);
+        if (d[0].length % n === 0 && d[1].length % n === 0) {
+            sizes = [n, n, n];
         } else {
-          console.error("Please input the sizes of your matrices.");
+            console.error("Please input the sizes of your matrices.");
         }
-      })();
-    d = d.slice();
-    d[0] = arrayChanger(d[0], sizes[2]);
-    d[1] = arrayChanger(d[1], sizes[2]);
-    d.map((x) => x.map((y) => y));
-    var res;
-    !(d instanceof Array)
-      ? (() => {
-          console.error(
-            "Please make sure you are passing an array type object"
-          );
-        })()
-      : (() => {
-          if (d.length === 1) {
-            console.error("Please input array sizes nxm");
-            return;
-          } else {
-            res = d[0].map((row, i) =>
-              d[1][0].map((_, j) =>
-                row.reduce((acc, _, n) => acc + d[0][i][n] * d[1][n][j], 0)
-              )
-            );
-          }
-        })();
-    return res;
-  },
+    }
+    const [m, n, p] = sizes;
+    const a = d[0];
+    const b = d[1];
+    const c = new Float32Array(m * p);
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < p; j++) {
+            let sum = 0;
+            for (let k = 0; k < n; k++) {
+                sum += a[i * n + k] * b[k * p + j];
+            }
+            c[i * p + j] = sum;
+        }
+    }
+    return c;
+},
 
   //Matrix addition. Accepts 2d arrays like [Arr1, Arr2]
   /**
@@ -89,3 +75,7 @@ export const matrixUtils = {
     }
   },
 };
+
+const unflatten = (arr) => {
+
+}

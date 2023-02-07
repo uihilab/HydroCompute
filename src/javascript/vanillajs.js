@@ -27,13 +27,14 @@ export default class vanillajs {
    */
   static async run(args) {
 
+    this.results = [];
+    this.execTime = 0;
+
     if (args.data.length === 0) {
       return console.error(`Problem with data.`);
     }
 
-    let { funcArgs, functions, dependencies, linked, steps} = args
-
-    let data = new Float32Array(args.data)
+    let { funcArgs, functions, dependencies, linked, steps, data} = args
 
     dependencies =
       (typeof dependencies === "undefined") || (dependencies === null) || (dependencies[0] === "") ? [] : dependencies;
@@ -58,7 +59,6 @@ export default class vanillajs {
     } else {
       this.dataSplits = data.slice()
     }
-    data = []
 
     //Need to change the dependencies. They can be different for each
     //of the steps linked, or the functions per step.
@@ -134,16 +134,14 @@ export default class vanillajs {
    * @returns 
    */
   static async parallelRun(args, step) {
-    let results = [];
-    let p = []
-    let data = this.dataSplits
+    let data = this.dataSplits;
+    let workerTasks = [];
+
     for (var i = 0; i < this.workers.workerCount; i++) {
       let d = this.splitting 
       ? data[i].buffer 
-      : data.buffer
-    let workerArgs = {
-        //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-        //This data can be partitioned so that the worker can access either a 
+      : data.buffer;
+      let workerArgs = {
         data: d,
         id: i,
         funcName: args.functions[i],
@@ -151,13 +149,13 @@ export default class vanillajs {
         step: step,
       };
       this.workers.workerInit(i);
-      results.push(
-        await this.workers.workerThreads[i].worker(workerArgs, d)
-        );
-    };
-    this.workers.finished = true
-    return results;
+      workerTasks.push(this.workers.workerThreads[i].worker(workerArgs, d));
+    }
+
+    await Promise.all(workerTasks);
+    this.workers.finished = true;
   }
+
 
   /**
    * 
@@ -174,7 +172,7 @@ export default class vanillajs {
       x = await this.concurrentRun(args, stepCounter, dependencies);
     } else {
       //Parallel analysis
-      x = await this.parallelRun(args, stepCounter);
+      await this.parallelRun(args, stepCounter);
     }
     if (this.workers.workerCount === this.workers.results.length)
       {

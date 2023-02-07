@@ -170,7 +170,7 @@ class hydrocompute {
         "Please set the required engine first before initializing!"
       );
     if (Object.keys(this.engine).includes('workers')){
-      await waitFor(() => {this.engine.workers.finished === true})
+      await waitFor(() => {this.engine.finished === true})
       return this.engine.workers.results
     } else {
       await waitFor(() => {this.engine.finished === true})

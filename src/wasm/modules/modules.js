@@ -5,6 +5,7 @@
 const availableModules = {
   matrixUtils: "matrixUtils",
   timeSeries: "timeSeries",
+  C: "C"
   //FFT: "FFT"
 };
 
@@ -25,15 +26,26 @@ const loc = (name) => {
 const assemblyModule = async (name) => {
   try {
     const memory = new WebAssembly.Memory({
-      initial: 10,
-      maximum: 100,
-      shared: true,
+      initial: 1,
+      //maximum: 100,
+      //shared: true,
     });
     const module = await WebAssembly.instantiateStreaming(fetch(loc(name)), {
       js: { mem: memory },
       env: {
         abort: (_msg, _file, line, column) =>
           console.error(`Abort at ${line}: ${column}`),
+          memory: memory,
+          __stack_pointer: new WebAssembly.Global(
+            {
+                mutable: true,
+                value: 'i32',
+            },
+            0x1000,
+        ),
+        __memory_base: 0,
+        __table_base: 0,
+        __indirect_function_table: new WebAssembly.Table({initial: 1, element: 'anyfunc'})
       },
     });
     return module.instance.exports;
@@ -177,3 +189,4 @@ export {
   availableModules,
   avScripts,
 };
+
