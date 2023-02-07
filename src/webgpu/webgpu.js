@@ -82,6 +82,9 @@ export default class webgpu {
     //argument extraction
     let {data, functions, dependencies, steps, linked, funcArgs} = args
     funcArgs = funcArgs === undefined ? {} : funcArgs
+    
+    
+    data = [data.slice(0, data.length/2), data.slice(data.length/2, data.length)]
 
     let matData = [],
     matSize = [],
@@ -91,7 +94,7 @@ export default class webgpu {
     
     for (var i =0; i < data.length; i++){
       matSize.push(matrixSize(data[i], funcArgs))
-      matData.push(buffers.matrixChanger(data[i], matSize[i]))
+      matData.push(new Float32Array([...matSize[i], ...data[i]]))
       matBuffers.push(buffers.bufferCreator(true, this.device,matData[i]))
     }
 
@@ -150,6 +153,9 @@ export default class webgpu {
 
   }
 
+  /**
+   * 
+   */
   static setEngine() {
     this.adapter = null;
     this.device = null;
