@@ -2,8 +2,6 @@ import {
     scriptUtils,
     getAllModules,
     } from './modules/modules.js'
-
-import Module from './modules/C/another_examples.js'
   
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {

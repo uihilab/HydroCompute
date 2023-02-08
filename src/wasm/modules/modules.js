@@ -1,12 +1,14 @@
-/*
- * Exposes the available modules to be digested by the wasm engine.
- *
+import { CUtils } from "./C/mods.js";
+import { ASUtils } from "./assemblyScript/mods.js";
+
+/**
+ * Anything else that has to be imported into the library's
+ * usage has to be added here
  */
-const availableModules = {
-  matrixUtils: "matrixUtils",
-  timeSeries: "timeSeries",
-  C: "C"
-  //FFT: "FFT"
+const availableScripts = {
+  C: "../../src/wasm/modules/C",
+  //assemblyScrpt utils
+  AS: "../../src/wasm/modules/assemblyScript",
 };
 
 /**
@@ -14,8 +16,23 @@ const availableModules = {
  * @param {String} name - folder and wasm module name to import
  * @returns
  */
-const loc = (name) => {
-  return `../../src/wasm/modules/${name}/${name}.wasm`;
+const _location = (scName, utilName) => {
+  let n = (ob, name) => {
+    if (ob.hasOwnProperty(name)) {
+      return ob[name];
+    } else {
+      return console.error("No utils found with that name in the given module");
+    }
+  };
+  if (scName === "C") {
+    let stgMod = n(CUtils, utilName);
+    return `${availableScripts.C}/${utilName}/${stgMod}`;
+  } else if (scName === "AS") {
+    let stgMod = n(ASUtils, utilName);
+    return `${availableScripts.AS}/${utilName}/${stgMod}`;
+  } else {
+    return console.error("No script or module with the given parameters");
+  }
 };
 
 /**
@@ -23,31 +40,24 @@ const loc = (name) => {
  * @param {*} name
  * @returns
  */
-const assemblyModule = async (name) => {
+const ASModule = async (name) => {
   try {
     const memory = new WebAssembly.Memory({
       initial: 1,
       //maximum: 100,
       //shared: true,
     });
-    const module = await WebAssembly.instantiateStreaming(fetch(loc(name)), {
-      js: { mem: memory },
-      env: {
-        abort: (_msg, _file, line, column) =>
-          console.error(`Abort at ${line}: ${column}`),
+    const module = await WebAssembly.instantiateStreaming(
+      fetch(_location("AS", name)),
+      {
+        js: { mem: memory },
+        env: {
+          abort: (_msg, _file, line, column) =>
+            console.error(`Abort at ${line}: ${column}`),
           memory: memory,
-          __stack_pointer: new WebAssembly.Global(
-            {
-                mutable: true,
-                value: 'i32',
-            },
-            0x1000,
-        ),
-        __memory_base: 0,
-        __table_base: 0,
-        __indirect_function_table: new WebAssembly.Table({initial: 1, element: 'anyfunc'})
-      },
-    });
+        },
+      }
+    );
     return module.instance.exports;
   } catch (e) {
     console.log(e);
@@ -55,11 +65,24 @@ const assemblyModule = async (name) => {
 };
 
 /**
+ *
+ * @param {String} modName - module available on the C/C++ modules.
+ * @returns
+ */
+const CModule = async (modName) => {
+  try {
+    let { default: Module } = await import(_location("C", modName));
+    return Module();
+  } catch (error) {
+    console.log(`There was an error pulling the following module: ${modName}`);
+  }
+};
+
+/**
  * Helper functions for AssemblyScript compiled modules
- * This might be used for other compilations from C, C++, Rust, etc.
  */
 
-class scriptUtils {
+class AScriptUtils {
   constructor() {
     this.dataview = undefined;
     this.memory = undefined;
@@ -131,10 +154,19 @@ class scriptUtils {
   }
 }
 
-const loadModule = async (moduleName) => {
+class CScriptsUtils {
+  constructor() {}
+}
+
+const loadModule = async (scriptName, moduleName) => {
   try {
     const myCurrentModule = await new Promise((resolve, reject) => {
-      resolve(assemblyModule(moduleName));
+      //Removes extension for each module
+      resolve(
+        scriptName === "AS"
+          ? ASModule(moduleName.substring(0, moduleName.length - 5))
+          : CModule(moduleName.substring(0, moduleName.length - 3))
+      );
     });
     return myCurrentModule;
   } catch (e) {
@@ -144,49 +176,63 @@ const loadModule = async (moduleName) => {
 
 const getAllModules = async () => {
   let wasmMods = {};
-  for (var mod of Object.keys(availableModules)) {
-    let stgMod = await loadModule(mod);
-    wasmMods[mod] = stgMod;
+  let availableMods;
+  for (var sc of Object.keys(availableScripts)) {
+    if (sc === "C") {
+      availableMods = Object.values(CUtils).map((val) => val);
+    } else if (sc === "AS") {
+      availableMods = Object.values(ASUtils).map((val) => val);
+    }
+    wasmMods[sc] = {};
+    for (var mod of availableMods) {
+      let stgMod = await loadModule(sc, mod);
+      wasmMods[sc][mod] = stgMod;
+    }
   }
   return wasmMods;
 };
 
+/**
+ *
+ * @returns
+ */
 const avScripts = async () => {
   let wasmMods = await getAllModules();
-  console.log(wasmMods);
-  let r = Object.keys(wasmMods).map((module) => {
-    return module;
-  });
-  let fun = new Map();
-  for (let func of r) {
-    let fn = [];
-    for (var i = 0; i < Object.keys(func).length; i++) {
-      fn.push(Object.keys(wasmMods[func])[i]);
-    }
+  let main = new Map();
 
-    fn = fn.filter((ele) =>
-      ele === undefined ||
-      ele === "memory" ||
-      ele === "__collect" ||
-      ele === "__new" ||
-      ele === "__pin" ||
-      ele === "__rtti_base" ||
-      ele === "__unpin" ||
-      ele === "__setArgumentsLength"
-        ? null
-        : ele
-    );
-    fun.set(func, fn);
-  }
-  return fun;
+  Object.keys(wasmMods).forEach((scr) => {
+    let modules = new Map();
+    main.set(scr, modules);
+    Object.keys(wasmMods[scr]).map((fn) => {
+      let fun = Object.keys(wasmMods[scr][fn]);
+      fun = fun.filter((ele) =>
+        ele === undefined ||
+        ele === "memory" ||
+        ele === "__collect" ||
+        ele === "__new" ||
+        ele === "__pin" ||
+        ele === "__rtti_base" ||
+        ele === "__unpin" ||
+        ele === "__setArgumentsLength" ||
+        ele.includes("HEAP") ||
+        ele === "ready" ||
+        ele === "calledRun" ||
+        ele === "ready" ||
+        ele === "asm"
+          ? null
+          : ele
+      );
+      modules.set(fn, fun);
+    });
+  });
+  return main;
 };
 
 export {
   getAllModules,
   loadModule,
-  scriptUtils,
-  assemblyModule,
-  availableModules,
+  AScriptUtils,
+  ASModule,
+  availableScripts,
   avScripts,
 };
-
