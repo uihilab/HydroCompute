@@ -1,242 +1,212 @@
-import {assemblyModule, availableModules} from './modules/modules.js'
-import { NotFound } from '../core/utils/errors.js';
+import { DAG, concatArrays } from "../core/utils/globalUtils.js";
+import workerScope from "../core/utils/workers.js";
+import {avScripts} from './modules/modules.js'
+import { splits } from "../core/utils/splits.js";
 
 
 /**
- * Imports modules from different web assembly compilations for usage
- * This class will not be released, but rather serves as a comparison between
- * other methods.
- * @class wasm
+ * @class
+ * @name wasm
+ * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
-export default class wasm{
-    constructor(props = {}){
-        //defaults, if any
+export default class wasm {
+    constructor(params = {}){
+    }
+  /**
+   * 
+   * @param {*} args 
+   */
+  static initialize(args) {
+    this.setEngine();
+    this.workers = new workerScope('wasm', this.workerLocation)
+  }
+
+  /**
+   *
+   * @param {*} args
+   * @returns
+   */
+  static async run(args) {
+    this.workers.results = []
+    this.workers.execTime = 0
+    if (args.data.length === 0) {
+      return;
     }
 
-    /**
-     * Initialize the method with the same parameters available from all other engines
-     */
-    static initialize() {
-        this.setEngine()
-        this.getAllModules()
-        console.log(`Web assembly scripts called.\nModules available: ${Object.keys(availableModules)}`)
+    let { funcArgs, functions, dependencies, linked, steps, data, scripts} = args
+
+    dependencies =
+      (typeof args.dependencies === "undefined") || (args.dependencies === null) || (args.dependencies[0] === "") ? [] : args.dependencies;
+    //This still needs improvement
+    this.workers.workerCount = 
+    //Array.isArray(args.data[0])
+      //? //assuming the main driver for the workers scope is the length of the data
+        // args.data.length
+      //: //assuming that the data is a 1D array run or passed by n functions
+      //args.linked === true ? this.functions.length * args.steps : 
+      functions.length;
+
+    for (var i = 0; i < this.workers.workerCount; i++) {
+      this.workers.workerSpanner(i);
     }
 
-    /**
-     * 
-     * @param {*} mem - allocation based on the computation required per module. Initiated with 1 page or 
-     * @param {*} location - parameter will change
-     * @returns 
-     */
-    static async loadModule(moduleName) {
-        try {
-        const myCurrentModule = await new Promise((resolve, reject) => {
-          resolve(assemblyModule(moduleName));
+    //EXAMPLE CASE: If there are multiple functions that do not depend of each other
+    //assume that the work can be parallelized
+    if (functions.length > 1 && dependencies.length === 0){
+      this.dataSplits = splits.main('split1DArray', {data: data, n: functions.length})
+      this.splitting = true
+    } else {
+      this.dataSplits = data.slice()
+    }
+
+    //Need to change the dependencies. They can be different for each
+    //of the steps linked, or the functions per step.
+
+    var stepCounter = 0;
+
+    if (linked) {
+      var stepPromise = [];
+
+      for (var i = 0; i < steps; i++) {
+        stepPromise.push((args) => {
+          return new Promise((resolve) => {
+            var _args = {
+              //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
+              data : this.dataSplits,
+              id: i,
+              funcName: functions,
+              step: i,
+              funcArgs: funcArgs
+            };
+            let p = this.taskRunner(_args, i, dependencies);
+            resolve(p);
+          });
         });
-            return myCurrentModule
-        } catch (e) {
-            throw new NotFound(`Module not found in available scripts.`)
-        }
       }
+      DAG({ functions: stepPromise, args: args, type: "steps" });
+    } else {
+      while (stepCounter <= args.steps) {
+        this.taskRunner(args, stepCounter, dependencies);
+        stepCounter++;
+      }
+    }
+  }
 
+  /**
+   * Running jobs concurrently through based on an acyclic graph implementation.
+   * It can also run parallel jobs if the dependencies array is passed as a
+   * @method concurrentRun
+   * @param {Object{}} args
+   * @param {Number} step
+   * @param {Object[]} dependencies
+   * @returns
+   */
+  static async concurrentRun(args, step, dependencies) {
+    for (var i = 0; i < this.workers.workerCount; i++) {
+      var _args = {
+        //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
+        data: args.data,
+        id: i,
+        funcName: args.functions[i],
+        step: step,
+        funcArgs: args.funcArgs[i],
+      };
+      this.workers.workerInit(i);
+    }
+    let res = DAG({
+      functions: Object.keys(this.workers.workerThreads).map((key) => {
+        return this.workers.workerThreads[key].worker;
+      }),
+      dag: dependencies,
+      args: _args,
+      type: "functions",
+    });
+    this.workers.finished = true
+    return res;
+  }
+
+  /**
+   * 
+   * @param {*} args 
+   * @param {*} step 
+   * @returns 
+   */
+  static async parallelRun(args, step) {
+    let data = this.dataSplits;
+    let workerTasks = []
+
+    for (var i = 0; i < this.workers.workerCount; i++) {
+      let d = this.splitting ? data[i].buffer : data.buffer
+      let workerArgs = {
+        //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
+        //This data can be partitioned so that the worker can access either a 
+        data: d,
+        id: i,
+        funcName: args.functions[i],
+        funcArgs: args.funcArgs[i],
+        step: step,
+      };
+      this.workers.workerInit(i);
+      workerTasks.push(this.workers.workerThreads[i].worker(workerArgs, d));
+    }
+    await Promise.all(workerTasks);
+    this.workers.finished = true;
+  }
+
+  /**
+   * 
+   * @param {*} args 
+   * @param {*} stepCounter 
+   * @param {*} dependencies 
+   * @returns 
+   */
+  static async taskRunner(args, stepCounter, dependencies) {
+    //this.workers.results.push([]);
+    let x;
+    if (dependencies.length > 0) {
+      // Sequential Execution
+      x = await this.concurrentRun(args, stepCounter, dependencies);
+    } else {
+      //Parallel analysis
+      x = await this.parallelRun(args, stepCounter);
+    }
+    if (this.workers.workerCount === this.workers.results.length)
+    {
+      this.results.push(concatArrays(this.workers.results))
+      this.execTime = this.workers.execTime
+      console.log(`Execution time: ${this.execTime} ms`)
+      this.workers.resetWorkers()
+    }
+  }
 
     /**
-     * 
-     * @param {*} args 
-     */
-    static async run(args){
-        this.results === []
-        let {funcArgs, data, functions} = args
-
-        Array.isArray(funcArgs[0]) ? funcArgs = funcArgs[0] : funcArgs = []
-
-        //Need change to adopt to the functions from other scripts
-        Object.keys(this.wasmMods).forEach((module) => {
-            let start = performance.now()
-            let r;
-            for (var func of functions) {
-            if (Object.keys(this.wasmMods[module]).includes(func)) {
-                let mod = this.wasmMods[module]
-                let ref = mod[func]
-                if (module === "matrixUtils") {
-                    let mat1 = this.retainP(this.lowerTypedArray(Float32Array, 4, 2, data[0], mod), mod)
-                    let mat2 = this.lowerTypedArray(Float32Array, 4, 2, data[1], mod)
-                    Object.keys(mod).includes('__setArgumentsLength') ? mod.__setArgumentsLength(arguments.length) : null
-                    try {
-                        funcArgs.unshift(mat2)
-                        funcArgs.unshift(mat1)
-                        console.log(funcArgs)
-                        r = this.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod)
-                        this.results.push(r.slice())
-                    } finally {
-                        this.releaseP(mat1, mod)
-                    }
-                } else {
-                    let arr = this.lowerTypedArray(Float32Array, 4, 2, data, mod)
-                    mod.__setArgumentsLength(arguments.length);
-                    funcArgs.unshift(arr)
-                    r = this.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod)
-                    this.results.push(r.slice())
-                }
-            }
-            }
-            let end = performance.now()
-            console.log(`Execution time: ${end-start} ms`)
-            this.execTime += (end-start)
-        })
+   * 
+   * @returns {Object[]} string concatenation of the available scripts for each script.
+   */
+    static async availableScripts() { 
+        return await avScripts()
     }
 
-    /**
-     * 
-     * @param {*} constructor 
-     * @param {*} pointer 
-     * @param {*} module 
-     * @returns 
-     */
-    static liftTypedArray(constructor, pointer, module) {
-        if (!pointer) return null;
-        return new constructor(
-            module.memory.buffer,
-            this.getU32(pointer+4, module),
-            this.dataview.getUint32(pointer + 8, true) / constructor.BYTES_PER_ELEMENT
-        ).slice()
-    }
-
-    /**
-     * 
-     * @param {*} constructor 
-     * @param {*} id 
-     * @param {*} align 
-     * @param {*} values 
-     * @param {*} module 
-     * @returns 
-     */
-    static lowerTypedArray(constructor, id, align, values, module){
-        if (values == null) return 0;
-
-        const length = values.length,
-        buffer = module.__pin(module.__new(length << align, 1)) >>> 0,
-        header = module.__new(12, id) >>> 0;
-
-        this.setU32(header + 0, buffer, module);
-        this.dataview.setUint32(header + 4, buffer, true)
-        this.dataview.setUint32(header + 8, length << align, true);
-        new constructor(module.memory.buffer, buffer, length).set(values);
-        module.__unpin(buffer);
-        return header
-    }
-
-    /**
-     * 
-     * @param {*} pointer 
-     * @param {*} value 
-     * @param {*} module 
-     */
-    static setU32(pointer, value, module) {
-        try{
-            this.dataview.setUint32(pointer, value, true)
-        } catch {
-            this.dataview = new DataView(module.memory.buffer);
-            this.dataview.setInt32(pointer, value, true)
-        }
-    }
-
-    /**
-     * 
-     * @param {*} pointer 
-     * @param {*} module 
-     * @returns 
-     */
-    static getU32(pointer, module) {
-        try{
-            return this.dataview.getUint32(pointer, true)
-        } catch {
-            this.dataview = new DataView(module.memory.buffer);
-            return this.dataview.getUint32(pointer, true)
-
-        }
-    }
-
-    /**
-     * 
-     */
-    static async getAllModules() {
-        for (var mod of Object.keys(availableModules)) {
-            let stgMod = await this.loadModule(mod)
-            this.wasmMods[mod] = stgMod
-        }
-    }
-
-    /**
-     * 
-     * @param {*} pointer 
-     * @param {*} module 
-     * @returns 
-     */
-    static retainP(pointer, module) {
-        if (pointer) {
-            const refcount = this.refCounts.get(pointer);
-            if (refcount) this.refCounts.set(pointer, refcount+1)
-            else this.refCounts.set(module.__pin(pointer), 1)
-        }
-        return pointer
-    }
-
-    /**
-     * 
-     * @param {*} pointer 
-     * @param {*} module 
-     */
-    static releaseP(pointer, module) {
-        if (pointer) {
-            const refcount = this.refCounts.get(pointer);
-            if (refcount === 1) module.__unpin(pointer), this.refCounts.delete(pointer);
-            else if (refcount) this.refCounts.set(pointer, refcount-1);
-            else throw Error(`no refcounter "${refcount}" for the reference "${pointer}"`)
-        }
-    }
-
-    /**
-     * 
-     * @returns 
-     */
-    static async availableScripts() {
-        await this.getAllModules()
-        let r = Object.keys(this.wasmMods).map((module) => {
-          return module;
-        });
-        let fun = new Map();
-        for (let func of r) {
-          let fn = []
-          for (var i = 0; i < Object.keys(func).length; i++){
-            fn.push(Object.keys(this.wasmMods[func])[i])
-          }
-  
-          fn = fn.filter((ele) => ele === undefined || ele === "memory" || ele === "__collect" || ele === "__new" || ele === "__pin" || ele === "__rtti_base" || ele === "__unpin" || ele === "__setArgumentsLength" ? null : ele)
-          fun.set(func, fn)
-        }
-        return fun;
-    }
-
-    /**
-     * 
-     */
     static setEngine() {
-        this.wasmMods = {}
-        this.functions = [];
-        this.results = [];
-        this.refCounts = new Map()
-        this.execTime = 0;
-        this.dataview = undefined;
-        this.memory = undefined;
+      this.execTime = 0;
+      this.splitting = false;
+      this.results = [];
+        this.workerLocation = "../../src/wasm/worker.js"
       }
 
-    /**
-     * 
-     * @returns 
-     */
-    static getexecTime(){
-        return this.execTime;
-    }
+  /**
+   * 
+   * @returns 
+   */
+  static async showResults() {
+    return this.results
+  }
 
+  /**
+   * 
+   * @returns 
+   */
+  static getexecTime() {
+    return this.execTime
+  }
 }

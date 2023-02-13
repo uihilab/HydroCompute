@@ -1,14 +1,15 @@
 import { CUtils } from "./C/mods.js";
 import { ASUtils } from "./assemblyScript/mods.js";
 
+
 /**
  * Anything else that has to be imported into the library's
  * usage has to be added here
  */
 const availableScripts = {
-  C: "../../src/wasm/modules/C",
+  C: "../../../src/wasm/modules/C",
   //assemblyScrpt utils
-  AS: "../../src/wasm/modules/assemblyScript",
+  AS: "../../../src/wasm/modules/assemblyScript",
 };
 
 /**
@@ -170,6 +171,7 @@ const loadModule = async (scriptName, moduleName) => {
     });
     return myCurrentModule;
   } catch (e) {
+    console.error(e)
     throw new NotFound(`Module not found in available scripts.`);
   }
 };
@@ -186,7 +188,7 @@ const getAllModules = async () => {
     wasmMods[sc] = {};
     for (var mod of availableMods) {
       let stgMod = await loadModule(sc, mod);
-      wasmMods[sc][mod] = stgMod;
+      wasmMods[sc][sc === 'AS' ? mod.substring(0, mod.length-5) : mod.substring(0, mod.length-3)] = stgMod;
     }
   }
   return wasmMods;
@@ -198,11 +200,12 @@ const getAllModules = async () => {
  */
 const avScripts = async () => {
   let wasmMods = await getAllModules();
-  let main = new Map();
+  console.log(wasmMods)
+  let main = {};
 
   Object.keys(wasmMods).forEach((scr) => {
     let modules = new Map();
-    main.set(scr, modules);
+    main[scr] = modules
     Object.keys(wasmMods[scr]).map((fn) => {
       let fun = Object.keys(wasmMods[scr][fn]);
       fun = fun.filter((ele) =>
@@ -218,7 +221,9 @@ const avScripts = async () => {
         ele === "ready" ||
         ele === "calledRun" ||
         ele === "ready" ||
-        ele === "asm"
+        ele === "asm" ||
+        ele === '_createMem' ||
+        ele === '_destroy'
           ? null
           : ele
       );
@@ -232,6 +237,7 @@ export {
   getAllModules,
   loadModule,
   AScriptUtils,
+  CScriptsUtils,
   ASModule,
   availableScripts,
   avScripts,

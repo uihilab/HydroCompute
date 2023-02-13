@@ -48,13 +48,60 @@ export const matrixUtils = {
       console.error("Please input array sizes nxm");
       return;
     } else {
-      var res = [];
+      d = [d.slice(0, d.length/2), d.slice(d.length/2, d.length)]
+      var res = new Float32Array(d.length);
       for (var i = 0; i < d[0].length; i++) {
         res.push(d[0][i] + d[1][i]);
       }
       return res;
     }
   },
+
+  conv2d: (input, kernel) => {
+    let output = [];
+
+    let inputRows = input.length;
+    let inputCols = input[0].length;
+    let kernelRows = kernel.length;
+    let kernelCols = kernel[0].length;
+
+    let padRows = Math.floor(kernelRows / 2);
+    let padCols = Math.floor(kernelCols / 2);
+
+    let paddedInput = [];
+    for (let i = 0; i < inputRows + 2 * padRows; i++) {
+        let row = [];
+        for (let j = 0; j < inputCols + 2 * padCols; j++) {
+            row.push(0);
+        }
+        paddedInput.push(row);
+    }
+
+    for (let i = 0; i < inputRows; i++) {
+        for (let j = 0; j < inputCols; j++) {
+            paddedInput[i + padRows][j + padCols] = input[i][j];
+        }
+    }
+
+    for (let i = 0; i < inputRows; i++) {
+        let row = [];
+        for (let j = 0; j < inputCols; j++) {
+            let sum = 0;
+            for (let m = 0; m < kernelRows; m++) {
+                for (let n = 0; n < kernelCols; n++) {
+                    let ii = i + m - padRows;
+                    let jj = j + n - padCols;
+                    sum += paddedInput[ii][jj] * kernel[m][n];
+                }
+            }
+            row.push(sum);
+        }
+        output.push(row);
+    }
+
+    return output;
+},
+
 
   /**
    *
@@ -75,7 +122,3 @@ export const matrixUtils = {
     }
   },
 };
-
-const unflatten = (arr) => {
-
-}

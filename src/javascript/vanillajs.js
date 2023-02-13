@@ -53,6 +53,7 @@ export default class vanillajs {
 
     //EXAMPLE CASE: If there are multiple functions that do not depend of each other
     //assume that the work can be parallelized
+    //THIS NEEDS TO CHANGE
     if (functions.length > 1 && dependencies.length === 0){
       this.dataSplits = splits.main('split1DArray', {data: data, n: functions.length})
       this.splitting = true
@@ -69,6 +70,7 @@ export default class vanillajs {
       var stepPromise = [];
 
       for (var i = 0; i < steps; i++) {
+        //THIS NEEDS TO CHANGE
         stepPromise.push((args) => {
           return new Promise((resolve) => {
             //this could be changed
@@ -107,7 +109,7 @@ export default class vanillajs {
     for (var i = 0; i < this.workers.workerCount; i++) {
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-        data: args.data,
+        data: this.dataSplits,
         id: i,
         funcName: args.functions[i],
         step: step,

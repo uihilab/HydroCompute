@@ -108,7 +108,7 @@ class hydrocompute {
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
     })();
-    if (data.length > 0 && functions.length > 0) {
+    if ((data.length > 0 && functions.length > 0) || (data.length === 0 && args.funcArgs.length > 0 && functions.length > 0)) {
       //Data passed in raw without splitting
       try {
         this.engine.run({
@@ -135,7 +135,7 @@ class hydrocompute {
    *
    * @returns
    */
-  currentEgine() {
+  currentEngine() {
     return this.currentEngineName;
   }
 
@@ -202,8 +202,20 @@ class hydrocompute {
    * @returns
    */
 
-  engineScripts() {
-    return this.engine.availableScripts();
+  async engineScripts () {
+    let m = await this.engine.availableScripts()
+    if(this.currentEngineName === 'wasm'){
+      let _m = new Map()
+      let stgM = Object.keys(m)
+      for (var x of stgM){
+        let stgKeys = m[x].keys()
+        for (var y of stgKeys){
+          _m.set(`${x}-${y}`, m[x].get(y))
+        }
+      }
+      return _m
+    }
+    return m;
   }
 
   /**

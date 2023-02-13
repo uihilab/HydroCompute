@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="module" onload="initHydrocompute() " src="../../src/hydrocompute.js"></script>
     <!-- <script type="module" onload="initHydroLang() " src="./hydrolang/hydro.js"></script> -->
-    
+
     <title>HydroCompute Example</title>
 </head>
 <style>
@@ -181,7 +181,6 @@
                                                     <option value="vanillajs">vanillajs</option>
                                                     <option value="webgpu">webgpu</option>
                                                     <option value="wasm">wasm</option>
-                                                    <option value="wasmWorkers">wasmWorkers</option>
                                                     <option value="webrtc">webrtc</option>
                                                 </select>
                                             </div>
@@ -507,7 +506,7 @@
                             mul.push(JSON.parse(i.children[j].firstChild.value));
                             break;
                         case 2:
-                            fnParam.push(i.children[j].firstChild.value);
+                            fnParam.push((i.children[j].firstChild.value));
                             break;
                         case 3:
                             dep.push(JSON.parse(i.children[j].firstChild.value));
@@ -523,7 +522,24 @@
                     ?
                     fnParam[0].includes(',')
                         ?
-                        [fnParam[0].split(',').map(Number)]
+                        [
+                            fnParam[0].split(',').map(val => {
+                                if (val === Number) {
+                                    return val;
+                                }
+                                else {
+                                    val = JSON.stringify(val);
+                                    let ob = new Object()
+                                    console.log(val)
+                                    let [key, p] = val.split(":")
+                                    ob[(key.replace(/[^a-z.]/g, ''))]
+                                        = JSON.parse(p.replace(/[^0-9.]/g, ''))
+                                    return ob
+                                }
+
+                            })
+                            //JSON.parse(fnParam[0].split(',')) 
+                        ]
                         : [JSON.parse(fnParam[0])]
                     : null)
             }
