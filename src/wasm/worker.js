@@ -4,14 +4,14 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 self.onmessage = async (e) => {
   let st = 0,
     end = 0;
-  let { funcName, funcArgs } = e.data;
+  let { funcName, funcArgs = [] } = e.data;
   let data = new Float32Array(e.data.data);
   let wasmSc = await getAllModules();
   let result = null;
   try {
-    Object.keys(wasmSc).forEach((scr) => {
-      Object.keys(wasmSc[scr]).forEach((module) => {
-        if (Object.keys(wasmSc[scr][module]).includes(funcName)) {
+    for (const scr in wasmSc) {
+      for (const module in wasmSc[scr]) {
+        if (funcName in wasmSc[scr][module]) {
           //points to the current module
           let mod = wasmSc[scr][module],
             ref = mod[funcName];
@@ -51,9 +51,7 @@ self.onmessage = async (e) => {
                 views.releaseP(mat1, mod);
               }
             } else {
-              funcArgs === null || funcArgs === undefined
-                ? (funcArgs = [])
-                : funcArgs;
+              funcArgs ?? []
               let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
               mod.__setArgumentsLength(
                 funcArgs.length === 0 ? 1 : funcArgs.length
@@ -65,6 +63,7 @@ self.onmessage = async (e) => {
                 ref(...funcArgs) >>> 0,
                 mod
               );
+              end = performance.now();
             }
           } else if (scr === "C") {
             if (module === "matrixUtils") {
@@ -83,9 +82,20 @@ self.onmessage = async (e) => {
                 result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
                 mod._destroy(ptr1); mod._destroy(ptr2), mod._destroy(r_ptr)
             }
+          else {
+            let len = data.length, bytes = Float32Array.BYTES_PER_ELEMENT,
+            ptr = mod._createMem(len*bytes), r_ptr = mod._createMem(len*bytes);
+            mod.HEAPF32.set(data, ptr/bytes);
+            st = performance.now();
+            mod[funcName](ptr, r_ptr, len)
+            end = performance.now();
+            result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
+            mod._destroy(ptr); mod._destroy(r_ptr)
           }
-          typeof result === "undefined" ? (result = "") : result;
+          }
+          //typeof result === "undefined" ? (result = "") : result;
           //end = performance.now();
+          console.log(result)
           self.postMessage({
             id: e.data.id,
             results: result,
@@ -93,13 +103,9 @@ self.onmessage = async (e) => {
             exec: end - st,
           }, [result.buffer]);
         }
-      });
-    });
+      };
+    };
   } catch (e) {
     console.error(e);
   }
 };
-
-const handleAS = (mod, src, ref, funcName, data) => {
-
-}

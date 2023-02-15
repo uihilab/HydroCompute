@@ -1,6 +1,8 @@
-import Hydrolang from "../../../hydrolang/hydro.js";
+//import Hydrolang from "../../../hydrolang/hydro.js";
+//import { fakeDom } from "../../core/utils/fakeDom.js";
 
-let hydrolang = new Hydrolang();
+//fakeDom()
+//let hydrolang = new Hydrolang();
 
 export const hydro = {
   dataRetrieve: async (d) => {

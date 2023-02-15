@@ -1,23 +1,27 @@
-import { DAG, concatArrays } from "../core/utils/globalUtils.js";
-import workerScope from "../core/utils/workers.js";
-import * as scripts from "./scripts/scripts.js";
-import { splits } from "../core/utils/splits.js";
+import { DAG, concatArrays } from "./globalUtils.js";
+import workerScope from "./workers.js";
+import { splits } from "./splits.js";
+import { jsScripts } from "../../javascript/scripts/jsScripts.js";
+import { avScripts } from "../../wasm/modules/modules.js";
 
 /**
  * @class
- * @name vanillajs
+ * @name engine
  * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
-export default class vanillajs {
-    constructor(params = {}){
+export default class engine {
+    constructor(engine, workerLocation){
+        this.setEngine();
+        this.workerLocation = workerLocation;
+        this.initialize(engine)
     }
   /**
    * 
    * @param {*} args 
    */
-  static initialize(args) {
-    this.setEngine();
-    this.workers = new workerScope('vanillajs', this.workerLocation)
+  initialize(engine) {
+    this.engineName = engine
+    this.workers = new workerScope(engine, this.workerLocation)
   }
 
   /**
@@ -25,16 +29,15 @@ export default class vanillajs {
    * @param {*} args
    * @returns
    */
-  static async run(args) {
-
+  async run(args) {
     this.results = [];
     this.execTime = 0;
 
-    if (args.data.length === 0) {
+    if (args.data.length === 0 && args.funcArgs.length === 0) {
       return console.error(`Problem with data.`);
     }
 
-    let { funcArgs, functions, dependencies, linked, steps, data} = args
+    let { funcArgs = [], functions = [], dependencies = [], linked = false, steps = 0, data = []} = args
 
     dependencies =
       (typeof dependencies === "undefined") || (dependencies === null) || (dependencies[0] === "") ? [] : dependencies;
@@ -48,7 +51,7 @@ export default class vanillajs {
       functions.length;
 
     for (var i = 0; i < this.workers.workerCount; i++) {
-      this.workers.workerSpanner(i);
+      this.workers.createWorkerThread(i);
     }
 
     //EXAMPLE CASE: If there are multiple functions that do not depend of each other
@@ -97,7 +100,7 @@ export default class vanillajs {
   }
 
   /**
-   * Running jobs concurrently through based on an acyclic graph implementation.
+   * Running jobs concurrently based on a DAG.
    * It can also run parallel jobs if the dependencies array is passed as a
    * @method concurrentRun
    * @param {Object{}} args
@@ -105,17 +108,21 @@ export default class vanillajs {
    * @param {Object[]} dependencies
    * @returns
    */
-  static async concurrentRun(args, step, dependencies) {
+  async concurrentRun(args, step, dependencies) {
+    let data = this.dataSplits
     for (var i = 0; i < this.workers.workerCount; i++) {
+      let d = this.splitting 
+      ? data[i].buffer 
+      : data.buffer;
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-        data: this.dataSplits,
+        data: d,
         id: i,
         funcName: args.functions[i],
         step: step,
         funcArgs: args.funcArgs[i]
       };
-      this.workers.workerInit(i);
+      this.workers.initializeWorkerThread(i);
     }
     let res = DAG({
       functions: Object.keys(this.workers.workerThreads).map((key) => {
@@ -125,7 +132,6 @@ export default class vanillajs {
       args: _args,
       type: "functions",
     });
-    this.workers.finished = true
     return res;
   }
 
@@ -135,7 +141,7 @@ export default class vanillajs {
    * @param {*} step 
    * @returns 
    */
-  static async parallelRun(args, step) {
+  async parallelRun(args, step) {
     let data = this.dataSplits;
     let workerTasks = [];
 
@@ -150,12 +156,10 @@ export default class vanillajs {
         funcArgs: args.funcArgs[i],
         step: step,
       };
-      this.workers.workerInit(i);
-      workerTasks.push(this.workers.workerThreads[i].worker(workerArgs, d));
+      this.workers.initializeWorkerThread(i);
+      workerTasks.push(this.workers.workerThreads[i].worker(workerArgs));
     }
-
     await Promise.all(workerTasks);
-    this.workers.finished = true;
   }
 
 
@@ -166,19 +170,25 @@ export default class vanillajs {
    * @param {*} dependencies 
    * @returns 
    */
-  static async taskRunner(args, stepCounter, dependencies) {
+  async taskRunner(args, stepCounter, dependencies) {
     //this.workers.results.push([]);
     let x;
+    let exeType = null
     if (dependencies.length > 0) {
       // Sequential Execution
+      exeType = 'seq'
       x = await this.concurrentRun(args, stepCounter, dependencies);
     } else {
-      //Parallel analysis
+      exeType = 'par'
+      //Parallel Execution
       await this.parallelRun(args, stepCounter);
     }
     if (this.workers.workerCount === this.workers.results.length)
       {
-        this.results.push(concatArrays(this.workers.results))
+        this.results.push(
+          exeType === 'seq'? 
+          this.workers.results:
+          concatArrays(this.workers.results))
         this.execTime = this.workers.execTime
         console.log(`Execution time: ${this.execTime} ms`)
         this.workers.resetWorkers()
@@ -190,38 +200,22 @@ export default class vanillajs {
    * 
    * @returns {Object[]} string concatenation of the available scripts for each script.
    */
-    static availableScripts() { 
-      let r = Object.keys(scripts).map((script) => {
-        return script;
-      });
-      let fun = new Map();
-      for (let func of r) {
-        let fn = []
-        for (var i = 0; i < Object.keys(func).length; i++){
-          fn.push(Object.keys(scripts[func])[i])
-        }
 
-        fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
-        fun.set(func, fn)
-      }
-      return fun;
-}
-
-    static setEngine() {
+  setEngine() {
         this.execTime = 0;
+        this.engineName = null
         this.splitting = false
         this.instanceCounter = 0;
         this.results = [];
-        this.workers = {};
         this.dataSplits;
-        this.workerLocation = "../../src/javascript/worker.js"
+        this.workerLocation = null
       }
 
   /**
    * 
    * @returns 
    */
-  static async showResults() {
+  showResults() {
     return this.results
   }
 
@@ -229,7 +223,12 @@ export default class vanillajs {
    * 
    * @returns 
    */
-  static getexecTime() {
+  getexecTime() {
     return this.execTime;
+  }
+
+  availableScripts(){
+    if (this.engineName === "javascript") return jsScripts();
+    if (this.engineName === "wasm") return avScripts();
   }
 }

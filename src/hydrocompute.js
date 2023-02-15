@@ -16,7 +16,7 @@ class hydrocompute {
     this.kernels = {};
     this.instanceRun = 0;
     this.availableData = [];
-    this.engineResults = {}
+    this.engineResults = {};
     Object.entries(engines).forEach((engine) => {
       let [propName, propModule] = engine;
       this.kernels = { ...this.kernels, [propName]: propModule };
@@ -27,13 +27,13 @@ class hydrocompute {
       ? this.setEngine(args[0])
       : (() => {
           console.log("Web workers engine has been set as default.");
-          this.setEngine(args.engine || "vanillajs");
+          this.setEngine(args.engine || "javascript");
         })();
 
-        this.engineResults[`Run_${this.instanceRun}`] = {}
-        this.engineResults[`Run_${this.instanceRun}`].results = []
-        this.engineResults[`Run_${this.instanceRun}`].executionTime = 0
-
+    this.engineResults[`Run_${this.instanceRun}`] = {
+      results: [],
+      executionTime: 0
+    };
   }
 
   /**
@@ -53,7 +53,7 @@ class hydrocompute {
 
   /**
    *
-   * @param  {Object{}} args initialize the engine
+   * @param  {Object{}} args initialize the engine, if any
    */
   //Initialize a specific engine
   #init(...args) {
@@ -97,7 +97,6 @@ class hydrocompute {
    * @returns
    */
   async run(args) {
-
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -108,7 +107,12 @@ class hydrocompute {
         `Data with nametag: "${args.dataId}" not found in the storage.`
       );
     })();
-    if ((data.length > 0 && functions.length > 0) || (data.length === 0 && args.funcArgs.length > 0 && functions.length > 0)) {
+    if (
+      (data.length > 0 && functions.length > 0) ||
+      (data.length === 0 &&
+        args.funcArgs.length > 0 &&
+        args.functions.length > 0)
+    ) {
       //Data passed in raw without splitting
       try {
         this.engine.run({
@@ -120,9 +124,10 @@ class hydrocompute {
           linked: this.linked,
         });
         //setting results to be saved in main class
-        this.engineResults[`Run_${this.instanceRun}`].engineName = this.currentEngineName
-        this.engineResults[`Run_${this.instanceRun}`].dataId = args.dataId
-        this.instanceRun++
+        this.engineResults[`Run_${this.instanceRun}`].engineName =
+          this.currentEngineName;
+        this.engineResults[`Run_${this.instanceRun}`].dataId = args.dataId;
+        this.instanceRun++;
       } catch (error) {
         return error;
       }
@@ -169,13 +174,7 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-    if (Object.keys(this.engine).includes('workers')){
-      await waitFor(() => {this.engine.finished === true})
-      return this.engine.workers.results
-    } else {
-      await waitFor(() => {this.engine.finished === true})
-      return this.engine.results
-    }
+      return this.engine.results;
   }
 
   /**
@@ -202,18 +201,18 @@ class hydrocompute {
    * @returns
    */
 
-  async engineScripts () {
-    let m = await this.engine.availableScripts()
-    if(this.currentEngineName === 'wasm'){
-      let _m = new Map()
-      let stgM = Object.keys(m)
-      for (var x of stgM){
-        let stgKeys = m[x].keys()
-        for (var y of stgKeys){
-          _m.set(`${x}-${y}`, m[x].get(y))
+  async engineScripts() {
+    let m = await this.engine.availableScripts();
+    if (this.currentEngineName === "wasm") {
+      let _m = new Map();
+      let stgM = Object.keys(m);
+      for (var x of stgM) {
+        let stgKeys = m[x].keys();
+        for (var y of stgKeys) {
+          _m.set(`${x}-${y}`, m[x].get(y));
         }
       }
-      return _m
+      return _m;
     }
     return m;
   }
@@ -235,21 +234,21 @@ class hydrocompute {
    */
   makeid(length) {
     let result = "",
-    characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-    charactersLength = characters.length;
+      characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+      charactersLength = characters.length;
     for (var i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
   }
 
+  /**
+   *
+   * @returns
+   */
   getexecTime() {
-    // if (this.engine.workers !== undefined && this.engine !== "jsworkers") {
-    //   return this.engine.workers.execTime
-    // } else {
-      return this.engine.execTime
-    // }
+    return this.engine.execTime;
   }
 }
 

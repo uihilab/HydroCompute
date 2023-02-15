@@ -1,14 +1,13 @@
 import engine from "../core/utils/engine.js";
 
-
 /**
  * @class
- * @name wasm
+ * @name javascript
  * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
-export default class wasm {
+export default class javascript {
     constructor(){
-      this.initialize()
+        this.initialize()
     }
   /**
    * 
@@ -16,7 +15,7 @@ export default class wasm {
    */
   static initialize(args) {
     this.setLocations();
-    this.engine = new engine('wasm', this.workerLocation)
+    this.engine = new engine('javascript', this.workerLocation)
   }
 
   /**
@@ -28,20 +27,20 @@ export default class wasm {
     await this.engine.run(args)
   }
 
-  static setLocations() {
-        this.workerLocation = "../../src/wasm/worker.js"
+    static setLocations() {
+        this.workerLocation = "../../src/javascript/worker.js"
       }
-
-  static availableScripts() {
-    return this.engine.availableScripts()
-  }
 
   /**
    * 
    * @returns 
    */
-  static async showResults() {
+  static showResults() {
     return this.engine.showResults()
+  }
+
+  static availableScripts(){
+    return this.engine.availableScripts()
   }
 
   /**

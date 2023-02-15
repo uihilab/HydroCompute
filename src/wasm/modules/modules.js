@@ -90,6 +90,9 @@ class AScriptUtils {
     this.refCounts = new Map();
   }
 
+  /**
+   * s
+   */
   liftTypedArray(constructor, pointer, module) {
     if (!pointer) return null;
     return new constructor(
@@ -99,6 +102,15 @@ class AScriptUtils {
     ).slice();
   }
 
+  /**
+   * 
+   * @param {*} constructor 
+   * @param {*} id 
+   * @param {*} align 
+   * @param {*} values 
+   * @param {*} module 
+   * @returns 
+   */
   lowerTypedArray(constructor, id, align, values, module) {
     if (values == null) return 0;
 
@@ -114,6 +126,12 @@ class AScriptUtils {
     return header;
   }
 
+  /**
+   * 
+   * @param {*} pointer 
+   * @param {*} module 
+   * @returns 
+   */
   retainP(pointer, module) {
     if (pointer) {
       const refcount = this.refCounts.get(pointer);
@@ -123,6 +141,11 @@ class AScriptUtils {
     return pointer;
   }
 
+  /**
+   * 
+   * @param {*} pointer 
+   * @param {*} module 
+   */
   releaseP(pointer, module) {
     if (pointer) {
       const refcount = this.refCounts.get(pointer);
@@ -136,6 +159,12 @@ class AScriptUtils {
     }
   }
 
+  /**
+   * 
+   * @param {*} pointer 
+   * @param {*} value 
+   * @param {*} module 
+   */
   setU32(pointer, value, module) {
     try {
       this.dataview.setUint32(pointer, value, true);
@@ -145,6 +174,12 @@ class AScriptUtils {
     }
   }
 
+  /**
+   * 
+   * @param {*} pointer 
+   * @param {*} module 
+   * @returns 
+   */
   getU32(pointer, module) {
     try {
       return this.dataview.getUint32(pointer, true);
@@ -159,6 +194,12 @@ class CScriptsUtils {
   constructor() {}
 }
 
+/**
+ * 
+ * @param {*} scriptName 
+ * @param {*} moduleName 
+ * @returns 
+ */
 const loadModule = async (scriptName, moduleName) => {
   try {
     const myCurrentModule = await new Promise((resolve, reject) => {
@@ -176,6 +217,10 @@ const loadModule = async (scriptName, moduleName) => {
   }
 };
 
+/**
+ * 
+ * @returns 
+ */
 const getAllModules = async () => {
   let wasmMods = {};
   let availableMods;

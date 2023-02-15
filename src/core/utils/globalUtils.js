@@ -27,7 +27,9 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
     values = [];
 
     const handleResolution = (promise, i, value) => {
-      values[i] = value;
+      console.log(values[i])
+      //Assumming that it is giving back a Float32Array
+      values[i] = value.buffer;
       if (stopped) {
         return;
       }
@@ -144,7 +146,11 @@ export const arrayChanger = (arr, width) =>
     []
   );
 
-//Check if shared array buffer is available.
+  
+/**
+ * 
+ * @returns 
+ */
 export const checkSharedArrays = () => {
   try{
     var sab = new SharedArrayBuffer(1024);
@@ -166,6 +172,11 @@ export const waitFor = (conditionFunction) => {
   return new Promise(poll);
 }
 
+/**
+ * Helper function for concatenating arrays.
+ * @param {*} arrays 
+ * @returns 
+ */
 export const concatArrays = (arrays) => {
   if (arrays.length === 1) return arrays[0]
   let totalLength = arrays.reduce((sum, array) => 
@@ -180,6 +191,11 @@ export const concatArrays = (arrays) => {
   return finalArray
 }
 
+/**
+ * Helper function for flatennizing a 2D array
+ * @param {*} arr 
+ * @returns 
+ */
 export const flattenFloat32Array = (arr) => {
   if(typeof arr[0] !== 'object') return arr
   let flatArray = [];

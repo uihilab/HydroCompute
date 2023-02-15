@@ -26,17 +26,20 @@ export const timeSeries = {
    * @returns
    */
   simpleMovingAverage: (d, window = 5, n = Infinity) => {
-    if (!d || d.length < window) return [];
+    if (!d || d.length < window) return new Float32Array(0);
     let index = window - 1;
-    const res = new Float32Array(d.length);
     let num = 0;
+    const res = new Float32Array(Math.min(n, d.length - window + 1));
     while (++index < d.length + 1 && num++ < n) {
-      const windowSlice = d.slice(index - window, index);
-      const sum = windowSlice.reduce((prev, curr) => prev + curr, 0);
-      res.push(sum / window);
+      let sum = 0;
+      for (let i = index - window; i < index; i++) {
+        sum += d[i];
+      }
+      res[num - 1] = sum / window;
     }
     return res;
   },
+  
 
   /**
    *

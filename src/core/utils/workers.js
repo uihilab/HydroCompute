@@ -8,41 +8,47 @@ export default class workerScope {
     this.resetWorkers()
   }
 
-  workerSpanner(i) {
-    this.workerThreads[i] = {};
-    this.workerThreads[i].finished = false;
-    this.workerThreads[i].worker = undefined;
+  /**
+   * 
+   * @param {*} number 
+   */
+  createWorkerThread(number) {
+    this.workerThreads[number] = {
+      worker: undefined,
+      execTime: 0
+    };
   }
 
-  workerInit(i) {
-    this.workerThreads[i].worker = (args, buffer) => {
+  /**
+   * 
+   * @param {*} index 
+   */
+  initializeWorkerThread(index) {
+    this.workerThreads[index].worker = (args) => {
+      let buffer = args.data
         return new Promise((resolve, reject) => {
           //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
           var w = new Worker(this.workerLocation, {
             type: "module",
           });
-          w.onmessage = (e) => {
-            const r = e.data.results;
-            resolve(
-              r,
-              (this.workerThreads[i].finished = true),
-              // i === this.workerCount ? 
-              this.results.push(r) 
-              // : null
-              ,
-              (this.execTime += e.data.exec),
-              w.terminate()
-            );
+          w.onmessage = ({data: {results, exec}}) => {
+            resolve(results, exec)
+              this.results.push(results) 
+              this.execTime += exec,
+              w.terminate();
           };
           w.onerror = (e) => {
-            console.log(e)
-            reject(e.error);
+            reject(error);
           };
+          buffer.byteLength === 0 ? w.postMessage(args) :
           w.postMessage(args, [buffer]);
         });
       }
   }
 
+  /**
+   * 
+   */
   resetWorkers() {
     this.finished = false
     this.maxWorkerCount = navigator.hardwareConcurrency-1;

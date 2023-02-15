@@ -57,7 +57,9 @@ export const matrixUtils = {
     }
   },
 
-  conv2d: (input, kernel) => {
+  conv2d: (data) => {
+
+    let {input, kernel} = data
     let output = [];
 
     let inputRows = input.length;
@@ -101,17 +103,6 @@ export const matrixUtils = {
 
     return output;
 },
-
-
-  /**
-   *
-   * @param {*} d
-   * @returns
-   */
-  backArray: (d) => {
-    console.log(`Callback function for backArray`);
-    return d;
-  },
 
   //Main function to run any of the functions described in the object.
   main: (name, data) => {
