@@ -26,7 +26,7 @@ class hydrocompute {
     args.length !== 0
       ? this.setEngine(args[0])
       : (() => {
-          console.log("Web workers engine has been set as default.");
+          console.log("The javascript engine has been set as default.");
           this.setEngine(args.engine || "javascript");
         })();
 

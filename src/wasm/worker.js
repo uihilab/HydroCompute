@@ -9,8 +9,8 @@ self.onmessage = async (e) => {
   let wasmSc = await getAllModules();
   let result = null;
   try {
-    for (const scr in wasmSc) {
-      for (const module in wasmSc[scr]) {
+    for (let scr in wasmSc) {
+      for (let module in wasmSc[scr]) {
         if (funcName in wasmSc[scr][module]) {
           //points to the current module
           let mod = wasmSc[scr][module],
@@ -23,7 +23,7 @@ self.onmessage = async (e) => {
                 data.slice(0, data.length / 2),
                 data.slice(data.length / 2, data.length),
               ];
-              funcArgs = funcArgs[0] || [];
+              funcArgs ?? [];
               let mat1 = views.retainP(
                 views.lowerTypedArray(Float32Array, 4, 2, data[0], mod),
                 mod
@@ -51,7 +51,7 @@ self.onmessage = async (e) => {
                 views.releaseP(mat1, mod);
               }
             } else {
-              funcArgs ?? []
+              funcArgs ?? [];
               let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
               mod.__setArgumentsLength(
                 funcArgs.length === 0 ? 1 : funcArgs.length
@@ -66,46 +66,106 @@ self.onmessage = async (e) => {
               end = performance.now();
             }
           } else if (scr === "C") {
-            if (module === "matrixUtils") {
-                //THIS NEEDS TO CHANGE!
-                data = [
-                  data.slice(0, data.length / 2),
-                  data.slice(data.length / 2, data.length),
-                ];
-                let len = data[0].length, bytes = Float32Array.BYTES_PER_ELEMENT,
-                ptr1 = mod._createMem(len*bytes), ptr2 = mod._createMem(len*bytes),
-                r_ptr = mod._createMem(len*bytes);
-                mod.HEAPF32.set(data[0], ptr1/bytes); mod.HEAPF32.set(data[1], ptr2/bytes);
-                st = performance.now();
-                mod[funcName](ptr1, ptr2, r_ptr, Math.sqrt(len));
-                end = performance.now();
-                result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
-                mod._destroy(ptr1); mod._destroy(ptr2), mod._destroy(r_ptr)
-            }
-          else {
-            let len = data.length, bytes = Float32Array.BYTES_PER_ELEMENT,
-            ptr = mod._createMem(len*bytes), r_ptr = mod._createMem(len*bytes);
-            mod.HEAPF32.set(data, ptr/bytes);
-            st = performance.now();
-            mod[funcName](ptr, r_ptr, len)
-            end = performance.now();
-            result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
-            mod._destroy(ptr); mod._destroy(r_ptr)
-          }
+            // if (module === "matrixUtils") {
+            //   //THIS NEEDS TO CHANGE!
+            //   data = [
+            //     data.slice(0, data.length / 2),
+            //     data.slice(data.length / 2, data.length),
+            //   ];
+            //   let len = data[0].length,
+            //     bytes = Float32Array.BYTES_PER_ELEMENT,
+            //     ptr1 = mod._createMem(len * bytes),
+            //     ptr2 = mod._createMem(len * bytes),
+            //     r_ptr = mod._createMem(len * bytes);
+            //   mod.HEAPF32.set(data[0], ptr1 / bytes);
+            //   mod.HEAPF32.set(data[1], ptr2 / bytes);
+            //   st = performance.now();
+            //   mod[funcName](ptr1, ptr2, r_ptr, Math.sqrt(len));
+            //   end = performance.now();
+            //   result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
+            //   mod._destroy(ptr1);
+            //   mod._destroy(ptr2), mod._destroy(r_ptr);
+            // } else {
+            //   let len = data.length,
+            //     bytes = Float32Array.BYTES_PER_ELEMENT,
+            //     ptr = mod._createMem(len * bytes),
+            //     r_ptr = mod._createMem(len * bytes);
+            //   mod.HEAPF32.set(data, ptr / bytes);
+            //   st = performance.now();
+            //   mod[funcName](ptr, r_ptr, len);
+            //   end = performance.now();
+            //   result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
+            //   mod._destroy(ptr);
+            //   mod._destroy(r_ptr);
+            // }
+            [st, end, result] = handleC(scr,funcName, data, mod)
           }
           //typeof result === "undefined" ? (result = "") : result;
           //end = performance.now();
-          console.log(result)
-          self.postMessage({
-            id: e.data.id,
-            results: result,
-            step: e.data.step,
-            exec: end - st,
-          }, [result.buffer]);
+          console.log(result);
+          self.postMessage(
+            {
+              id: e.data.id,
+              results: result,
+              step: e.data.step,
+              exec: end - st,
+            },
+          );
         }
-      };
-    };
+      }
+    }
   } catch (e) {
     console.error(e);
   }
+};
+
+const handleAS = () => {};
+
+const handleC = (moduleName, functionName, data, module) => {
+  let result = null;
+  let len = data.length;
+  let ptrs = [];
+  const bytes = Float32Array.BYTES_PER_ELEMENT;
+  let inputData = [data];
+  let inputCount = 1;
+  let r_ptr = module._createMem(len * bytes);
+
+  // Check if we are working with the "matrixUtils" module, and adjust inputs accordingly
+  if (moduleName === "matrixUtils") {
+    inputData = [
+      data.slice(0, data.length / 2),
+      data.slice(data.length / 2, data.length),
+    ];
+    len = data[0].length
+    inputCount = 2;
+  }
+
+  // Allocate memory for input and output arrays
+  for (let i = 0; i < inputCount; i++) {
+    ptrs.push(module._createMem(len * bytes));
+  }
+  
+  // Copy input data to memory
+  for (let j = 0; j < ptrs.length - 1; j++) {
+    module.HEAPF32.set(inputData[j], ptrs[j] / bytes);
+  }
+
+  // Call the C function and measure execution time
+  const startTime = performance.now();
+  if (moduleName === "matrixUtils") {
+    module[functionName](...ptrs, r_ptr, Math.sqrt(len));
+  } else {
+    module[functionName](...ptrs, r_ptr, len);
+  }
+  const endTime = performance.now();
+
+  // Copy result data from memory and clean up memory
+  let outputData = new Float32Array(module.HEAPF32.buffer, ptrs[ptrs.length - 1], len);
+  for (let k of ptrs) {
+    module._destroy(k);
+  }
+  module._destroy(r_ptr)
+
+  result = [startTime, endTime, outputData];
+  return result;
 };

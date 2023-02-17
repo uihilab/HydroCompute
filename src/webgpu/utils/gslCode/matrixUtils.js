@@ -46,24 +46,16 @@ export const matrixUtils = {
     
     @compute @workgroup_size(8,8)
     fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
-      //Guarding against out of bounds group sizes
-      if (global_id.x >= u32(mat1.size.x) || global_id.y >= u32(mat2.size.y)){
+      // Guarding against out of bounds group sizes
+      if (global_id.x >= u32(mat1.size.x) || global_id.y >= u32(mat1.size.y)) {
         return;
-      };
+      }
     
-      resultMatrix.size = vec2(mat1.size.x, mat2.size.y);
+      resultMatrix.size = mat1.size;
     
-      let resultCell = vec2(global_id.x, global_id.y);
-      var result = 0.0;
-      for (var i=0u; i < u32(mat1.size.y); i = i + 1u) {
-        let a = i + resultCell.x * u32(mat1.size.y);
-        let b = resultCell.y + i * u32(mat2.size.y);
-        result = result + mat1.numbers[a] * mat2.numbers[b];
-      };
-    
-      let index = resultCell.y + resultCell.x * u32(mat2.size.y);
-      resultMatrix.numbers[index] = result;
-    };
+      let index = global_id.y + global_id.x * u32(mat1.size.y);
+      resultMatrix.numbers[index] = mat1.numbers[index] + mat2.numbers[index];
+    };  
     
       `;
   },
@@ -133,8 +125,8 @@ export const matrixUtils = {
         }
       }
     }    
-    `
-  }
+    `;
+  },
 };
 
 /**
@@ -146,7 +138,7 @@ export const matrixUtils = {
 export const matrixSize = (matrix, args) => {
   let sizes;
   //assuming that the matrices are square, no need to input sizes
-  if (typeof args.sizes === "undefined" || args[0] === null)
+  if (args === null || typeof args === undefined || args == undefined)
     sizes = (() => {
       if (matrix.length % Math.sqrt(matrix.length) === 0) {
         //return back square matrix
@@ -157,4 +149,3 @@ export const matrixSize = (matrix, args) => {
     })();
   return sizes;
 };
-

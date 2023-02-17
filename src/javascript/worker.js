@@ -17,7 +17,7 @@ self.onmessage = (e) => {
           id,
           results: result,
           step,
-          exec: end - st
+          exec: end - st  
         }, [result.buffer]);
         break;
       }

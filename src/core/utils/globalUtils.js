@@ -27,7 +27,6 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
     values = [];
 
     const handleResolution = (promise, i, value) => {
-      console.log(values[i])
       //Assumming that it is giving back a Float32Array
       values[i] = value.buffer;
       if (stopped) {
@@ -90,6 +89,97 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
   });
 };
 
+// export const DAG = ({ functions, dag, args, type } = {}) => {
+//   dag = dag || [];
+//   return new Promise((resolve, reject) => {
+//     const N = functions.length;
+//     // A DAG can be both stepwise or functionwise. The next definition
+//     // asserts that there is a dag ready for each step linearly
+//     // e.g. step0->step1->step2...
+//     dag =
+//       type === "steps"
+//         ? (() => {
+//             let x = Array.from({ length: N }, (_, i) => [i - 1]);
+//             x[0] = [];
+//             return x;
+//           })()
+//         : dag;
+//     const counts = dag.map((x) => x.length);
+//     let stopped = false,
+//       remaining = N,
+//       values = Array.from({ length: N }, () => []);
+
+//     const handleResolution = (promise, i, value) => {
+//       //Assumming that it is giving back a Float32Array
+//       values[i] = value.buffer;
+//       if (stopped) {
+//         return;
+//       }
+//       remaining -= 1;
+//       if (remaining == 0) {
+//         resolve(values);
+//       }
+//       for (let j = 0; j < N; ++j) {
+//         if (counts[j] < 1) {
+//           continue;
+//         }
+//         if (dag[j].indexOf(i) >= 0) {
+//           counts[j] -= 1;
+//           if (counts[j] == 0) {
+//             let _args = [];
+//             for (let k = 0; k < dag[j].length; k++) {
+//               // Collect output values from all predecessors
+//               _args.push(
+//                 type === "steps"
+//                   ? values[dag[j][k]][args.functions.length - 1]
+//                   : [...values[dag[j][k]]]
+//               );
+//             }
+//             args.data = _args;
+//             console.log(args)
+//             var promise = functions[j](args);
+//             promise.then(
+//               (value) => {
+//                 // Save output values in corresponding inner array
+//                 values[j] = value.buffer;
+//                 handleResolution(promise, j, value);
+//               },
+//               (error) => {
+//                 handleRejection(promise, j, error);
+//               }
+//             );
+//           }
+//         }
+//       }
+//     };
+
+//     const handleRejection = (promise, i, error) => {
+//       stopped = true;
+//       console.log(error);
+//       reject(error);
+//     };
+
+//     for (let i = 0; i < N; ++i) {
+//       if (counts[i] > 0) {
+//         continue;
+//       }
+//       var promise = functions[i](args);
+//       promise.then(
+//         (value) => {
+//           // Save output values in corresponding inner array
+//           values[i] = value.buffer;
+//           handleResolution(promise, i, value);
+//         },
+//         (error) => {
+//           handleRejection(promise, i, error);
+//         }
+//       );
+//     }
+//   });
+// };
+
+
+
 /**
  * Deep clones either objects or arrays
  * @param {Object{}} data - array or object
@@ -146,7 +236,6 @@ export const arrayChanger = (arr, width) =>
     []
   );
 
-  
 /**
  * 
  * @returns 

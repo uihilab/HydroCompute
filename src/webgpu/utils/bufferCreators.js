@@ -40,13 +40,9 @@ export const matrixChanger = (mat, sizes) => {
  */
 export const resultHolder = (device, matrices, type) => {
   const resultMatSize = (() => {
-    if (type === "matrixMul")
+    if (type === "matrixMul" || type === "matrixAdd")
       return (
         Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] * matrices[1][0])
-      );
-    if (type === "matrixAdd")
-      return (
-        Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] + matrices[1][0])
       );
     if (type === "matrixExpo")
     return (
@@ -70,7 +66,7 @@ export const resultHolder = (device, matrices, type) => {
  * @param {*} buffers
  */
 export const bufferDestroyer = (buffers) => {
-  for (const buffer in buffers) {
+  for (const buffer of buffers) {
     buffer.destroy();
   }
 };
