@@ -1,8 +1,13 @@
 import * as bind from "./utils/bindgroups.js";
 import * as shade from "./utils/shaderModules.js";
 import * as buffers from "./utils/bufferCreators.js";
-import { matrixUtils, matrixSize } from "./utils/gslCode/matrixUtils.js";
+import { matrixSize } from "./utils/gslCode/matrixUtils.js";
 import * as scripts from "./utils/gslCode/gslScripts.js"
+
+String.prototype.count = function(search) {
+  var m = this.match(new RegExp(search.toString().replace(/(?=[.\\+*?[^\]$(){}\|])/g, "\\"), "g"));
+  return m ? m.length:0;
+}
 
 self.onmessage = async (e) => {
   //
@@ -31,19 +36,24 @@ self.onmessage = async (e) => {
     lays = [],
     groups = [];
 
-  //this needs to change
-  data = [
-    data.slice(0, data.length / 2),
-    data.slice(data.length / 2, data.length),
-  ];
   try {
     for (const scr in scripts) {
       if (funcName in scripts[scr]) {
+        let glslCode = scripts[scr][funcName]();
+        let countWrite = glslCode.count('read_write');
+        let countRead = glslCode.count('read');
+
+        (countRead === 3 && countWrite === 1) ?
+        data = [
+          data.slice(0, data.length / 2),
+          data.slice(data.length / 2, data.length),
+        ]
+        : data = [data]
 
         st = performance.now();
         funcArgs === null ?? {};
         for (var i = 0; i < data.length; i++) {
-          matSize.push(matrixSize(data[i], funcArgs));
+          matSize.push(matrixSize(data[i],countRead-countWrite, funcArgs));
           matData.push(new Float32Array([...matSize[i], ...data[i]]));
           matBuffers.push(buffers.bufferCreator(true, device, matData[i]));
         }
@@ -51,7 +61,8 @@ self.onmessage = async (e) => {
         const [rSize, rBuffer] = buffers.resultHolder(
           device,
           matData,
-          funcName
+          countRead,
+          countWrite
         );
 
         for (var j = 0; j <= matData.length; j++) {
@@ -65,7 +76,6 @@ self.onmessage = async (e) => {
             bind.groupEntry(j, j === matData.length ? rBuffer : matBuffers[j])
           );
         }
-        console.log(scripts[scr][funcName]);
         const bindGroupLayout = bind.bindLayout(device, lays),
           bindgroup = bind.bindGroup(device, bindGroupLayout, groups),
           shader = shade.shaderModule(device, scripts[scr][funcName]()),
@@ -83,11 +93,12 @@ self.onmessage = async (e) => {
     }
     end = performance.now();
 
-    console.log(result);
+    //console.log(result);
+    console.log(`${funcName} execution time: ${end-st} ms`);
     self.postMessage({
-      id: e.data.id,
+      id: id,
       results: result,
-      step: e.data.step,
+      step: step,
       exec: end - st,
     });
   } catch (e) {

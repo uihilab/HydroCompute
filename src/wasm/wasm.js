@@ -28,10 +28,17 @@ export default class wasm {
     await this.engine.run(args)
   }
 
+  /**
+   * 
+   */
   static setLocations() {
         this.workerLocation = "../../src/wasm/worker.js"
       }
 
+  /**
+   * 
+   * @returns 
+   */
   static availableScripts() {
     return this.engine.availableScripts()
   }

@@ -67,20 +67,20 @@ export const matrixUtils = {
       numbers: array<f32>,
     };
     
-    @group(0) @binding(0) var<storage, read> mat: Matrix;
+    @group(0) @binding(0) var<storage, read> mat1: Matrix;
     @group(0) @binding(1) var<storage, read_write> resultMatrix: Matrix;
     
     @compute @workgroup_size(8,8)
     fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
-      if (global_id.x >= u32(mat.size.x) || global_id.y >= u32(mat.size.y)){
+      if (global_id.x >= u32(mat1.size.x) || global_id.y >= u32(mat1.size.y)){
         return;
       };
     
-      resultMatrix.size = mat.size;
+      resultMatrix.size = mat1.size;
     
-      let index = global_id.x + global_id.y * u32(mat.size.x);
-      let exponent = ${num};  // you can change the exponent value to any float number
-      resultMatrix.numbers[index] = pow(mat.numbers[index], exponent);
+      let index = global_id.x + global_id.y * u32(mat1.size.x);
+      let exponent = f32(${num});  // you can change the exponent value to any float number
+      resultMatrix.numbers[index] = pow(mat1.numbers[index], exponent);
     }    
     `;
   },
@@ -135,11 +135,14 @@ export const matrixUtils = {
  * @param {*} args
  * @returns
  */
-export const matrixSize = (matrix, args) => {
+export const matrixSize = (matrix, count, args) => {
   let sizes;
   //assuming that the matrices are square, no need to input sizes
   if (args === null || typeof args === undefined || args == undefined)
     sizes = (() => {
+      if (count === 1){
+        return [matrix.length, 1];
+      }
       if (matrix.length % Math.sqrt(matrix.length) === 0) {
         //return back square matrix
         return [Math.sqrt(matrix.length), Math.sqrt(matrix.length)];
@@ -147,5 +150,6 @@ export const matrixSize = (matrix, args) => {
         return console.error("Please input the sizes of your matrices.");
       }
     })();
+  //console.log(sizes)
   return sizes;
 };

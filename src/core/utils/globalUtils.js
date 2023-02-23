@@ -27,8 +27,8 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
     values = [];
 
     const handleResolution = (promise, i, value) => {
-      //Assumming that it is giving back a Float32Array
-      values[i] = value.buffer;
+      //Assumming that the worker is giving back a Float32Array
+      values[i] = value;
       if (stopped) {
         return;
       }
@@ -189,6 +189,9 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 export const dataCloner = (data) => {
   //Deep copy of array data using recursion
   const arrayCloner = (arr) => {
+    if (arr instanceof Float32Array){
+      return arr
+    }
     if (Array.isArray(arr[0])) {
       return arr.map(subArr => arrayCloner(subArr));
     } else {

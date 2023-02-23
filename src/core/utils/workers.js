@@ -1,4 +1,13 @@
-export default class workerScope {
+/**
+ * @desc Main class for managing threads. Results and execution time are saved here
+ * @property engine - name of the engine
+ * @property workerLocation - location of the worker running the engine
+ * @property workerThreads - holder for all the worker threads
+ * @property maxWorkerCount - maximum workers on the browser Leave it at least 1 less than all the available.
+ * @property results - holder of the results once finished
+ * @class threadManager
+ */
+export default class threadManager {
   constructor(name, location) {
     window.Worker
     ? console.log("Web workers engine set.")
@@ -9,13 +18,13 @@ export default class workerScope {
   }
 
   /**
-   * 
+   * Holder for the workers created by the class. It creates an object that contains the workers defined 
+   * by the execution context holding the execution time of each thread and the worker itself.
    * @param {*} number 
    */
   createWorkerThread(number) {
     this.workerThreads[number] = {
       worker: undefined,
-      execTime: 0
     };
   }
 
@@ -27,11 +36,18 @@ export default class workerScope {
     this.workerThreads[index].worker = (args) => {
       let buffer = args.data
         return new Promise((resolve, reject) => {
+          let w;
           //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
-          var w = new Worker(this.workerLocation, {
+          if (typeof importScripts === 'function'){
+            importScripts(this.workerLocation);
+            w = self;
+          } else {
+          w = new Worker(this.workerLocation, {
             type: "module",
           });
-          w.onmessage = ({data: {results, exec}}) => {
+        }
+          w.onmessage = ({data}) => {
+            let {results, exec} = data
             resolve(results, exec)
               this.results.push(results) 
               this.execTime += exec,
@@ -50,10 +66,8 @@ export default class workerScope {
    * 
    */
   resetWorkers() {
-    this.finished = false
     this.maxWorkerCount = navigator.hardwareConcurrency-1;
     this.workerThreads = {};
-    this.workerCount = 0;
     this.results = [];
     this.execTime = 0;
     console.log(`Initialized ${this.engine} using worker scope with max workers:${this.maxWorkerCount}`);

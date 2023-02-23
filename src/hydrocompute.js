@@ -1,6 +1,6 @@
 import * as engines from "./core/core.js";
 import { splits } from "./core/utils/splits.js";
-import { dataCloner, waitFor } from "./core/utils/globalUtils.js";
+import { dataCloner } from "./core/utils/globalUtils.js";
 
 /**
  * Main class for the compute modules.
@@ -108,7 +108,7 @@ class hydrocompute {
       );
     })();
     if (
-      (data.length > 0 && functions.length > 0) ||
+      (data.length > 0 && args.functions.length > 0) ||
       (data.length === 0 &&
         args.funcArgs.length > 0 &&
         args.functions.length > 0)
@@ -116,6 +116,7 @@ class hydrocompute {
       //Data passed in raw without splitting
       try {
         this.engine.run({
+          callbacks: args.callbacks,
           data: data,
           functions: args.functions,
           funcArgs: args.funcArgs,
@@ -169,12 +170,12 @@ class hydrocompute {
    *
    * @returns
    */
-  async results() {
+  results() {
     if (typeof this.engine === "undefined")
       return console.error(
         "Please set the required engine first before initializing!"
       );
-      return this.engine.results;
+      return this.engine.showResults();
   }
 
   /**

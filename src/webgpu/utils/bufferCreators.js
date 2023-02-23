@@ -1,3 +1,4 @@
+
 /**
  *
  * @param {*} mapped
@@ -38,22 +39,24 @@ export const matrixChanger = (mat, sizes) => {
  * @param {*} matrices
  * @returns
  */
-export const resultHolder = (device, matrices, type) => {
+export const resultHolder = (device, matrices, reads, writes) => {
   const resultMatSize = (() => {
-    if (type === "matrixMul" || type === "matrixAdd")
+    if (reads === 3 && writes === 1)
       return (
         Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] * matrices[1][0])
       );
-    if (type === "matrixExpo")
+    if (reads === 2 && writes === 1)
     return (
-      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0])
+      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0])
     )
-    if (type === "LUDecomposition")
+    if (reads === 3 && writes === 2)
+    //change...
     return (
-      [Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0]),
-      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0])]
+      [Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0]),
+      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0])]
     )
   })();
+  //console.log(resultMatSize)  
   const resultBuffer = device.createBuffer({
     size: resultMatSize,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,

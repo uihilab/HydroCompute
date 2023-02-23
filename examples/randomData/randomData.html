@@ -239,6 +239,7 @@
             dependencies = [],
             name,
             step,
+            callbacks,
             sim = 0,
             functions = [],
             fnConfigs = [],
@@ -579,7 +580,7 @@
             })
             //Initiate with the computations.The dependencies needs to change
             window.compute.run({
-                callbacks: true,
+                callbacks: false,
                 functions: functions,
                 dataId: name,
                 dependencies: dependencies[0],
@@ -590,14 +591,14 @@
             counter()
 
             results = await window.compute.results()
-            console.log(results)
+            //console.log(results)
         }
 
         const resultViewer = async () => {
             if (await results.length > 0) {
                 //console.log(`Running time for the compute module was: ${window.compute.executionTime()} ms for ${functions.length} functions and ${step === 0 ? 1 : step} steps or ${functions.length * (step === 0 ? 1 : step)} total processes!`)
                 removeChart()
-                console.log(await results)
+                //console.log(await results)
                 return;
                 // } else {
                 //     resultViewer()
