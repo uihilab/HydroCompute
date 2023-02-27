@@ -5,8 +5,6 @@
  */
 import { matrixUtils } from "./matrixUtils.js";
 import { timeSeries } from "./timeSeries.js";
-import { hydro } from "./hydro.js";
 
 export { matrixUtils, timeSeries, 
-    hydro 
 }

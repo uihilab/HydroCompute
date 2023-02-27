@@ -64,7 +64,7 @@ export default class engine {
         ? []
         : dependencies;
     //This still needs improvement
-    this.threads.threadCount =
+    this.threadCount =
       //Array.isArray(args.data[0])
       //? //assuming the main driver for the workers scope is the length of the data
       // args.data.length
@@ -72,7 +72,7 @@ export default class engine {
       //args.linked === true ? this.functions.length * args.steps :
       functions.length;
 
-    for (var i = 0; i < this.threads.threadCount; i++) {
+    for (var i = 0; i < this.threadCount; i++) {
       this.threads.createWorkerThread(i);
     }
 
@@ -137,7 +137,7 @@ export default class engine {
    */
   async concurrentRun(args, step, dependencies) {
     let data = this.dataSplits;
-    for (var i = 0; i < this.threads.threadCount; i++) {
+    for (var i = 0; i < this.threadCount; i++) {
       let d = this.splitting ? data[i].buffer : data.buffer;
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
@@ -167,11 +167,26 @@ export default class engine {
    * @returns
    */
   async parallelRun(args, step) {
-    let data = this.dataSplits;
-    let threadTasks = [];
+    const batches = [];
+    let results = [];
+    let last = 0;
 
-    for (var i = 0; i < this.threads.threadCount; i++) {
-      let d = this.splitting ? data[i].buffer : data.buffer;
+    for (let i = 0; i < this.threadCount; i += this.threads.maxWorkerCount){
+      const batch = {
+        functions :[],
+        funcArgs: []
+      };
+      for (let j = i; j < i + this.threads.maxWorkerCount && j < this.threadCount; j++){
+        batch.functions.push(args.functions[j]);
+        batch.funcArgs.push(args.funcArgs[j]);
+      }
+      batches.push(batch)
+    }
+    for (let batch of batches){
+      let batchTasks = [];
+    for (var i = 0; i < batch.functions.length; i++) {
+      let j = last + i;
+      let d = this.splitting ? this.dataSplits[j].buffer : this.dataSplits.buffer;
       let workerArgs = {
         data: d,
         id: i,
@@ -180,10 +195,14 @@ export default class engine {
         step: step,
       };
       this.threads.initializeWorkerThread(i);
-      threadTasks.push(this.threads.workerThreads[i].worker(workerArgs));
+      batchTasks.push(this.threads.workerThreads[i].worker(workerArgs));
     }
-    let r = await Promise.all(threadTasks);
-    return r
+    let batchResults = await Promise.all(batchTasks);
+    results = results.concat(batchResults)
+    last += batch.functions.length;
+  }
+  //console.log(results)
+    return results;
   }
 
   /**
@@ -208,15 +227,11 @@ export default class engine {
       x = await this.parallelRun(args, stepCounter);
       //console.log(await x)
     }
-    if (this.threads.threadCount === this.threads.results.length) {
-      this.results.push(
-        exeType === "seq"
-          ? this.threads.results
-          : concatArrays(this.threads.results)
-      );
-      this.execTime = this.threads.execTime;
-      console.log(`Execution time: ${this.execTime} ms`);
-      this.threads.resetWorkers();
+    if (this.threadCount === this.threads.results.length) {
+      this.results.push(this.threads.results);
+      let [execTime, workerTime] = this.threads.execTimes;
+      console.log(`Total function execution time: ${execTime} ms\nTotal worker execution time: ${workerTime} ms`);
+      //this.threads.resetWorkers();  
     }
     return x;
   }
@@ -231,7 +246,7 @@ export default class engine {
     this.splitting = false;
     this.instanceCounter = 0;
     this.results = [];
-    this.dataSplits;
+    this.dataSplits = [];
     this.workerLocation = null;
   }
 
@@ -247,7 +262,7 @@ export default class engine {
    *
    * @returns
    */
-  getexecTime() {
+  executionTime() {
     return this.execTime;
   }
 

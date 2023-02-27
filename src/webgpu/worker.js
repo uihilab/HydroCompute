@@ -2,15 +2,18 @@ import * as bind from "./utils/bindgroups.js";
 import * as shade from "./utils/shaderModules.js";
 import * as buffers from "./utils/bufferCreators.js";
 import { matrixSize } from "./utils/gslCode/matrixUtils.js";
-import * as scripts from "./utils/gslCode/gslScripts.js"
+import * as scripts from "./utils/gslCode/gslScripts.js";
 
-String.prototype.count = function(search) {
-  var m = this.match(new RegExp(search.toString().replace(/(?=[.\\+*?[^\]$(){}\|])/g, "\\"), "g"));
-  return m ? m.length:0;
-}
+String.prototype.count = function (search) {
+  var m = this.match(
+    new RegExp(search.toString().replace(/(?=[.\\+*?[^\]$(){}\|])/g, "\\"), "g")
+  );
+  return m ? m.length : 0;
+};
 
 self.onmessage = async (e) => {
   //
+  let sc_1 = performance.now()
   const adapter = await navigator.gpu?.requestAdapter();
   if (!adapter) {
     console.error(
@@ -27,7 +30,7 @@ self.onmessage = async (e) => {
 
   let st = 0,
     end = 0;
-  const { funcName, funcArgs } = e.data;
+  const { funcName, funcArgs, id, step } = e.data;
   let data = new Float32Array(e.data.data);
   let result = null;
   let matData = [],
@@ -40,20 +43,19 @@ self.onmessage = async (e) => {
     for (const scr in scripts) {
       if (funcName in scripts[scr]) {
         let glslCode = scripts[scr][funcName]();
-        let countWrite = glslCode.count('read_write');
-        let countRead = glslCode.count('read');
+        let countWrite = glslCode.count("read_write");
+        let countRead = glslCode.count("read");
 
-        (countRead === 3 && countWrite === 1) ?
-        data = [
-          data.slice(0, data.length / 2),
-          data.slice(data.length / 2, data.length),
-        ]
-        : data = [data]
+        countRead === 3 && countWrite === 1
+          ? (data = [
+              data.slice(0, data.length / 2),
+              data.slice(data.length / 2, data.length),
+            ])
+          : (data = [data]);
 
-        st = performance.now();
         funcArgs === null ?? {};
         for (var i = 0; i < data.length; i++) {
-          matSize.push(matrixSize(data[i],countRead-countWrite, funcArgs));
+          matSize.push(matrixSize(data[i], countRead - countWrite, funcArgs));
           matData.push(new Float32Array([...matSize[i], ...data[i]]));
           matBuffers.push(buffers.bufferCreator(true, device, matData[i]));
         }
@@ -81,6 +83,8 @@ self.onmessage = async (e) => {
           shader = shade.shaderModule(device, scripts[scr][funcName]()),
           pipeline = shade.computingPipelines(device, shader, bindGroupLayout);
 
+        st = performance.now();
+
         let stgR = await shade.dispatchers(
           device,
           pipeline,
@@ -88,19 +92,26 @@ self.onmessage = async (e) => {
           matData,
           [rSize, rBuffer]
         );
-        result = stgR.slice(2);
+        end = performance.now();
+
+        let d = stgR.slice(2);
+        result = new ArrayBuffer(d.buffer.byteLength);
+        new Float32Array(result).set(new Float32Array(d.buffer));
       }
     }
-    end = performance.now();
-
+    let sc_2 = performance.now()
     //console.log(result);
-    console.log(`${funcName} execution time: ${end-st} ms`);
-    self.postMessage({
-      id: id,
-      results: result,
-      step: step,
-      exec: end - st,
-    });
+    //console.log(`${funcName} execution time: ${end-st} ms`);
+    self.postMessage(
+      {
+        id,
+        results: result,
+        step,
+        funcExec: end - st,
+        workerExec: sc_2-sc_1
+      },
+      [result]
+    );
   } catch (e) {
     console.error(e);
   }

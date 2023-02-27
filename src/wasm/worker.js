@@ -2,9 +2,8 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
-  let st = 0,
-    end = 0,
-    m = null;
+  let sc_1 = performance.now()
+  let exec = 0;
   let { funcName, funcArgs = [], id, step } = e.data;
   let data = new Float32Array(e.data.data);
   let wasmSc = await getAllModules();
@@ -68,51 +67,20 @@ self.onmessage = async (e) => {
           //   }
           // } 
           if (scr === "C") {
-            if (module === "matrixUtils") {
-              //THIS NEEDS TO CHANGE!
-              data = [
-                data.slice(0, data.length / 2),
-                data.slice(data.length / 2, data.length),
-              ];
-              let len = data[0].length,
-                bytes = Float32Array.BYTES_PER_ELEMENT,
-                ptr1 = mod._createMem(len * bytes),
-                ptr2 = mod._createMem(len * bytes),
-                r_ptr = mod._createMem(len * bytes);
-              mod.HEAPF32.set(data[0], ptr1 / bytes);
-              mod.HEAPF32.set(data[1], ptr2 / bytes);
-              st = performance.now();
-              mod[funcName](ptr1, ptr2, r_ptr, Math.sqrt(len));
-              end = performance.now();
-              result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
-              mod._destroy(ptr1);
-              mod._destroy(ptr2), mod._destroy(r_ptr);
-            } else {
-              let len = data.length,
-                bytes = Float32Array.BYTES_PER_ELEMENT,
-                ptr = mod._createMem(len * bytes),
-                r_ptr = mod._createMem(len * bytes);
-              mod.HEAPF32.set(data, ptr / bytes);
-              st = performance.now();
-              mod[funcName](ptr, r_ptr, len);
-              end = performance.now();
-              result = new Float32Array(mod.HEAPF32.buffer, r_ptr, len);
-              mod._destroy(ptr);
-              mod._destroy(r_ptr);
-            }
-            // [st, end, m] = handleC(module, funcName, data, mod);
-            // result = new Float32Array(m)
+            [exec, result] = handleC(module, funcName, data, mod);
           }
           //typeof result === "undefined" ? (result = "") : result;
           //end = performance.now();
           //console.log(result);
           //console.log(`${funcName} execution time: ${end-st} ms`);
+          let sc_2 = performance.now()
           self.postMessage({
             id,
-            results: result.buffer,
+            results: result,
             step,
-            exec: end - st,
-          },[result.buffer]);
+            funcExec: exec,
+            workerExec: sc_2-sc_1
+          },[result]);
         } 
       }
     }
@@ -159,11 +127,13 @@ const handleAS = (moduleName, functionName, data, module) => {
 
 const handleC = (moduleName, functionName, data, module) => {
   let result = null;
+  let stgRes = null;
   let ptrs = [];
   let r_ptr = 0;
   let startTime = 0;
   let endTime = 0;
   let outputData = null;
+  let d = null
 
   const bytes = Float32Array.BYTES_PER_ELEMENT;
   let inputData = [data];
@@ -186,7 +156,7 @@ const handleC = (moduleName, functionName, data, module) => {
       ptrs.push(module._createMem(len * bytes));
     }
 
-    console.log(inputData.length, ptrs.length, len, r_ptr);
+    //console.log(inputData.length, ptrs.length, len, r_ptr);
 
     // Copy input data to memory
     for (let j = 0; j < ptrs.length; j++) {
@@ -203,19 +173,22 @@ const handleC = (moduleName, functionName, data, module) => {
     endTime = performance.now();
 
     // Copy result data from memory and clean up memory
-    outputData = new Float32Array(module.HEAPF32.buffer, r_ptr, len);
+    d = Array.from(new Float32Array(module.HEAPF32.buffer, r_ptr, len));
+    //create a new view from the data and pass it as a buffer
+    outputData = new Float32Array(d)
+    stgRes = new ArrayBuffer(outputData.buffer.byteLength)
+    new Float32Array(stgRes).set(new Float32Array(outputData.buffer))
   } finally {
     for (let k of ptrs) {
       module._destroy(k);
     }
     module._destroy(r_ptr);
-    module._doMemCheck();
+    outputData = []
+    r_ptr = null
+    // module._doMemCheck();
   }
 
-  result = [startTime, endTime, outputData.buffer];
+  result = [endTime - startTime, stgRes];
   return result;
 };
 
-const garbageCollect = new FinalizationRegistry((val) => {
-  module._destroy(val)
-})

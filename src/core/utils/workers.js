@@ -25,6 +25,8 @@ export default class threadManager {
   createWorkerThread(number) {
     this.workerThreads[number] = {
       worker: undefined,
+      functionTime: 0,
+      workerTime: 0
     };
   }
 
@@ -47,13 +49,15 @@ export default class threadManager {
           });
         }
           w.onmessage = ({data}) => {
-            let {results, exec} = data
-            resolve(results, exec)
-              this.results.push(results) 
-              this.execTime += exec,
+            console.log(`working...`)
+            let {results, funcExec, workerExec} = data
+            resolve(results, funcExec)
+              this.results.push(new Float32Array(results)) 
+              this.workerThreads[index].functionTime += funcExec,
+              this.workerThreads[index].workerTime += workerExec
               w.terminate();
           };
-          w.onerror = (e) => {
+          w.onerror = (error) => {
             reject(error);
           };
           buffer.byteLength === 0 ? w.postMessage(args) :
@@ -69,7 +73,19 @@ export default class threadManager {
     this.maxWorkerCount = navigator.hardwareConcurrency-1;
     this.workerThreads = {};
     this.results = [];
-    this.execTime = 0;
     console.log(`Initialized ${this.engine} using worker scope with max workers:${this.maxWorkerCount}`);
   }
+
+  /**
+   * 
+   */
+  get execTimes() {
+    let funcTime = 0, workerTime = 0;
+    for (let i = 0; i < Object.keys(this.workerThreads).length; i++) {
+      funcTime += this.workerThreads[i].functionTime;
+      workerTime += this.workerThreads[i].workerTime;
+    }
+    return [funcTime, workerTime];
+  }
+
 }
