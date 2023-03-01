@@ -128,28 +128,3 @@ export const matrixUtils = {
     `;
   },
 };
-
-/**
- *
- * @param {*} matrices
- * @param {*} args
- * @returns
- */
-export const matrixSize = (matrix, count, args) => {
-  let sizes;
-  //assuming that the matrices are square, no need to input sizes
-  if (args === null || typeof args === undefined || args == undefined)
-    sizes = (() => {
-      if (count === 1){
-        return [matrix.length, 1];
-      }
-      if (matrix.length % Math.sqrt(matrix.length) === 0) {
-        //return back square matrix
-        return [Math.sqrt(matrix.length), Math.sqrt(matrix.length)];
-      } else {
-        return console.error("Please input the sizes of your matrices.");
-      }
-    })();
-  //console.log(sizes)
-  return sizes;
-};

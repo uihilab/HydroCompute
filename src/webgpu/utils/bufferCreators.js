@@ -1,3 +1,28 @@
+/**
+ *
+ * @param {*} matrices
+ * @param {*} args
+ * @returns
+ */
+export const matrixSize = (matrix, count, args) => {
+  let sizes;
+  //assuming that the matrices are square, no need to input sizes
+  if (args === null || typeof args === undefined || args == undefined)
+    sizes = (() => {
+      if (count === 1){
+        return [matrix.length, 1];
+      }
+      if (matrix.length % Math.sqrt(matrix.length) === 0) {
+        //return back square matrix
+        return [Math.sqrt(matrix.length), Math.sqrt(matrix.length)];
+      } else {
+        return console.error("Please input the sizes of your matrices.");
+      }
+    })();
+  //console.log(sizes)
+  return sizes;
+};
+
 
 /**
  *
@@ -73,3 +98,51 @@ export const bufferDestroyer = (buffers) => {
     buffer.destroy();
   }
 };
+
+export class deviceConnect{
+  constructor(){
+  }
+
+  async initialize() {
+    this.adapter = null;
+    this.device = null;
+    await this.deviceCall();
+
+    if (!this.adapter) return false;
+
+    while (!this.device) {
+      this.adapter = null;
+      await this.deviceCall();
+      if (!this.adapter) return false
+    }
+    return this.device
+  }
+
+  async deviceCall(){
+    if (!this.adapter) {
+      this.adapter = await navigator.gpu.requestAdapter();
+
+      if (!this.adapter) {
+        console.error(
+          'WebGPU is not available in your browser. Return to other engines, if possible.'
+        );
+        return
+      }
+    }
+
+    this.device = await this.adapter.requestDevice();
+    this.device.lost.then((info) => {
+      console.error("Device was lost. Reconnecting... Info: ");
+      try{
+        this.recoverDevice()
+      } catch (error){
+        console.error('Device could not be recovered.', error)
+      }
+    })
+  }
+
+  async recoverDevice(){
+    this.deviceCall()
+    return this.adapter
+  }
+}

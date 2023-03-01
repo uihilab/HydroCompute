@@ -2,7 +2,7 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
-  let sc_1 = performance.now()
+  performance.mark('start-script')
   let exec = 0;
   let { funcName, funcArgs = [], id, step } = e.data;
   let data = new Float32Array(e.data.data);
@@ -67,19 +67,19 @@ self.onmessage = async (e) => {
           //   }
           // } 
           if (scr === "C") {
-            [exec, result] = handleC(module, funcName, data, mod);
+            result = handleC(module, funcName, data, mod);
           }
           //typeof result === "undefined" ? (result = "") : result;
           //end = performance.now();
           //console.log(result);
           //console.log(`${funcName} execution time: ${end-st} ms`);
-          let sc_2 = performance.now()
+          performance.mark('end-script')
           self.postMessage({
             id,
             results: result,
             step,
-            funcExec: exec,
-            workerExec: sc_2-sc_1
+            funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
+            workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
           },[result]);
         } 
       }
@@ -164,13 +164,13 @@ const handleC = (moduleName, functionName, data, module) => {
     }
 
     // Call the C function and measure execution time
-    startTime = performance.now();
+    performance.mark('start-function');
     if (moduleName === "matrixUtils") {
       module[functionName](...ptrs, r_ptr, Math.sqrt(len));
     } else {
       module[functionName](...ptrs, r_ptr, len);
     }
-    endTime = performance.now();
+    performance.mark('end-function');
 
     // Copy result data from memory and clean up memory
     d = Array.from(new Float32Array(module.HEAPF32.buffer, r_ptr, len));
@@ -188,7 +188,6 @@ const handleC = (moduleName, functionName, data, module) => {
     // module._doMemCheck();
   }
 
-  result = [endTime - startTime, stgRes];
-  return result;
+  return stgRes;
 };
 

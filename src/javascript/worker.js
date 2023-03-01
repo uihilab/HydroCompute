@@ -1,5 +1,5 @@
 self.onmessage = async (e) => {
-  let sc_1 = performance.now()
+  performance.mark('start-script')
   const scripts = await import('./scripts/scripts.js')
   
   const {funcName, id, step} = e.data;
@@ -8,27 +8,26 @@ self.onmessage = async (e) => {
   try {
     for (const script in scripts) {
       if (funcName in scripts[script]) {
-        const st = performance.now();
+        performance.mark('start-function');
         result = scripts[script][funcName](data);
-        const end = performance.now();
-        let sc_2 = performance.now()
+        performance.mark('end-function');
+       performance.mark('end-script')
         self.postMessage({
           id,
           results: result.buffer,
           step,
-          funcExec: end - st ,
-          workerExec: sc_2 - sc_1 
+          funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
+          workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
         },[result.buffer]);
         break;
       }
     }
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
-      console.log(error)
       console.error(`There was an error executing:\nfunction: ${funcName}\nid: ${id}`);
     } else {
       console.log(error)
-      console.error("Please place your script with the correct name in the /utils folder");
+      console.error('There was an error running the script. More info: ', error);
     }
   }
 };

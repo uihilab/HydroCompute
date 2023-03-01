@@ -1,8 +1,23 @@
-import * as bind from "./utils/bindgroups.js";
-import * as shade from "./utils/shaderModules.js";
-import * as buffers from "./utils/bufferCreators.js";
-import { matrixSize } from "./utils/gslCode/matrixUtils.js";
+import {
+  layoutEntry,
+  groupEntry,
+  bindLayout,
+  bindGroup,
+} from "./utils/bindgroups.js";
+import {
+  shaderModule,
+  computingPipelines,
+  dispatchers,
+} from "./utils/shaderModules.js";
+import {
+  matrixSize,
+  bufferCreator,
+  resultHolder,
+  deviceConnect,
+} from "./utils/bufferCreators.js";
 import * as scripts from "./utils/gslCode/gslScripts.js";
+
+const adapter = new deviceConnect();
 
 String.prototype.count = function (search) {
   var m = this.match(
@@ -12,55 +27,60 @@ String.prototype.count = function (search) {
 };
 
 self.onmessage = async (e) => {
-  //
-  let sc_1 = performance.now()
-  const adapter = await navigator.gpu?.requestAdapter();
-  if (!adapter) {
-    console.error(
-      "This function cannot be used, WebGPU not available in your browser"
-    );
-    return Error();
-  }
-
-  const device = await adapter.requestDevice();
-
-  device.lost.then((info) => {
-    console.error("Device was lost: ", info);
-  });
+  performance.mark('start-script');
+  const device = await adapter.initialize();
+    //
 
   let st = 0,
-    end = 0;
-  const { funcName, funcArgs, id, step } = e.data;
-  let data = new Float32Array(e.data.data);
-  let result = null;
-  let matData = [],
+    end = 0,
+    result = null,
+    matData = [],
     matSize = [],
     matBuffers = [],
     lays = [],
-    groups = [];
+    groups = [],
+    { funcName, funcArgs, id, step, data } = e.data;
+  
+    data = new Float32Array(data);
 
   try {
     for (const scr in scripts) {
       if (funcName in scripts[scr]) {
-        let glslCode = scripts[scr][funcName]();
-        let countWrite = glslCode.count("read_write");
-        let countRead = glslCode.count("read");
+        let glslCode = scripts[scr][funcName](),
+        countWrite = glslCode.count("read_write"),
+        countRead = glslCode.count("read");
 
         countRead === 3 && countWrite === 1
           ? (data = [
-              data.slice(0, data.length / 2),
-              data.slice(data.length / 2, data.length),
+              data.slice(0, data.length >> 1),
+              data.slice(data.length >> 1, data.length),
             ])
           : (data = [data]);
+
+        //   const matData = countRead === 3 && countWrite === 1
+        //   ? ([
+        //     floatData.subarray(0, data.length >> 1),
+        //     floatData.subarray(data.length >> 1)
+        //   ])
+        // : ([floatData]);
 
         funcArgs === null ?? {};
         for (var i = 0; i < data.length; i++) {
           matSize.push(matrixSize(data[i], countRead - countWrite, funcArgs));
           matData.push(new Float32Array([...matSize[i], ...data[i]]));
-          matBuffers.push(buffers.bufferCreator(true, device, matData[i]));
+          matBuffers.push(bufferCreator(true, device, matData[i]));
         }
 
-        const [rSize, rBuffer] = buffers.resultHolder(
+        // const matSize = matData.map(
+        //   (item) => matrixSize(item, countRead - countWrite, funcArgs)
+        // );
+        // const matBuffers = matData.map(
+        //   (item, index) => bufferCreator(true, device, new Float32Array([...matSize[index], ...item]))
+        // );
+
+        // console.log(matSize, matBuffers)
+
+        const [rSize, rBuffer] = resultHolder(
           device,
           matData,
           countRead,
@@ -69,46 +89,43 @@ self.onmessage = async (e) => {
 
         for (var j = 0; j <= matData.length; j++) {
           lays.push(
-            bind.layoutEntry(
+            layoutEntry(
               j,
               j === matData.length ? "storage" : "read-only-storage"
             )
           );
           groups.push(
-            bind.groupEntry(j, j === matData.length ? rBuffer : matBuffers[j])
+            groupEntry(j, j === matData.length ? rBuffer : matBuffers[j])
           );
         }
-        const bindGroupLayout = bind.bindLayout(device, lays),
-          bindgroup = bind.bindGroup(device, bindGroupLayout, groups),
-          shader = shade.shaderModule(device, scripts[scr][funcName]()),
-          pipeline = shade.computingPipelines(device, shader, bindGroupLayout);
+        const bindGroupLayout = bindLayout(device, lays),
+          bindgroup = bindGroup(device, bindGroupLayout, groups),
+          shader = shaderModule(device, glslCode),
+          pipeline = computingPipelines(device, shader, bindGroupLayout);
 
-        st = performance.now();
+        performance.mark('start-function');
 
-        let stgR = await shade.dispatchers(
-          device,
-          pipeline,
-          bindgroup,
-          matData,
-          [rSize, rBuffer]
-        );
-        end = performance.now();
+        let stgR = await dispatchers(device, pipeline, bindgroup, matData, [
+          rSize,
+          rBuffer,
+        ]);
+        performance.mark('end-function');
 
         let d = stgR.slice(2);
         result = new ArrayBuffer(d.buffer.byteLength);
         new Float32Array(result).set(new Float32Array(d.buffer));
       }
     }
-    let sc_2 = performance.now()
+    performance.mark('end-script');
     //console.log(result);
-    //console.log(`${funcName} execution time: ${end-st} ms`);
+    //console.log(`${funcName} executi`on time: ${end-st} ms`);
     self.postMessage(
       {
         id,
         results: result,
         step,
-        funcExec: end - st,
-        workerExec: sc_2-sc_1
+        funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
+        workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
       },
       [result]
     );

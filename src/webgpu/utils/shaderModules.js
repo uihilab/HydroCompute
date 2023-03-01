@@ -48,7 +48,7 @@ export const dispatchers = async (
   passEncoder.setPipeline(pipeline);
   passEncoder.setBindGroup(0, bindgroup);
   //This will need modifications to extend the matrices and or new data types
-  let x = data.map(arr => Math.ceil(arr[0] / 8))
+  let x = data.map(arr => (arr[0] + 7 ) >>> 3)
   passEncoder.dispatchWorkgroups(
     ...x
   );
