@@ -32,7 +32,7 @@ self.onmessage = async (e) => {
     groups = [],
     { funcName, funcArgs, id, step, data} = e.data;
   
-    let floatData = new Float32Array(data);
+    data = new Float32Array(data);
 
   try {
     for (const scr in scripts) {
