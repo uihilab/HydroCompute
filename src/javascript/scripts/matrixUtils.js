@@ -1,5 +1,3 @@
-import { arrayChanger } from "../../core/utils/globalUtils.js";
-
 export const matrixUtils = {
   //Matrix multiplication. Accepts 2d arrays as [Arr1, Arr2]
   /**

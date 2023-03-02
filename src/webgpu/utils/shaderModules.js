@@ -67,6 +67,8 @@ export const dispatchers = async (
 
   await gpuBuffer.mapAsync(GPUMapMode.READ);
   const arrayBuffer = gpuBuffer.getMappedRange();
+  //Removing the first elements of the array. Only used for the
+  //bind group.
   const dataResult = arrayBuffer.slice(8);
   gpuBuffer.unmap();
   return dataResult;

@@ -190,10 +190,6 @@ class AScriptUtils {
   }
 }
 
-class CScriptsUtils {
-  constructor() {}
-}
-
 /**
  * 
  * @param {*} scriptName 
@@ -282,7 +278,6 @@ export {
   getAllModules,
   loadModule,
   AScriptUtils,
-  CScriptsUtils,
   ASModule,
   availableScripts,
   avScripts,

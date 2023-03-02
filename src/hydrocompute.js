@@ -1,6 +1,8 @@
-import * as engines from "./core/core.js";
+// import * as engines from "./core/core.js";
+import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
 import { dataCloner } from "./core/utils/globalUtils.js";
+import engine from "./core/utils/engine.js";
 
 /**
  * Main class for the compute modules.
@@ -13,14 +15,15 @@ class hydrocompute {
     this.engine;
     this.currentEngineName = null;
     this.engineFactory;
-    this.kernels = {};
     this.instanceRun = 0;
     this.availableData = [];
     this.engineResults = {};
-    Object.entries(engines).forEach((engine) => {
-      let [propName, propModule] = engine;
-      this.kernels = { ...this.kernels, [propName]: propModule };
-    });
+    // console.log(engines)
+    // Object.entries(engines).forEach((engine) => {
+    //   let [propName, propModule] = engine;
+    //   this.kernels = { ...this.kernels, [propName]: propModule };
+    // });
+
     //Initiate the module with the workers api. If required, the user can change to another
     //backend product.
     args.length !== 0
@@ -29,11 +32,6 @@ class hydrocompute {
           console.log("The javascript engine has been set as default.");
           this.setEngine(args.engine || "javascript");
         })();
-
-    this.engineResults[`Run_${this.instanceRun}`] = {
-      results: [],
-      executionTime: 0
-    };
   }
 
   /**
@@ -67,23 +65,19 @@ class hydrocompute {
    */
   setEngine(kernel) {
     this.currentEngineName = kernel;
-    this.engine = this.kernels[kernel];
+    // if (!this.currentEngineName === "webrtc"){
+    this.engine = new engine(this.currentEngineName, kernels[this.currentEngineName]);
+  // }
+  // else {
+  //   this.engine = kernels[this.currentEngineName]
+  // }
     if (Object.keys(this.enginesCalled).includes(kernel)) {
-      this.enginesCalled[kernel] = this.enginesCalled[kernel] + 1;
+      this.enginesCalled[kernel] =+ 1
     } else {
       this.enginesCalled[kernel] = 1;
     }
     this.enginesCalled[kernel] = 1;
-    this.#init();
-  }
-
-  /**
-   *
-   * @param {*} engine
-   */
-  #getEngineFactory(engine) {
-    isEngineSet();
-    //implementation of all the specific requirements of each kernel
+    // this.#init();
   }
 
   /**
@@ -115,7 +109,8 @@ class hydrocompute {
     ) {
       //Data passed in raw without splitting
       try {
-        this.engine.run({
+        this.instanceRun += 1;
+        await this.engine.run({
           callbacks: args.callbacks,
           data: data,
           functions: args.functions,
@@ -123,18 +118,28 @@ class hydrocompute {
           dependencies: args.dependencies,
           steps: this.steps,
           linked: this.linked,
-        });
-        //setting results to be saved in main class
-        this.engineResults[`Run_${this.instanceRun}`].engineName =
-          this.currentEngineName;
-        this.engineResults[`Run_${this.instanceRun}`].dataId = args.dataId;
-        this.instanceRun++;
+        })
+        this.setResults()
       } catch (error) {
+        console.error("There was an error with the given run", error);
         return error;
       }
     } else {
       return console.error("There was an error pulling the data.");
     }
+  }
+
+  setResults() {
+    this.engineResults[`Run_${this.instanceRun}`] = {
+      engineName:  this.currentEngine(),
+      results: [...this.engine.results],
+      funcTime: this.engine.funcEx,
+      execTime: this.engine.scriptEx,
+    };
+    console.log(`Finished.`)
+    //setting results to be saved in main class
+
+    this.engine.setEngine()
   }
 
   /**
@@ -175,7 +180,7 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-      return this.engine.showResults();
+    return ;
   }
 
   /**
@@ -183,7 +188,7 @@ class hydrocompute {
    * @returns
    */
   availableEngines() {
-    return Object.keys(this.kernels);
+    return Object.keys(kernels);
   }
 
   /**
@@ -250,6 +255,10 @@ class hydrocompute {
    */
   getexecTime() {
     return this.engine.execTime;
+  }
+
+  engineChange(){
+
   }
 }
 

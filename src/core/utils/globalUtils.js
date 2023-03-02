@@ -254,16 +254,6 @@ export const checkSharedArrays = () => {
   }
 }
 
-export const waitFor = (conditionFunction) => {
-
-  const poll = resolve => {
-    if(conditionFunction()) resolve();
-    else setTimeout(_ => poll(resolve), 10);
-  }
-
-  return new Promise(poll);
-}
-
 /**
  * Helper function for concatenating arrays.
  * @param {*} arrays 

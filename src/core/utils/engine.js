@@ -1,4 +1,4 @@
-import { DAG, concatArrays } from "./globalUtils.js";
+import { DAG } from "./globalUtils.js";
 import threadManager from "./workers.js";
 import { splits } from "./splits.js";
 import { jsScripts } from "../../javascript/scripts/jsScripts.js";
@@ -8,7 +8,7 @@ import { gpuScripts } from "../../webgpu/gpuScripts.js";
 /**
  * @class
  * @name engine
- * @description main engine used for running all the scripts available in the engine
+ * @description main engine driver for all the available modules in the hydrocompute library.
  * @property results - array with results
  * @property execTime - execution time of the running tasks
  * @property engineName - name of the engine running (javascript, wasm, webgpu)
@@ -18,7 +18,7 @@ export default class engine {
   /**
    * 
    * @param {String} engine - name of engine running the workers
-   * @param {String} workerLocation 
+   * @param {String} workerLocation - location of the worker script running the data
    */
   constructor(engine, workerLocation) {
     this.setEngine();
@@ -26,7 +26,8 @@ export default class engine {
     this.initialize(engine);
   }
   /**
-   *
+   * @method initialize
+   * @description setter for the current engine name and worker location
    * @param {String} engine
    */
   initialize(engine) {
@@ -35,14 +36,13 @@ export default class engine {
   }
 
   /**
-   *
+   * @method run
+   * @description main method for running a simulation. It sets up the way of running
+   * the computational engine for each module
    * @param {*} args
    * @returns
    */
   async run(args) {
-    this.results = [];
-    this.execTime = 0;
-
     if (args.data.length === 0 && args.funcArgs.length === 0) {
       return console.error(`Problem with data.`);
     }
@@ -120,16 +120,15 @@ export default class engine {
       DAG({ functions: stepPromise, args: args, type: "steps" });
     } else {
       while (stepCounter <= steps) {
-        this.taskRunner(args, stepCounter, dependencies);
+        await this.taskRunner(args, stepCounter, dependencies);
         stepCounter++;
       }
     }
   }
 
   /**
-   * Running jobs concurrently based on a DAG.
-   * It can also run parallel jobs if the dependencies array is passed as a
    * @method concurrentRun
+   * @description running jobs concurrently based on a DAG. It can also run parallel jobs if the dependencies array is passed as empty.
    * @param {Object{}} args
    * @param {Number} step
    * @param {Object[]} dependencies
@@ -149,7 +148,7 @@ export default class engine {
       };
       this.threads.initializeWorkerThread(i);
     }
-    let res = DAG({
+    let res = await DAG({
       functions: Object.keys(this.threads.workerThreads).map((key) => {
         return this.threads.workerThreads[key].worker;
       }),
@@ -202,7 +201,7 @@ export default class engine {
     last += batch.functions.length;
   }
   //console.log(results)
-    return results;
+    //return results;
   }
 
   /**
@@ -215,25 +214,23 @@ export default class engine {
   async taskRunner(args, stepCounter, dependencies) {
     //this.workers.results.push([]);
     let x;
-    let exeType = null;
     if (dependencies.length > 0) {
       // Sequential Execution
-      exeType = "seq";
       x = await this.concurrentRun(args, stepCounter, dependencies);
-      //console.log(await x)
     } else {
-      exeType = "par";
       //Parallel Execution
       x = await this.parallelRun(args, stepCounter);
       //console.log(await x)
     }
     if (this.threadCount === this.threads.results.length) {
       this.results.push(this.threads.results);
-      let [execTime, workerTime] = this.threads.execTimes;
-      console.log(`Total function execution time: ${execTime} ms\nTotal worker execution time: ${workerTime} ms`);
-      //this.threads.resetWorkers();  
+      [this.funcEx, this.scriptEx] = this.threads.execTimes;
+      //this.setEngine()
+      
+      console.log(`Total function execution time: ${this.funcEx} ms\nTotal worker execution time: ${this.scriptEx} ms`);
+      this.threads.resetWorkers();  
     }
-    return x;
+    //return x;
   }
 
   /**
@@ -241,7 +238,8 @@ export default class engine {
    *@method setEngine
    */
   setEngine() {
-    this.execTime = 0;
+    this.funcEx = 0;
+    this.scriptEx = 0;
     this.engineName = null;
     this.splitting = false;
     this.instanceCounter = 0;
@@ -262,8 +260,12 @@ export default class engine {
    *
    * @returns
    */
-  executionTime() {
-    return this.execTime;
+  functionTime() {
+    return this.funcEx;
+  }
+
+  scriptTime() {
+    return this.scriptEx;
   }
 
   /**

@@ -3,7 +3,6 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
   performance.mark('start-script')
-  let exec = 0;
   let { funcName, funcArgs = [], id, step } = e.data;
   let data = new Float32Array(e.data.data);
   let wasmSc = await getAllModules();
