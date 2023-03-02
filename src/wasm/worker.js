@@ -126,12 +126,9 @@ const handleAS = (moduleName, functionName, data, module) => {
 };
 
 const handleC = (moduleName, functionName, data, module) => {
-  let result = null;
   let stgRes = null;
   let ptrs = [];
   let r_ptr = 0;
-  let startTime = 0;
-  let endTime = 0;
   let outputData = null;
   let d = null
 
@@ -142,8 +139,8 @@ const handleC = (moduleName, functionName, data, module) => {
   // Check if we are working with the "matrixUtils" module, and adjust inputs accordingly
   if (moduleName === "matrixUtils") {
     inputData = [
-      data.slice(0, data.length / 2),
-      data.slice(data.length / 2, data.length),
+      data.slice(0, data.length >> 1),
+      data.slice(data.length >> 1, data.length),
     ];
     inputCount = 2;
   }
@@ -187,7 +184,6 @@ const handleC = (moduleName, functionName, data, module) => {
     r_ptr = null
     // module._doMemCheck();
   }
-
   return stgRes;
 };
 

@@ -4,22 +4,9 @@
  * @param {*} args
  * @returns
  */
-export const matrixSize = (matrix, count, args) => {
-  let sizes;
-  //assuming that the matrices are square, no need to input sizes
-  if (args === null || typeof args === undefined || args == undefined)
-    sizes = (() => {
-      if (count === 1){
-        return [matrix.length, 1];
-      }
-      if (matrix.length % Math.sqrt(matrix.length) === 0) {
-        //return back square matrix
-        return [Math.sqrt(matrix.length), Math.sqrt(matrix.length)];
-      } else {
-        return console.error("Please input the sizes of your matrices.");
-      }
-    })();
-  //console.log(sizes)
+export const matrixSize = (matrix, count, args = undefined) => {
+  const isSquare = matrix.length % Math.sqrt(matrix.length) === 0;
+  const sizes = args || (isSquare ? [Math.sqrt(matrix.length), Math.sqrt(matrix.length)] : console.error("Please input the sizes of your matrices."));
   return sizes;
 };
 
@@ -50,12 +37,9 @@ export const bufferCreator = (mapped, device, matrix) => {
  * @returns
  */
 export const matrixChanger = (mat, sizes) => {
-  var matrix = mat.slice();
-  //this needs to be resolved. Having a matrix like this is unuseful
-  matrix.unshift(...sizes);
-  mat = [];
-  sizes = [];
-  return new Float32Array(matrix);
+  const matrix = [...sizes, ...mat];
+  const [, ...result] = new Float32Array(matrix);
+  return result;
 };
 
 /**
@@ -65,25 +49,21 @@ export const matrixChanger = (mat, sizes) => {
  * @returns
  */
 export const resultHolder = (device, matrices, reads, writes) => {
-  const resultMatSize = (() => {
-    if (reads === 3 && writes === 1)
-      return (
-        Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] * matrices[1][0])
-      );
-    if (reads === 2 && writes === 1)
-    return (
+  const sizeMappings = {
+    '3-1': Float32Array.BYTES_PER_ELEMENT * (2 + matrices[0][0] * matrices[1][0]),
+    '2-1': Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0]),
+    '3-2': [
+      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0]),
       Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0])
-    )
-    if (reads === 3 && writes === 2)
-    //change...
-    return (
-      [Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0]),
-      Float32Array.BYTES_PER_ELEMENT * (1 + matrices[0][0])]
-    )
-  })();
+    ]
+  };
+
+  const key = `${reads}-${writes}`;
+  const resultMatSize = sizeMappings[key];
+
   //console.log(resultMatSize)  
   const resultBuffer = device.createBuffer({
-    size: resultMatSize,
+    size: resultMatSize instanceof Array ? resultMatSize.reduce((a,b) => a +b) : resultMatSize,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
   });
   return [resultMatSize, resultBuffer];
@@ -101,11 +81,13 @@ export const bufferDestroyer = (buffers) => {
 
 export class deviceConnect{
   constructor(){
+    this.adapter = null;
+    this.device = null;
+    this.lostListener = null;
   }
 
   async initialize() {
-    this.adapter = null;
-    this.device = null;
+
     await this.deviceCall();
 
     if (!this.adapter) return false;
@@ -115,6 +97,9 @@ export class deviceConnect{
       await this.deviceCall();
       if (!this.adapter) return false
     }
+
+    this.addLostListener();
+
     return this.device
   }
 
@@ -131,18 +116,33 @@ export class deviceConnect{
     }
 
     this.device = await this.adapter.requestDevice();
-    this.device.lost.then((info) => {
-      console.error("Device was lost. Reconnecting... Info: ");
-      try{
-        this.recoverDevice()
-      } catch (error){
-        console.error('Device could not be recovered.', error)
+  }
+
+  addLostListener(){
+    if (this.lostListener) return;
+
+    this.lostListener = this.device.lost.then(async (info) => {
+      console.error('Device was lost. Reconnecting... Info: ', info);
+
+      try {
+        await this.recoverDevice();
+      } catch (error) {
+        console.error('Device could not be recovered', error);
       }
     })
   }
 
+  removeLostListener(){
+    if (this.lostListener) {
+      this.lostListener = null;
+    }
+  }
+
   async recoverDevice(){
-    this.deviceCall()
-    return this.adapter
+    this.removeLostListener();
+    await this.deviceCall();
+    this.addLostListener();
   }
 }
+
+

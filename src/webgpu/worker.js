@@ -17,43 +17,35 @@ import {
 } from "./utils/bufferCreators.js";
 import * as scripts from "./utils/gslCode/gslScripts.js";
 
-const adapter = new deviceConnect();
-
-String.prototype.count = function (search) {
-  var m = this.match(
-    new RegExp(search.toString().replace(/(?=[.\\+*?[^\]$(){}\|])/g, "\\"), "g")
-  );
-  return m ? m.length : 0;
-};
+const adapter = new deviceConnect()
 
 self.onmessage = async (e) => {
   performance.mark('start-script');
-  const device = await adapter.initialize();
+  const device = await adapter.initialize()
     //
 
-  let st = 0,
-    end = 0,
-    result = null,
+  let result = null,
     matData = [],
     matSize = [],
     matBuffers = [],
     lays = [],
     groups = [],
-    { funcName, funcArgs, id, step, data } = e.data;
+    { funcName, funcArgs, id, step, data} = e.data;
   
-    data = new Float32Array(data);
+    let floatData = new Float32Array(data);
 
   try {
     for (const scr in scripts) {
       if (funcName in scripts[scr]) {
         let glslCode = scripts[scr][funcName](),
-        countWrite = glslCode.count("read_write"),
-        countRead = glslCode.count("read");
+        countWrite = (glslCode.match(/read_write/g) || []).length,
+        countRead = (glslCode.match(/read/g) || []).length;
+        let length = data.length
 
         countRead === 3 && countWrite === 1
           ? (data = [
-              data.slice(0, data.length >> 1),
-              data.slice(data.length >> 1, data.length),
+              data.slice(0, length >> 1),
+              data.slice(length >> 1, length),
             ])
           : (data = [data]);
 
@@ -105,20 +97,15 @@ self.onmessage = async (e) => {
 
         performance.mark('start-function');
 
-        let stgR = await dispatchers(device, pipeline, bindgroup, matData, [
+        result = await dispatchers(device, pipeline, bindgroup, matData, [
           rSize,
           rBuffer,
         ]);
         performance.mark('end-function');
-
-        let d = stgR.slice(2);
-        result = new ArrayBuffer(d.buffer.byteLength);
-        new Float32Array(result).set(new Float32Array(d.buffer));
       }
     }
     performance.mark('end-script');
-    //console.log(result);
-    //console.log(`${funcName} executi`on time: ${end-st} ms`);
+
     self.postMessage(
       {
         id,

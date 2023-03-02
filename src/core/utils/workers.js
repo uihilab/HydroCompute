@@ -37,7 +37,7 @@ export default class threadManager {
   initializeWorkerThread(index) {
     this.workerThreads[index].worker = (args) => {
       let buffer = args.data
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
           let w;
           //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
           if (typeof importScripts === 'function'){
@@ -52,7 +52,7 @@ export default class threadManager {
             console.log(`working...`)
             let {results, funcExec, workerExec} = data
             resolve(results, funcExec)
-              this.results.push(new Float32Array(results)) 
+              this.results.push(results) 
               this.workerThreads[index].functionTime += funcExec,
               this.workerThreads[index].workerTime += workerExec
               w.terminate();
@@ -60,6 +60,7 @@ export default class threadManager {
           w.onerror = (error) => {
             reject(error);
           };
+
           buffer.byteLength === 0 ? w.postMessage(args) :
           w.postMessage(args, [buffer]);
         });

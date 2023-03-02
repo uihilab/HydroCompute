@@ -6,16 +6,16 @@ import engine from "../core/utils/engine.js";
  * The data structures supported for the workers scripts are limited to: JSON objects, JS objects, strings, numbers, and arrays
  */
 export default class webgpu {
-    constructor(){
-        this.initialize()
-    }
+  constructor() {
+    this.initialize();
+  }
   /**
-   * 
-   * @param {*} args 
+   *
+   * @param {*} args
    */
   static initialize(args) {
     this.setLocations();
-    this.engine = new engine('webgpu', this.workerLocation)
+    this.engine = new engine("webgpu", this.workerLocation);
   }
 
   /**
@@ -24,30 +24,30 @@ export default class webgpu {
    * @returns
    */
   static async run(args) {
-    await this.engine.run(args)
+    await this.engine.run(args);
   }
 
-    static setLocations() {
-        this.workerLocation = "../../src/webgpu/worker.js"
-      }
+  static setLocations() {
+    this.workerLocation = "../../src/webgpu/worker.js";
+  }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   static showResults() {
-    return this.engine.showResults()
+    return this.engine.showResults();
   }
 
-  static availableScripts(){
-    return this.engine.availableScripts()
+  static availableScripts() {
+    return this.engine.availableScripts();
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   static getexecTime() {
-    return this.engine.getexecTime()
+    return this.engine.getexecTime();
   }
 }

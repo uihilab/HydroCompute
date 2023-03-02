@@ -67,7 +67,7 @@ export const dispatchers = async (
 
   await gpuBuffer.mapAsync(GPUMapMode.READ);
   const arrayBuffer = gpuBuffer.getMappedRange();
-  //const dataResult = arrayBuffer.slice();
-  //gpuBuffer.unmap();
-  return new Float32Array(arrayBuffer);
+  const dataResult = arrayBuffer.slice(8);
+  gpuBuffer.unmap();
+  return dataResult;
 };
