@@ -24,9 +24,8 @@ self.onmessage = async (e) => {
     }
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
-      console.error(`There was an error executing:\nfunction: ${funcName}\nid: ${id}`);
+      console.error(`There was an error executing:\nfunction: ${funcName}\nid: ${id}`, error);
     } else {
-      console.log(error)
       console.error('There was an error running the script. More info: ', error);
     }
   }

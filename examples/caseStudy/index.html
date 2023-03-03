@@ -261,8 +261,8 @@
         x[0] = [];
         let y = Array.from({ length: jsFuns.length }, (_, i) => [i - 1]);
         y[0] = [];
-        wasmcompute.run({ callbacks: true, functions: cFuns, dataId: item.name, dependencies: [], funcArgs: [] })
-        jscompute.run({ callbacks: true, functions: jsFuns, dataId: item.name, dependencies: y, funcArgs: [] })
+        wasmcompute.run({ callbacks: false, functions: cFuns, dataId: item.name, dependencies: [], funcArgs: [] })
+        jscompute.run({ callbacks: false, functions: jsFuns, dataId: item.name, dependencies: y, funcArgs: [] })
       }
     }
 

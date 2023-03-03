@@ -50,15 +50,6 @@ class hydrocompute {
   }
 
   /**
-   *
-   * @param  {Object{}} args initialize the engine, if any
-   */
-  //Initialize a specific engine
-  #init(...args) {
-    this.engine.initialize(args);
-  }
-
-  /**
    * Available kernels, keeps track of available instances
    * @method setEngine
    * @param {String} kernel - type of kernel setup by the computation.
@@ -72,7 +63,7 @@ class hydrocompute {
   //   this.engine = kernels[this.currentEngineName]
   // }
     if (Object.keys(this.enginesCalled).includes(kernel)) {
-      this.enginesCalled[kernel] =+ 1
+      this.enginesCalled[kernel] += 1
     } else {
       this.enginesCalled[kernel] = 1;
     }
@@ -95,7 +86,7 @@ class hydrocompute {
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
       for (let item of this.availableData) {
-        if (item.id === args.dataId) return item.data;
+        if (item.id === args.dataId) return [item.data, item.length];
       }
       return console.error(
         `Data with nametag: "${args.dataId}" not found in the storage.`
@@ -112,7 +103,8 @@ class hydrocompute {
         this.instanceRun += 1;
         await this.engine.run({
           callbacks: args.callbacks,
-          data: data,
+          data: data[0],
+          length: data[1],
           functions: args.functions,
           funcArgs: args.funcArgs,
           dependencies: args.dependencies,
@@ -129,16 +121,18 @@ class hydrocompute {
     }
   }
 
+  /**
+   * 
+   */
   setResults() {
     this.engineResults[`Run_${this.instanceRun}`] = {
       engineName:  this.currentEngine(),
-      results: [...this.engine.results],
+      results: this.engine.results,
       funcTime: this.engine.funcEx,
       execTime: this.engine.scriptEx,
     };
     console.log(`Finished.`)
     //setting results to be saved in main class
-
     this.engine.setEngine()
   }
 
@@ -157,6 +151,7 @@ class hydrocompute {
   data(args) {
     let container = {
       id: typeof args.id === "undefined" ? this.makeid(5) : args.id,
+      length: args.data[0] instanceof Array ? args.data.length : 1
     };
     if (typeof args.splits === "undefined") {
       container.data = dataCloner(args.data);
@@ -255,10 +250,6 @@ class hydrocompute {
    */
   getexecTime() {
     return this.engine.execTime;
-  }
-
-  engineChange(){
-
   }
 }
 

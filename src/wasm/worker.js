@@ -3,7 +3,7 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
   performance.mark('start-script')
-  let { funcName, funcArgs = [], id, step } = e.data;
+  let { funcName, funcArgs = [], id, step, length } = e.data;
   let data = new Float32Array(e.data.data);
   let wasmSc = await getAllModules();
   let result = null;
@@ -68,10 +68,7 @@ self.onmessage = async (e) => {
           if (scr === "C") {
             result = handleC(module, funcName, data, mod);
           }
-          //typeof result === "undefined" ? (result = "") : result;
-          //end = performance.now();
-          //console.log(result);
-          //console.log(`${funcName} execution time: ${end-st} ms`);
+
           performance.mark('end-script')
           self.postMessage({
             id,

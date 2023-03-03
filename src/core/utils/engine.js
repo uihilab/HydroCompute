@@ -54,7 +54,8 @@ export default class engine {
       linked = false,
       steps = 0,
       data = [],
-      callbacks = true
+      callbacks = true,
+      length = 1
     } = args;
 
     dependencies =
@@ -111,6 +112,7 @@ export default class engine {
               funcName: functions,
               step: i,
               funcArgs: funcArgs,
+              length: length
             };
             let p = this.taskRunner(_args, i, dependencies);
             resolve(p);
@@ -143,6 +145,7 @@ export default class engine {
         data: d,
         id: i,
         funcName: args.functions[i],
+        length: args.length,
         step: step,
         funcArgs: args.funcArgs[i],
       };
@@ -192,6 +195,7 @@ export default class engine {
         funcName: args.functions[i],
         funcArgs: args.funcArgs[i],
         step: step,
+        length: length
       };
       this.threads.initializeWorkerThread(i);
       batchTasks.push(this.threads.workerThreads[i].worker(workerArgs));
