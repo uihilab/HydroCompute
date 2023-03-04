@@ -204,8 +204,6 @@ export default class engine {
     results = results.concat(batchResults)
     last += batch.functions.length;
   }
-  //console.log(results)
-    //return results;
   }
 
   /**

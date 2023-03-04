@@ -3,6 +3,7 @@ import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
 import { dataCloner } from "./core/utils/globalUtils.js";
 import engine from "./core/utils/engine.js";
+import webrtc from "./webrtc/webrtc.js";
 
 /**
  * Main class for the compute modules.
@@ -18,11 +19,6 @@ class hydrocompute {
     this.instanceRun = 0;
     this.availableData = [];
     this.engineResults = {};
-    // console.log(engines)
-    // Object.entries(engines).forEach((engine) => {
-    //   let [propName, propModule] = engine;
-    //   this.kernels = { ...this.kernels, [propName]: propModule };
-    // });
 
     //Initiate the module with the workers api. If required, the user can change to another
     //backend product.
@@ -56,19 +52,18 @@ class hydrocompute {
    */
   setEngine(kernel) {
     this.currentEngineName = kernel;
-    // if (!this.currentEngineName === "webrtc"){
-    this.engine = new engine(this.currentEngineName, kernels[this.currentEngineName]);
-  // }
-  // else {
-  //   this.engine = kernels[this.currentEngineName]
-  // }
+    this.currentEngineName === "webrtc"
+      ? (this.engine = new webrtc())
+      : (this.engine = new engine(
+          this.currentEngineName,
+          kernels[this.currentEngineName]
+        ));
+
     if (Object.keys(this.enginesCalled).includes(kernel)) {
-      this.enginesCalled[kernel] += 1
+      this.enginesCalled[kernel] += 1;
     } else {
       this.enginesCalled[kernel] = 1;
     }
-    this.enginesCalled[kernel] = 1;
-    // this.#init();
   }
 
   /**
@@ -110,8 +105,8 @@ class hydrocompute {
           dependencies: args.dependencies,
           steps: this.steps,
           linked: this.linked,
-        })
-        this.setResults()
+        });
+        this.setResults();
       } catch (error) {
         console.error("There was an error with the given run", error);
         return error;
@@ -122,18 +117,18 @@ class hydrocompute {
   }
 
   /**
-   * 
+   *
    */
   setResults() {
     this.engineResults[`Run_${this.instanceRun}`] = {
-      engineName:  this.currentEngine(),
+      engineName: this.currentEngine(),
       results: this.engine.results,
       funcTime: this.engine.funcEx,
       execTime: this.engine.scriptEx,
     };
-    console.log(`Finished.`)
+    console.log(`Finished.`);
     //setting results to be saved in main class
-    this.engine.setEngine()
+    this.engine.setEngine();
   }
 
   /**
@@ -151,7 +146,7 @@ class hydrocompute {
   data(args) {
     let container = {
       id: typeof args.id === "undefined" ? this.makeid(5) : args.id,
-      length: args.data[0] instanceof Array ? args.data.length : 1
+      length: args.data[0] instanceof Array ? args.data.length : 1,
     };
     if (typeof args.splits === "undefined") {
       container.data = dataCloner(args.data);
@@ -170,12 +165,13 @@ class hydrocompute {
    *
    * @returns
    */
-  results() {
+  results(name) {
     if (typeof this.engine === "undefined")
       return console.error(
         "Please set the required engine first before initializing!"
       );
-    return ;
+      //this needs change
+    return new Float32Array(this.engineResults[name].results[0][0]);
   }
 
   /**
@@ -250,6 +246,10 @@ class hydrocompute {
    */
   getexecTime() {
     return this.engine.execTime;
+  }
+
+  availableResults() {
+    return Object.keys(this.engineResults)
   }
 }
 

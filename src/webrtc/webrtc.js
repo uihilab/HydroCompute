@@ -1,8 +1,12 @@
 /**
+ * 
  *
  */
 export default class webrtc {
-  static initialize() {
+  constructor(){
+    this.initialize()
+  }
+  initialize() {
     this.MAX_MESSAGE_SIZE = 65535; 
     this.connectionTime = undefined;
     this.candidates = undefined;
@@ -19,7 +23,7 @@ export default class webrtc {
   /**
    *
    */
-  static run(res) {
+  run(res) {
     this.type === "host" ? 
     (() => {
         this.setDataChannel();
@@ -46,7 +50,7 @@ export default class webrtc {
   /**
    *
    */
-  static setConnection() {
+  setConnection() {
     this.candidates = this.connection.onicecandidate = e => {
       console.log("New ice candidate. Local conection in console.");
       console.log(JSON.stringify(this.connection.localDescription));
@@ -56,7 +60,7 @@ export default class webrtc {
   /**
    *
    */
-  static setDataChannel() {
+  setDataChannel() {
     this.dataChannel = this.connection.createDataChannel("dataChannel");
     //Same as above, this might need change
     this.dataChannel.binaryType = "arraybuffer";
@@ -68,7 +72,7 @@ export default class webrtc {
   /**
    *
    */
-  static onAvailableChannel() {
+  onAvailableChannel() {
     this.connection.ondatachannel = e => {
       const receiveChannel = e.channel;
       //Might need to change this according to future changes
@@ -102,7 +106,7 @@ export default class webrtc {
   /**
    *
    */
-  static settingOfferDescription(offer) {
+  settingOfferDescription(offer) {
     this.connection
       .setRemoteDescription(offer)
       .then(a => console.log(`Offer set up and connection done.`));
@@ -111,7 +115,7 @@ export default class webrtc {
   /**
    *
    */
-  static creatingOfferdescription() {
+  creatingOfferdescription() {
     this.connection
       .createOffer()
       .then((o) => this.connection.setLocalDescription(o));
@@ -120,7 +124,7 @@ export default class webrtc {
   /**
    *
    */
-  static async createAnswer() {
+  async createAnswer() {
     await this.connection
       .createAnswer()
       .then(a =>
@@ -136,7 +140,7 @@ export default class webrtc {
    * 
    * @param {*} data 
    */
-  static sendData(data) {
+  sendData(data) {
     this.type === "host" ? 
     this.dataChannel.send(data)
     :
@@ -148,7 +152,7 @@ export default class webrtc {
    * @param {Object[]} data - Transformed typed array (Uint8 or Float32s)
    */
 
-  static submitArray(data){
+  submitArray(data){
     const arrayBuffer = data.buffer
     for (let i = 0; i < arrayBuffer.byteLength; i += this.MAX_MESSAGE_SIZE){
       this.sendData(arrayBuffer.slice(i, i+this.MAX_MESSAGE_SIZE))
@@ -159,7 +163,7 @@ export default class webrtc {
   /**
    * 
    */
-  static openConnection(answer) {
+  openConnection(answer) {
     this.connection.setRemoteDescription(answer).
     then(a => console.log(`Connection openned.`))
   }
@@ -169,11 +173,11 @@ export default class webrtc {
    * RTC connection.
    */
 
-  static restartDataChannel(){
+  restartDataChannel(){
     this.setDataChannel()
   }
 
-  static oncloseReceiver(){}
+  oncloseReceiver(){}
 
-  static oncloseHost(){}
+  oncloseHost(){}
 }
