@@ -2,7 +2,7 @@ import { AScriptUtils, getAllModules } from "./modules/modules.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
-  performance.mark('start-script')
+  performance.mark("start-script");
   let { funcName, funcArgs = [], id, step, length } = e.data;
   let data = new Float32Array(e.data.data);
   let wasmSc = await getAllModules();
@@ -14,70 +14,31 @@ self.onmessage = async (e) => {
           //points to the current module
           let mod = wasmSc[scr][module],
             ref = mod[funcName];
-          // if (scr === "AS") {
-          //   let views = new AScriptUtils();
-          //   if (module === "matrixUtils") {
-          //     //THIS NEEDS TO CHANGE!
-          //     data = [
-          //       data.slice(0, data.length / 2),
-          //       data.slice(data.length / 2, data.length),
-          //     ];
-          //     funcArgs ?? [];
-          //     let mat1 = views.retainP(
-          //       views.lowerTypedArray(Float32Array, 4, 2, data[0], mod),
-          //       mod
-          //     );
-          //     let mat2 = views.lowerTypedArray(
-          //       Float32Array,
-          //       4,
-          //       2,
-          //       data[1],
-          //       mod
-          //     );
-          //     Object.keys(mod).includes("__setArgumentsLength")
-          //       ? mod.__setArgumentsLength(funcArgs.length)
-          //       : null;
-          //     try {
-          //       funcArgs.unshift(mat2), funcArgs.unshift(mat1);
-          //       st = performance.now();
-          //       result = views.liftTypedArray(
-          //         Float32Array,
-          //         ref(...funcArgs) >>> 0,
-          //         mod
-          //       );
-          //       end = performance.now();
-          //     } finally {
-          //       views.releaseP(mat1, mod);
-          //     }
-          //   } else {
-          //     funcArgs ?? [];
-          //     let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
-          //     mod.__setArgumentsLength(
-          //       funcArgs.length === 0 ? 1 : funcArgs.length
-          //     );
-          //     funcArgs.unshift(arr);
-          //     st = performance.now();
-          //     result = views.liftTypedArray(
-          //       Float32Array,
-          //       ref(...funcArgs) >>> 0,
-          //       mod
-          //     );
-          //     end = performance.now();
-          //   }
-          // } 
+          result = handleAS(module, ref, data, mod, funcArgs);
           if (scr === "C") {
             result = handleC(module, funcName, data, mod);
           }
 
-          performance.mark('end-script')
-          self.postMessage({
-            id,
-            results: result,
-            step,
-            funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
-            workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
-          },[result]);
-        } 
+          performance.mark("end-script");
+          self.postMessage(
+            {
+              id,
+              results: result,
+              step,
+              funcExec: performance.measure(
+                "measure-execution",
+                "start-function",
+                "end-function"
+              ).duration,
+              workerExec: performance.measure(
+                "measure-execution",
+                "start-script",
+                "end-script"
+              ).duration,
+            },
+            [result]
+          );
+        }
       }
     }
   } catch (e) {
@@ -85,15 +46,26 @@ self.onmessage = async (e) => {
   }
 };
 
-const handleAS = (moduleName, functionName, data, module) => {
-  let views = new AScriptUtils();
+/**
+ * 
+ * @param {*} moduleName 
+ * @param {*} ref 
+ * @param {*} data 
+ * @param {*} mod 
+ * @param {*} funcArgs 
+ * @returns 
+ */
+const handleAS = (moduleName, ref, data, mod, funcArgs) => {
+  let views = new AScriptUtils(),
+  stgResult = [];
+  funcArgs === null ? (funcArgs = []) : funcArgs;
   if (moduleName === "matrixUtils") {
     //THIS NEEDS TO CHANGE!
     data = [
-      data.slice(0, data.length / 2),
-      data.slice(data.length / 2, data.length),
+      data.slice(0, data.length >> 1),
+      data.slice(data.length >> 1, data.length),
     ];
-    funcArgs ?? [];
+    funcArgs = [...Array(4)].map((_, i) => Math.sqrt(data[0].length));
     let mat1 = views.retainP(
       views.lowerTypedArray(Float32Array, 4, 2, data[0], mod),
       mod
@@ -104,29 +76,37 @@ const handleAS = (moduleName, functionName, data, module) => {
       : null;
     try {
       funcArgs.unshift(mat2), funcArgs.unshift(mat1);
-      st = performance.now();
-      result = views.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod);
-      end = performance.now();
+      performance.mark("start-function");
+      stgResult = views.liftTypedArray(
+        Float32Array,
+        ref(...funcArgs) >>> 0,
+        mod
+      );
+      performance.mark("end-function");
     } finally {
       views.releaseP(mat1, mod);
     }
   } else {
-    funcArgs ?? [];
+    console.log(funcArgs);
     let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
     mod.__setArgumentsLength(funcArgs.length === 0 ? 1 : funcArgs.length);
     funcArgs.unshift(arr);
-    st = performance.now();
-    result = views.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod);
-    end = performance.now();
+    performance.mark("start-function");
+    stgResult = views.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod);
+    performance.mark("end-function");
   }
+  return stgResult.buffer;
 };
 
+/**
+ *
+ */
 const handleC = (moduleName, functionName, data, module) => {
   let stgRes = null;
   let ptrs = [];
   let r_ptr = 0;
   let outputData = null;
-  let d = null
+  let d = null;
 
   const bytes = Float32Array.BYTES_PER_ELEMENT;
   let inputData = [data];
@@ -157,29 +137,28 @@ const handleC = (moduleName, functionName, data, module) => {
     }
 
     // Call the C function and measure execution time
-    performance.mark('start-function');
+    performance.mark("start-function");
     if (moduleName === "matrixUtils") {
       module[functionName](...ptrs, r_ptr, Math.sqrt(len));
     } else {
       module[functionName](...ptrs, r_ptr, len);
     }
-    performance.mark('end-function');
+    performance.mark("end-function");
 
     // Copy result data from memory and clean up memory
     d = Array.from(new Float32Array(module.HEAPF32.buffer, r_ptr, len));
     //create a new view from the data and pass it as a buffer
-    outputData = new Float32Array(d)
-    stgRes = new ArrayBuffer(outputData.buffer.byteLength)
-    new Float32Array(stgRes).set(new Float32Array(outputData.buffer))
+    outputData = new Float32Array(d);
+    stgRes = new ArrayBuffer(outputData.buffer.byteLength);
+    new Float32Array(stgRes).set(new Float32Array(outputData.buffer));
   } finally {
     for (let k of ptrs) {
       module._destroy(k);
     }
     module._destroy(r_ptr);
-    outputData = []
-    r_ptr = null
+    outputData = [];
+    r_ptr = null;
     // module._doMemCheck();
   }
   return stgRes;
 };
-

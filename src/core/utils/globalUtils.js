@@ -256,7 +256,7 @@ export const checkSharedArrays = () => {
 
 /**
  * Helper function for concatenating arrays.
- * @param {*} arrays 
+ * @param {Array} arrays - 
  * @returns 
  */
 export const concatArrays = (arrays) => {
@@ -275,7 +275,7 @@ export const concatArrays = (arrays) => {
 
 /**
  * Helper function for flatennizing a 2D array
- * @param {*} arr 
+ * @param {Array} arr  - 2D array to be flattened
  * @returns 
  */
 export const flattenFloat32Array = (arr) => {

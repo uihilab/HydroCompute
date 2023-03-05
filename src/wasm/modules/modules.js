@@ -75,7 +75,7 @@ const CModule = async (modName) => {
     let { default: Module } = await import(_location("C", modName));
     return Module();
   } catch (error) {
-    console.log(`There was an error pulling the following module: ${modName}`);
+    console.error(`There was an error pulling the following module: ${modName}`, error);
   }
 };
 

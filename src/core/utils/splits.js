@@ -3,13 +3,15 @@ import { ValueErr, NotImplemented } from "./errors.js";
 
 /**
  * @namespace splits
+ * @description Collection of functions to be used for splitting data across the HydroCompute 
+ * 
  */
 
 export const splits = {
   //Splits a 1D array into N different chunks.
   /**
    * 
-   * @param {*} param0 
+   * @param {Array} data - 1d array of data
    * @returns 
    */
   split1DArray: ({data: data, n: n}) => {

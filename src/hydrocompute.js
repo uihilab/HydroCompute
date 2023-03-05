@@ -248,6 +248,10 @@ class hydrocompute {
     return this.engine.execTime;
   }
 
+  /**
+   * 
+   * @returns 
+   */
   availableResults() {
     return Object.keys(this.engineResults)
   }

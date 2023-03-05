@@ -18,9 +18,10 @@ export default class threadManager {
   }
 
   /**
-   * Holder for the workers created by the class. It creates an object that contains the workers defined 
+   * @method createWorkerThread
+   * @description Holder for the workers created by the class. It creates an object that contains the workers defined 
    * by the execution context holding the execution time of each thread and the worker itself.
-   * @param {*} number 
+   * @param {Number} number - number of thread to run
    */
   createWorkerThread(number) {
     this.workerThreads[number] = {
@@ -32,7 +33,7 @@ export default class threadManager {
 
   /**
    * 
-   * @param {*} index 
+   * @param {Number} index 
    */
   initializeWorkerThread(index) {
     this.workerThreads[index].worker = (args) => {
@@ -68,6 +69,8 @@ export default class threadManager {
   }
 
   /**
+   * @method resetWorkers
+   * @description Resets all the workers set to work in the compute engine.
    * 
    */
   resetWorkers() {
@@ -78,6 +81,8 @@ export default class threadManager {
   }
 
   /**
+   * @method execTime
+   * @description 
    * 
    */
   get execTimes() {
