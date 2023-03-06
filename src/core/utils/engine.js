@@ -144,7 +144,7 @@ export default class engine {
       dependencies = [],
       step = 0,
       data = [],
-      splitBool = true,
+      splitBool = false,
       length = 1,
       threadCount = 0,
     } = args;
@@ -158,18 +158,31 @@ export default class engine {
     //EXAMPLE CASE: If there are multiple functions that do not depend of each other
     //assume that the work can be parallelized
     //THIS NEEDS TO CHANGE
-    if (functions.length > 0 && dependencies.length === 0 && !splitBool) {
-      dataSplits = splits.main("split1DArray", {
-        data: data,
-        n: functions.length,
-      });
-    } else if (functions.length > 0 && dependencies.length === 0 && splitBool) {
-      dataSplits = Array.from({ length: functions.length }, (_, i) =>
-        data.slice()
-      );
-    } else if (functions.length > 0 && dependencies.length > 0) {
-      dataSplits = data;
+    switch(true) {
+      case (functions.length === 1):
+        dataSplits = data;
+        break;
+      case (functions.length > 0 && dependencies.length === 0 && splitBool):
+        dataSplits = splits.main("split1DArray", {
+          data: data,
+          n: functions.length,
+        });
+        break;
+      case (functions.length > 0 && dependencies.length === 0 && !splitBool):
+        dataSplits = Array.from({ length: functions.length }, (_, i) =>
+          data.slice()
+        );
+        break;
+      case (functions.length > 0 && dependencies.length > 0):
+        dataSplits = data;
+        // Handle the case where there are multiple functions with multiple dependencies
+        break;
+      default:
+        dataSplits = data;
+        // Handle any other case that was not anticipated
+        break;
     }
+    
 
     let _args = {
       data: dataSplits,
@@ -287,8 +300,15 @@ export default class engine {
       //console.log(await x)
     }
     if (args.threadCount === this.threads.results.length) {
-      this.results.push(this.threads.results);
-      [this.funcEx, this.scriptEx] = this.threads.execTimes;
+      [this.funcEx, this.scriptEx] = this.threads.execTimes
+
+      this.results.push(
+        {
+          //step: stepCounter,
+          results: this.threads.results,
+          funcEx: this.funcEx,
+          scriptEx: this.scriptEx
+        });
       //this.setEngine()
 
       console.log(
@@ -296,7 +316,6 @@ export default class engine {
       );
       this.threads.resetWorkers();
     }
-    console.log(x)
     return x;
   }
 

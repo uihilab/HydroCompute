@@ -81,19 +81,22 @@ class hydrocompute {
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
       let d = [], l =[]
+      try{
       for (let item of this.availableData) {
         for (let id of args.dataIds){
         if (id === item.id) {
         d.push(item.data.slice())
         l.push(item.length)
-      } else {
-        return console.error(
-          `Data with nametag: "${id}" not found in the storage.`
-        );
+        }
+        }
       }
-      }
+      return [d,l];
     }
-    return [d,l];
+    catch (error) {
+      return console.error(
+        `Data with nametag: "${id}" not found in the storage.`, error
+      );
+    }
     })();
     if (
       (data.length > 0 && args.functions.length > 0) ||
@@ -132,8 +135,6 @@ class hydrocompute {
     this.engineResults[`Run_${this.instanceRun}`] = {
       engineName: this.currentEngine(),
       results: this.engine.results,
-      funcTime: this.engine.funcEx,
-      execTime: this.engine.scriptEx,
     };
     console.log(`Finished.`);
     //setting results to be saved in main class

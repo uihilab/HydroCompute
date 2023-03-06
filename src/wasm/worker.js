@@ -15,7 +15,7 @@ self.onmessage = async (e) => {
           let mod = wasmSc[scr][module];
 
           if (scr === "AS"){
-            ref = mod[funcName];
+            let ref = mod[funcName];
             result = handleAS(module, ref, data, mod, funcArgs);
           }
           else if (scr === "C") {
