@@ -28,7 +28,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 
     const handleResolution = (promise, i, value) => {
       //Assumming that the worker is giving back a Float32Array. This slicing might be done some other way. Keep on mind!
-      values[i] = value.slice();
+      values[i] = value;
       if (stopped) {
         return;
       }
@@ -48,7 +48,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
               //Goes on a stepwise execution manner.
               _args =
                 type === "steps"
-                  ? new Float32Array(values[dag[j][k]][values[dag[j][k]].length - 1])
+                  ? new Float32Array(values[dag[j][k]][values[dag[j][k]].length - 1].slice())
                   : values[dag[j][k]];
             }
             args.data = _args;
