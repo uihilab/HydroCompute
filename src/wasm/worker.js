@@ -12,10 +12,13 @@ self.onmessage = async (e) => {
       for (let module in wasmSc[scr]) {
         if (funcName in wasmSc[scr][module]) {
           //points to the current module
-          let mod = wasmSc[scr][module],
+          let mod = wasmSc[scr][module];
+
+          if (scr === "AS"){
             ref = mod[funcName];
-          result = handleAS(module, ref, data, mod, funcArgs);
-          if (scr === "C") {
+            result = handleAS(module, ref, data, mod, funcArgs);
+          }
+          else if (scr === "C") {
             result = handleC(module, funcName, data, mod);
           }
 
@@ -87,7 +90,6 @@ const handleAS = (moduleName, ref, data, mod, funcArgs) => {
       views.releaseP(mat1, mod);
     }
   } else {
-    console.log(funcArgs);
     let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
     mod.__setArgumentsLength(funcArgs.length === 0 ? 1 : funcArgs.length);
     funcArgs.unshift(arr);

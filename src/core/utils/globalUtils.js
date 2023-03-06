@@ -27,8 +27,8 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
     values = [];
 
     const handleResolution = (promise, i, value) => {
-      //Assumming that the worker is giving back a Float32Array
-      values[i] = value;
+      //Assumming that the worker is giving back a Float32Array. This slicing might be done some other way. Keep on mind!
+      values[i] = value.slice();
       if (stopped) {
         return;
       }
@@ -48,11 +48,17 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
               //Goes on a stepwise execution manner.
               _args =
                 type === "steps"
-                  ? values[dag[j][k]][args.functions.length - 1]
+                  ? new Float32Array(values[dag[j][k]][values[dag[j][k]].length - 1])
                   : values[dag[j][k]];
             }
             args.data = _args;
-            var promise = functions[j](args);
+            var promise = null
+            if (type === "steps"){
+              promise = functions[j](j, _args)
+            }
+            else {
+              promise = functions[j](args);
+            }
             promise.then(
               (value) => {
                 handleResolution(promise, j, value);
@@ -68,7 +74,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 
     const handleRejection = (promise, i, error) => {
       stopped = true;
-      console.log(error)
+      console.error('There was an error executing a function. More details: ', error)
       reject(error);
     };
 
@@ -76,7 +82,14 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
       if (counts[i] > 0) {
         continue;
       }
-      var promise = functions[i](args);
+
+      var promise = null;
+      
+      if (type === "steps") {
+      promise = functions[i](i);
+    } else {
+      promise = functions[i](args);
+    }
       promise.then(
         (value) => {
           handleResolution(promise, i, value);

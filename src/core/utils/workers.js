@@ -52,7 +52,7 @@ export default class threadManager {
           w.onmessage = ({data}) => {
             console.log(`working...`)
             let {results, funcExec, workerExec} = data
-            resolve(results, funcExec)
+            resolve(results)
               this.results.push(results) 
               this.workerThreads[index].functionTime += funcExec,
               this.workerThreads[index].workerTime += workerExec

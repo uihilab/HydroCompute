@@ -70,22 +70,30 @@ class hydrocompute {
    *
    * @param {Object{}} args - contains callbacks, functions, dataId, and dependencies
    * @param {Boolean} callbacks - true if there are multiple funcitons  to run
-   * @param {String} dataId - data saved in the availableData object with a specific ID. Might be moved somewhere else in the future
-   * @param {Object[]} funcArgs - array of aditional parameters for functions as strings. Each additional argument per function is an object.
-   * @param {Object[]} dependencies - array of dependencies as numbers if callbacks is true. In format [[], [Dep0], [Dep0, Dep1]]
-   * @param {Object[]} functions - array of functions as strings specifying the functions to run.
+   * @param {Array} dataIds - data saved in the availableData object with a specific ID. Might be moved somewhere else in the future
+   * @param {Array} funcArgs - array of aditional parameters for functions as strings. Each additional argument per function is an object.
+   * @param {Array} dependencies - array of dependencies as numbers if callbacks is true. In format [[], [Dep0], [Dep0, Dep1]]
+   * @param {Array} functions - array of functions as strings specifying the functions to run.
    * @returns
    */
   async run(args) {
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
+      let d = [], l =[]
       for (let item of this.availableData) {
-        if (item.id === args.dataId) return [item.data, item.length];
+        for (let id of args.dataIds){
+        if (id === item.id) {
+        d.push(item.data.slice())
+        l.push(item.length)
+      } else {
+        return console.error(
+          `Data with nametag: "${id}" not found in the storage.`
+        );
       }
-      return console.error(
-        `Data with nametag: "${args.dataId}" not found in the storage.`
-      );
+      }
+    }
+    return [d,l];
     })();
     if (
       (data.length > 0 && args.functions.length > 0) ||
@@ -97,13 +105,12 @@ class hydrocompute {
       try {
         this.instanceRun += 1;
         await this.engine.run({
-          callbacks: args.callbacks,
+          splitBool: args.callbacks,
           data: data[0],
           length: data[1],
           functions: args.functions,
           funcArgs: args.funcArgs,
           dependencies: args.dependencies,
-          steps: this.steps,
           linked: this.linked,
         });
         this.setResults();
@@ -117,6 +124,8 @@ class hydrocompute {
   }
 
   /**
+   * Result setter once the simulation is finished.
+   * @method setResults
    *
    */
   setResults() {
@@ -133,7 +142,7 @@ class hydrocompute {
 
   /**
    *
-   * @returns
+   * @returns name - current engine name set.
    */
   currentEngine() {
     return this.currentEngineName;
