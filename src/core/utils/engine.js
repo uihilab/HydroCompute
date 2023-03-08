@@ -159,7 +159,7 @@ export default class engine {
       this.threads.createWorkerThread(i);
     }
 
-    let dataSplits = null;
+    let dataSplits = [];
 
     //EXAMPLE CASE: If there are multiple functions that do not depend of each other
     //assume that the work can be parallelized
@@ -174,9 +174,9 @@ export default class engine {
         });
         break;
       case functions.length > 0 && dependencies.length === 0 && !splitBool:
-        dataSplits = Array.from({ length: functions.length }, (_, i) =>
-          data.slice()
-        );
+        for (let i =0 ; i < functions.length; i ++) {
+          dataSplits.push(data.slice())
+        }
         break;
       case functions.length > 0 && dependencies.length > 0:
         dataSplits = data;
