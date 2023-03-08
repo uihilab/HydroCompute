@@ -8,7 +8,7 @@ import { gpuScripts } from "../../webgpu/gpuScripts.js";
 /**
  * @class
  * @name engine
- * @description main engine driver for all the available modules in the hydrocompute library.
+ * @description main engine driver for all the available modules in the hydrocompute library
  * @property results - array with results
  * @property execTime - execution time of the running tasks
  * @property engineName - name of the engine running (javascript, wasm, webgpu)
@@ -16,7 +16,7 @@ import { gpuScripts } from "../../webgpu/gpuScripts.js";
  */
 export default class engine {
   /**
-   *
+   *@description constructor to set the property variables ready for execution
    * @param {String} engine - name of engine running the workers
    * @param {String} workerLocation - location of the worker script running the data
    */
@@ -28,8 +28,9 @@ export default class engine {
 
   /**
    * @method initialize
+   * @memberof engine
    * @description setter for the current engine name and worker location
-   * @param {String} engine
+   * @param {String} engine - engine worker location to be fetched
    */
   initialize(engine) {
     this.engineName = engine;
@@ -37,9 +38,10 @@ export default class engine {
   }
 
   /**
-   *
-   * @param {*} args
-   * @returns
+   * @method run
+   * @memberof engine
+   * @description interface method from the compute layer. it resets the values for each of the 
+   * @param {Object} args - containing the values for each step of splitBool, data, length, functions, funcArgs, dependencies, linked. See documentation for the HydroCompute class for more details
    */
   async run(args) {
     //Default behavior for when no data or no functions are passed.
@@ -103,6 +105,7 @@ export default class engine {
       });
     }
 
+    try{
     //Evluate the execution as a set of trailing down promises that resolve on after the other
     if (linked) {
       var stepResolve = [];
@@ -111,10 +114,10 @@ export default class engine {
         //THIS NEEDS TO CHANGE
         stepResolve.push((i, data) => {
           return new Promise(async (resolve) => {
-            let _args = stepArgs[i]
+            let _args = stepArgs[i];
             //this could be changed
-            if (data !== undefined){
-              _args.data = data
+            if (data !== undefined) {
+              _args.data = data;
             }
             let p = await this.stepRun(_args);
             resolve(p);
@@ -128,6 +131,9 @@ export default class engine {
         await this.stepRun(stepArg);
       }
     }
+  } catch (error) {
+    console.error('There was an error with the execution of the steps. More info:', error)
+  }
   }
 
   /**
@@ -157,23 +163,22 @@ export default class engine {
 
     //EXAMPLE CASE: If there are multiple functions that do not depend of each other
     //assume that the work can be parallelized
-    //THIS NEEDS TO CHANGE
-    switch(true) {
-      case (functions.length === 1):
+    switch (true) {
+      case functions.length === 1:
         dataSplits = data;
         break;
-      case (functions.length > 0 && dependencies.length === 0 && splitBool):
+      case functions.length > 0 && dependencies.length === 0 && splitBool:
         dataSplits = splits.main("split1DArray", {
           data: data,
           n: functions.length,
         });
         break;
-      case (functions.length > 0 && dependencies.length === 0 && !splitBool):
+      case functions.length > 0 && dependencies.length === 0 && !splitBool:
         dataSplits = Array.from({ length: functions.length }, (_, i) =>
           data.slice()
         );
         break;
-      case (functions.length > 0 && dependencies.length > 0):
+      case functions.length > 0 && dependencies.length > 0:
         dataSplits = data;
         // Handle the case where there are multiple functions with multiple dependencies
         break;
@@ -182,7 +187,6 @@ export default class engine {
         // Handle any other case that was not anticipated
         break;
     }
-    
 
     let _args = {
       data: dataSplits,
@@ -193,10 +197,14 @@ export default class engine {
       length,
     };
 
+    try{
     //Need to change the dependencies. They can be different for each
     //of the steps linked, or the functions per step.
     let r = await this.taskRunner(_args, step, dependencies);
-    return r
+    return r;
+  } catch (error) {
+    console.error(`There was an error executing step: ${step}. More info: `, error)
+  }
   }
 
   /**
@@ -209,7 +217,7 @@ export default class engine {
    */
   async concurrentRun(args, step, dependencies) {
     for (var i = 0; i < args.threadCount; i++) {
-      let d = args.splitting ? args.data[i].buffer : args.data.buffer;
+      let d = !args.splitting ? args.data[i].buffer : args.data.buffer;
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         data: d,
@@ -221,6 +229,7 @@ export default class engine {
       };
       this.threads.initializeWorkerThread(i);
     }
+    try{
     let res = await DAG({
       functions: Object.keys(this.threads.workerThreads).map((key) => {
         return this.threads.workerThreads[key].worker;
@@ -230,6 +239,9 @@ export default class engine {
       type: "functions",
     });
     return res;
+  } catch (error) {
+    console.error(`There was an error executing the DAG for step: ${step}. More info: `, error)
+  }
   }
 
   /**
@@ -262,7 +274,7 @@ export default class engine {
       let batchTasks = [];
       for (var i = 0; i < batch.functions.length; i++) {
         let j = last + i;
-        let d = args.splitting ? args.data[j].buffer : args.data.buffer;
+        let d = !args.splitting ? args.data[j].buffer : args.data.buffer;
         let workerArgs = {
           data: d,
           id: i,
@@ -300,15 +312,14 @@ export default class engine {
       //console.log(await x)
     }
     if (args.threadCount === this.threads.results.length) {
-      [this.funcEx, this.scriptEx] = this.threads.execTimes
+      [this.funcEx, this.scriptEx] = this.threads.execTimes;
 
-      this.results.push(
-        {
-          //step: stepCounter,
-          results: this.threads.results,
-          funcEx: this.funcEx,
-          scriptEx: this.scriptEx
-        });
+      this.results.push({
+        //step: stepCounter,
+        results: this.threads.results,
+        funcEx: this.funcEx,
+        scriptEx: this.scriptEx,
+      });
       //this.setEngine()
 
       console.log(
@@ -335,29 +346,10 @@ export default class engine {
   }
 
   /**
-   *
-   * @returns
-   */
-  showResults() {
-    return this.results;
-  }
-
-  /**
-   *
-   * @returns
-   */
-  functionTime() {
-    return this.funcEx;
-  }
-
-  scriptTime() {
-    return this.scriptEx;
-  }
-
-  /**
-   * @description Returns all the available scripts for each of the engines
    * @method availableScripts
-   * @returns {Object} result coming from the type of engine called
+   * @memberof engine
+   * @description Returns all the available scripts for each of the engines
+   * @returns {Object} available functions for each script on an engine
    */
   availableScripts() {
     if (this.engineName === "javascript") return jsScripts();

@@ -77,6 +77,7 @@ class hydrocompute {
    * @returns
    */
   async run(args) {
+    args.engine !== undefined ? this.setEngine(args.engine) : null
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -132,11 +133,11 @@ class hydrocompute {
    *
    */
   setResults() {
-    this.engineResults[`Run_${this.instanceRun}`] = {
+    this.engineResults[`Simulation_${this.instanceRun}`] = {
       engineName: this.currentEngine(),
       results: this.engine.results,
     };
-    console.log(`Finished.`);
+    console.log(`Simulation finished.`);
     //setting results to be saved in main class
     this.engine.setEngine();
   }

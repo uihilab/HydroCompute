@@ -59,6 +59,7 @@ export default class threadManager {
               w.terminate();
           };
           w.onerror = (error) => {
+            console.error(`There was an error executing thread: ${index}, function: ${args.funcName}, step: ${args.step}. More info: `, error)
             reject(error);
           };
 
