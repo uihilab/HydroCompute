@@ -202,15 +202,19 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 export const dataCloner = (data) => {
   //Deep copy of array data using recursion
   const arrayCloner = (arr) => {
-    if (arr instanceof Float32Array){
-      return arr
+    if (arr instanceof Float32Array) {
+      return arr;
     }
     if (Array.isArray(arr[0])) {
-      return arr.map(subArr => arrayCloner(subArr));
+      const clonedArr = new Array(arr.length);
+      for (let i = 0; i < arr.length; i++) {
+        clonedArr[i] = new Float32Array(arrayCloner(arr[i]));
+      }
+      return clonedArr;
     } else {
-      return new Float32Array(arr);
+      return arr;
     }
-  }; 
+  };
 
   const objectCloner = (inObject) => {
     let tempOb = {};
@@ -229,11 +233,16 @@ export const dataCloner = (data) => {
     return tempOb;
   };
 
+  try{
   if (Array.isArray(data)) {
-    return flattenFloat32Array(arrayCloner(data));
+    let stgD = arrayCloner(data)
+    return flattenFloat32Array(stgD);
   } else {
     return objectCloner(data);
   }
+} catch (error) {
+  return console.error(`There was an error cloning the data. More info: `, error)
+}
 };
 
 /**
@@ -272,18 +281,22 @@ export const checkSharedArrays = () => {
  * @param {Array} arrays - 
  * @returns 
  */
+
 export const concatArrays = (arrays) => {
-  if (arrays.length === 1) return arrays[0]
-  let totalLength = arrays.reduce((sum, array) => 
-  sum + array.length, 0
-  ),
-  finalArray = new Float32Array(totalLength),
-  offset = 0;
-  for (let array of arrays){
-    finalArray.set(array, offset);
-    offset += array.length;
-  };
-  return finalArray
+  if (arrays.length === 1) {
+    return arrays[0];
+  }
+
+  const totalLength = arrays.reduce((sum, array) => sum + array.length, 0);
+  const finalArray = new Float32Array(totalLength);
+
+  let offset = 0;
+  for (let i = 0; i < arrays.length; i++) {
+    finalArray.set(arrays[i], offset);
+    offset += arrays[i].length;
+  }
+
+  return finalArray;
 }
 
 /**

@@ -1,6 +1,8 @@
 self.onmessage = async (e) => {
   performance.mark('start-script')
   const scripts = await import('./scripts/scripts.js')
+  //Need to correct firefox imports
+  //const scripts = self.importScripts('./scripts/scripts.js')
   
   const {funcName, id, step} = e.data;
   const data = new Float32Array(e.data.data);

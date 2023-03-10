@@ -274,7 +274,8 @@ export default class engine {
       let batchTasks = [];
       for (var i = 0; i < batch.functions.length; i++) {
         let j = last + i;
-        let d = !args.splitting ? args.data[j].buffer : args.data.buffer;
+        //item changed, check it out later
+        let d = args.data.buffer !== undefined ? args.data.buffer : args.data[j].buffer;
         let workerArgs = {
           data: d,
           id: i,
