@@ -49,6 +49,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
               _args =
                 type === "steps"
                   ? new Float32Array(values[dag[j][k]][values[dag[j][k]].length - 1].slice())
+                  //This needs correction
                   : values[dag[j][k]];
             }
             args.data = _args;

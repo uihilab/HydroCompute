@@ -2,6 +2,7 @@
  * Error classes to divert issues throughout the code.
  */
 
+//This needs expansion
 export class ValueErr extends Error {
     constructor(message){
         super(message);
