@@ -77,27 +77,28 @@ class hydrocompute {
    * @returns
    */
   async run(args) {
-    args.engine !== undefined ? this.setEngine(args.engine) : null
+    args.engine !== undefined ? this.setEngine(args.engine) : null;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
-      let d = [], l =[]
-      try{
-      for (let item of this.availableData) {
-        for (let id of args.dataIds){
-        if (id === item.id) {
-        d.push(item.data.slice())
-        l.push(item.length)
+      let d = [],
+        l = [];
+      try {
+        for (let item of this.availableData) {
+          for (let id of args.dataIds) {
+            if (id === item.id) {
+              d.push(item.data.slice());
+              l.push(item.length);
+            }
+          }
         }
-        }
+        return [d, l];
+      } catch (error) {
+        return console.error(
+          `Data with nametag: "${id}" not found in the storage.`,
+          error
+        );
       }
-      return [d,l];
-    }
-    catch (error) {
-      return console.error(
-        `Data with nametag: "${id}" not found in the storage.`, error
-      );
-    }
     })();
     if (
       (data.length > 0 && args.functions.length > 0) ||
@@ -135,7 +136,7 @@ class hydrocompute {
   setResults() {
     this.engineResults[`Simulation_${this.instanceRun}`] = {
       engineName: this.currentEngine(),
-      results: this.engine.results,
+      ...this.engine.results,
     };
     console.log(`Simulation finished.`);
     //setting results to be saved in main class
@@ -181,8 +182,12 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-      //this needs change
-    return new Float32Array(this.engineResults[name].results[0][0]);
+    let stgViewer = []
+    for (let r of this.engineResults[name].results){
+      stgViewer.push(new Float32Array(r))
+    }
+    //this needs change
+    return stgViewer;
   }
 
   /**
@@ -260,11 +265,11 @@ class hydrocompute {
   }
 
   /**
-   * 
-   * @returns 
+   *
+   * @returns
    */
   availableResults() {
-    return Object.keys(this.engineResults)
+    return Object.keys(this.engineResults);
   }
 }
 

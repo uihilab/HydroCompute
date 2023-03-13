@@ -40,7 +40,7 @@ export default class engine {
   /**
    * @method run
    * @memberof engine
-   * @description interface method from the compute layer. it resets the values for each of the 
+   * @description interface method from the compute layer. it resets the values for each of the
    * @param {Object} args - containing the values for each step of splitBool, data, length, functions, funcArgs, dependencies, linked. See documentation for the HydroCompute class for more details
    */
   async run(args) {
@@ -83,6 +83,7 @@ export default class engine {
         thisThreadCount = thisFunctions.length,
         thisDataLength = length[i];
 
+      //defaults in case there are no inputs from the user
       thisDep =
         typeof thisDep === "undefined" || thisDep === null || thisDep[0] === ""
           ? []
@@ -105,35 +106,40 @@ export default class engine {
       });
     }
 
-    try{
-    //Evluate the execution as a set of trailing down promises that resolve on after the other
-    if (linked) {
-      var stepResolve = [];
+    try {
+      //Evluate the execution as a set of trailing down promises that resolve on after the other
+      if (linked) {
+        var stepResolve = [];
 
-      for (var i = 0; i < stepArgs.length; i++) {
-        //THIS NEEDS TO CHANGE
-        stepResolve.push((i, data) => {
-          return new Promise(async (resolve) => {
-            let _args = stepArgs[i];
-            //this could be changed
-            if (data !== undefined) {
-              _args.data = data;
-            }
-            let p = await this.stepRun(_args);
-            resolve(p);
+        for (var i = 0; i < stepArgs.length; i++) {
+          //THIS NEEDS TO CHANGE
+          stepResolve.push((i, data) => {
+            return new Promise(async (resolve) => {
+              let _args = stepArgs[i];
+              //this could be changed
+              if (data !== undefined) {
+                _args.data = data;
+              }
+              let p = await this.stepRun(_args);
+              resolve(p);
+            });
           });
-        });
+        }
+
+        //Define a trailing down execution
+        await DAG({ functions: stepResolve, args: stepArgs[0], type: "steps" });
+      } else {
+        //Define a step execution
+        for (let stepArg of stepArgs) {
+          await this.stepRun(stepArg);
+        }
       }
-      await DAG({ functions: stepResolve, args: stepArgs[0], type: "steps" });
-    } else {
-      //execution in case the steps arent connected.
-      for (let stepArg of stepArgs) {
-        await this.stepRun(stepArg);
-      }
+    } catch (error) {
+      console.error(
+        "There was an error with the execution of the steps. More info:",
+        error
+      );
     }
-  } catch (error) {
-    console.error('There was an error with the execution of the steps. More info:', error)
-  }
   }
 
   /**
@@ -174,8 +180,8 @@ export default class engine {
         });
         break;
       case functions.length > 0 && dependencies.length === 0 && !splitBool:
-        for (let i =0 ; i < functions.length; i ++) {
-          dataSplits.push(data.slice())
+        for (let i = 0; i < functions.length; i++) {
+          dataSplits.push(data.slice());
         }
         break;
       case functions.length > 0 && dependencies.length > 0:
@@ -197,14 +203,17 @@ export default class engine {
       length,
     };
 
-    try{
-    //Need to change the dependencies. They can be different for each
-    //of the steps linked, or the functions per step.
-    let r = await this.taskRunner(_args, step, dependencies);
-    return r;
-  } catch (error) {
-    console.error(`There was an error executing step: ${step}. More info: `, error)
-  }
+    try {
+      //Need to change the dependencies. They can be different for each
+      //of the steps linked, or the functions per step.
+      let r = await this.taskRunner(_args, step, dependencies);
+      return r;
+    } catch (error) {
+      console.error(
+        `There was an error executing step: ${step}. More info: `,
+        error
+      );
+    }
   }
 
   /**
@@ -217,7 +226,9 @@ export default class engine {
    */
   async concurrentRun(args, step, dependencies) {
     for (var i = 0; i < args.threadCount; i++) {
-      let d = !args.splitting ? args.data[i].buffer : args.data.buffer;
+      let d =           args.data.buffer !== undefined
+      ? args.data.buffer
+      : args.data[j].buffer;
       var _args = {
         //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
         data: d,
@@ -229,19 +240,22 @@ export default class engine {
       };
       this.threads.initializeWorkerThread(i);
     }
-    try{
-    let res = await DAG({
-      functions: Object.keys(this.threads.workerThreads).map((key) => {
-        return this.threads.workerThreads[key].worker;
-      }),
-      dag: dependencies,
-      args: _args,
-      type: "functions",
-    });
-    return res;
-  } catch (error) {
-    console.error(`There was an error executing the DAG for step: ${step}. More info: `, error)
-  }
+    try {
+      let res = await DAG({
+        functions: Object.keys(this.threads.workerThreads).map((key) => {
+          return this.threads.workerThreads[key].worker;
+        }),
+        dag: dependencies,
+        args: _args,
+        type: "functions",
+      });
+      return res;
+    } catch (error) {
+      console.error(
+        `There was an error executing the DAG for step: ${step}. More info: `,
+        error
+      );
+    }
   }
 
   /**
@@ -275,7 +289,10 @@ export default class engine {
       for (var i = 0; i < batch.functions.length; i++) {
         let j = last + i;
         //item changed, check it out later
-        let d = args.data.buffer !== undefined ? args.data.buffer : args.data[j].buffer;
+        let d =
+          args.data.buffer !== undefined
+            ? args.data.buffer
+            : args.data[j].buffer;
         let workerArgs = {
           data: d,
           id: i,

@@ -27,7 +27,7 @@
       <div class="col-md-6">
         <div class="container p-2 bg-light rounded" id="DataGen">
           <h4 class="display-7">Data Retrieval</h4>
-          <p class="lead">Queried from 1940s through today</p>
+          <p class="lead">Queried from 1900s through today</p>
           <hr class="my-4">
           <label for="arraySel" class="form-label">Available Data Sources</label>
           <select class="form-select" name="sourceSelect" id="sourceSelect" onchange="onSelectSource()">
@@ -51,7 +51,7 @@
         <div class="container rounded">
           <div class="row align-items-md-stretch">
             <div class="col-md-6 py-2">
-              <h5 class="display-11 text-center">Current Parametrization</h5>
+              <h5 class="display-11 text-center">Retrieved Data</h5>
               <div id="paramTable"></div>
               <button class="btn btn-outline-secondary float-start">Clear Data</button>
               <button class="btn btn-outline-secondary float-end">Download
@@ -59,8 +59,7 @@
             </div>
             <div class="col-md-6 py-2">
               <h5 class="display-11 text-center">Graphical output</h5>
-              <div id="graph">
-
+              <div id="visualize">
               </div>
             </div>
             <br>
@@ -75,9 +74,10 @@
     let source_sites = [];
     let runningData;
     let computeReady = [];
+    let stations_to_query = [];
     const initHydrocompute = () => {
-      window.jscompute = new hydrocompute('javascript');
-      window.wasmcompute = new hydrocompute('wasm');
+      window.compute = new hydrocompute();
+      //window.wasmcompute = new hydrocompute('wasm');
       let e = document.getElementById('sourceSelect')
       for (let source of sources) {
         e.add(new Option(`${source}`, `${source}`))
@@ -137,9 +137,9 @@
     }
 
     const onSelectStation = async () => {
-      computeReady = []
+      computeReady = [];
+      stations_to_query = [];
       let station_select = document.getElementById('stationSelect')
-      let stations_to_query = [];
       let options = station_select && station_select.options;
       let opt;
       for (var i = 0, iLen = options.length; i < iLen; i++) {
@@ -161,8 +161,14 @@
         //dates need to change here
         format: 'json',
         variable: '00060',
-        startDt: '1940-01-01',
-        endDt: '2023-01-29'
+        startDt: '1900-01-01',
+        endDt: (() => {
+          let d = new Date(Date.now()); return date = [
+            d.getFullYear(),
+            ('0' + (d.getMonth() + 1)).slice(-2),
+            ('0' + d.getDate()).slice(-2)
+          ].join('-')
+        })()
       }
 
 
@@ -251,19 +257,50 @@
     }
 
     const runCompute = async () => {
-      wasmcompute.availableData = []
+      compute.availableData = []
       let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'expoMovingAverage'];
-      let cFuns = ['_arima', '_acf'];
+      let cFuns = ['_arima', '_acf', '_acf', '_arima'];
+
       for (let item of computeReady) {
-        jscompute.data({ id: item.name, data: item.data[1] })
-        wasmcompute.data({ id: item.name, data: item.data[1] })
-        let x = Array.from({ length: cFuns.length }, (_, i) => [i - 1]);
-        x[0] = [];
-        let y = Array.from({ length: jsFuns.length }, (_, i) => [i - 1]);
-        y[0] = [];
-        wasmcompute.run({ callbacks: false, functions: cFuns, dataId: item.name, dependencies: [], funcArgs: [] })
-        jscompute.run({ callbacks: false, functions: jsFuns, dataId: item.name, dependencies: y, funcArgs: [] })
+        compute.data({ id: item.name, data: item.data[1] })
+        //wasmcompute.data({ id: item.name, data: item.data[1] })
       }
+      //for (let item of computeReady) {
+
+      let x = Array.from({ length: cFuns.length }, (_, i) => [i - 1]);
+      x[0] = [];
+      let y = Array.from({ length: jsFuns.length }, (_, i) => [i - 1]);
+      y[0] = [];
+
+      let calls = Array.from({ length: jsFuns.length }, (_, i) => false);    
+
+      await compute.run({
+        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
+        functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns),
+        dataIds: stations_to_query,
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y), funcArgs: []
+      });
+
+      compute.setEngine('wasm')
+
+      await compute.run({
+        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
+        functions: Array.from({ length: stations_to_query.length }, (_, i) => cFuns),
+        dataIds: stations_to_query, dependencies: [], funcArgs: []
+      })
+
+      //visualizeResults()
+
+      // await jscompute.run({ callbacks: [false, false], functions: [jsFuns, jsFuns], dataIds: [item.name, item.name], dependencies: [y, y], funcArgs: [], linked: true})
+      //}
+    }
+
+    const visualizeResults = () => {
+      let visualizeDiv = document.getElementById('visualize');
+      
+      let data = new google.visualization.DataTable();
+      data.addColumn('data', 'Date');
+
     }
 
   </script>

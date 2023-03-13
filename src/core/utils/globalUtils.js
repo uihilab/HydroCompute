@@ -213,7 +213,7 @@ export const dataCloner = (data) => {
       }
       return clonedArr;
     } else {
-      return arr;
+      return new Float32Array(arr);
     }
   };
 
