@@ -272,7 +272,7 @@
       let y = Array.from({ length: jsFuns.length }, (_, i) => [i - 1]);
       y[0] = [];
 
-      let calls = Array.from({ length: jsFuns.length }, (_, i) => false);    
+      compute.setEngine('javascript')
 
       await compute.run({
         callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
@@ -288,6 +288,8 @@
         functions: Array.from({ length: stations_to_query.length }, (_, i) => cFuns),
         dataIds: stations_to_query, dependencies: [], funcArgs: []
       })
+
+      console.log('Run has finished.')
 
       //visualizeResults()
 

@@ -118,7 +118,7 @@ class hydrocompute {
           dependencies: args.dependencies,
           linked: this.linked,
         });
-        this.setResults();
+        this.setResults(args.dataIds);
       } catch (error) {
         console.error("There was an error with the given run", error);
         return error;
@@ -133,10 +133,16 @@ class hydrocompute {
    * @method setResults
    *
    */
-  setResults() {
+  setResults(names) {
+    const stgOb = Object.fromEntries(
+      Object.entries({ ...this.engine.results }).map(([key, value], index) => [
+        names[index],
+        value,
+      ])
+    );
     this.engineResults[`Simulation_${this.instanceRun}`] = {
       engineName: this.currentEngine(),
-      ...this.engine.results,
+      ...stgOb,
     };
     console.log(`Simulation finished.`);
     //setting results to be saved in main class
@@ -182,9 +188,19 @@ class hydrocompute {
       return console.error(
         "Please set the required engine first before initializing!"
       );
-    let stgViewer = []
-    for (let r of this.engineResults[name].results){
-      stgViewer.push(new Float32Array(r))
+    let stgViewer = [];
+    for (let resultName in this.engineResults[name]) {
+      if (resultName !== "engineName") {
+        let x = []
+        for (let stgRes of this.engineResults[name][resultName]['results']) {
+          //for (let result in this.engineResults[name][resultName][stgRes].results) {
+            if (!stgRes.byteLength === 0) {
+              x.push(new Float32Array(stgRes));
+            //}
+          }
+        }
+        stgViewer.push({name: resultName, results: x })
+      }
     }
     //this needs change
     return stgViewer;
