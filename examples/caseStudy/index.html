@@ -59,7 +59,21 @@
             </div>
             <div class="col-md-6 py-2">
               <h5 class="display-11 text-center">Graphical output</h5>
-              <div id="visualize">
+              <div class="row align-items-sm-stretch">
+                <div id="dashboard-div">
+                  <div id="control-div"></div>
+                  <div id="chart"></div>
+                </div>
+              </div>
+              <div class="row align-items-sm-stretch">
+                <div class="col-md-3 py-2">
+                  <select class="form-select" style="visibility:hidden" name="resultSelect" id="resultSelect"
+                    onchange="populateRange()"></select>
+                </div>
+                <div class="col-md-3 py-2">
+                  <select class="form-select" style="visibility:hidden;" name="rangeSelect" id="rangeSelect"
+                    onchange="visualizeDownloaded()"></select>
+                </div>
               </div>
             </div>
             <br>
@@ -249,6 +263,7 @@
         }
         tbody.appendChild(tr)
       }
+      tbody.className = "text-center"
 
       table.appendChild(thead);
       table.appendChild(tbody);
@@ -257,9 +272,12 @@
     }
 
     const runCompute = async () => {
+
+      populateResults()
+
       compute.availableData = []
       let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'expoMovingAverage'];
-      let cFuns = ['_arima', '_acf', '_acf', '_arima'];
+      let cFuns = ['_arima', '_acf'];
 
       for (let item of computeReady) {
         compute.data({ id: item.name, data: item.data[1] })
@@ -286,23 +304,130 @@
       await compute.run({
         callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
         functions: Array.from({ length: stations_to_query.length }, (_, i) => cFuns),
-        dataIds: stations_to_query, dependencies: [], funcArgs: []
+        dataIds: stations_to_query,
+        dependencies: [], funcArgs: []
       })
 
       console.log('Run has finished.')
-
-      //visualizeResults()
-
-      // await jscompute.run({ callbacks: [false, false], functions: [jsFuns, jsFuns], dataIds: [item.name, item.name], dependencies: [y, y], funcArgs: [], linked: true})
-      //}
+      //getandSeeResult()
     }
 
-    const visualizeResults = () => {
-      let visualizeDiv = document.getElementById('visualize');
-      
-      let data = new google.visualization.DataTable();
-      data.addColumn('data', 'Date');
+    const populateResults = () => {
+      let resultSelect = document.getElementById('resultSelect');
+      resultSelect.style.visibility = "visible"
 
+      for (let query of computeReady) {
+        resultSelect.add(new Option(`${query.name}`, `${query.name}`))
+      }
+      resultSelect.value = computeReady[0].name
+      populateRange()
+    }
+
+    //
+    const populateRange = () => {
+      let optionSelect = document.getElementById('resultSelect').value;
+      let rangePopulate = document.getElementById('rangeSelect')
+      rangePopulate.options.length = 0
+      rangePopulate.style.visibility = "visible"
+
+
+      for (let computeValue of computeReady) {
+        if (computeValue.name === optionSelect) {
+          let sliceSize = 3650
+          console.log(sliceSize)
+          for (let i = 0; i < computeValue.data[0].length; i += sliceSize) {
+            let start = i;
+            let end = Math.min(start + sliceSize, computeValue.data[0].length);
+            let sliced = computeValue.data[0].slice(start, end);
+            rangePopulate.add(new Option(`Dates between ${sliced[0].slice(0, 7)} through ${sliced[sliced.length - 1].slice(0, 7)}`, `[${start}, ${end}]`));
+          }
+          //visualizeDownloaded(computeReady[0], range)
+          return
+        }
+      }
+    }
+
+    const visualizeDownloaded = () => {
+      let optionSelect = document.getElementById('resultSelect').value;
+      let rangePopulate = document.getElementById('rangeSelect').value;
+      let engineResults = []
+
+      let names = ['expoMovingAvg', 'arima', 'acf']
+
+      let dateView, dataView, resultView
+      let range = JSON.parse(rangePopulate)
+      for (let val of computeReady) {
+        if (val.name === optionSelect) {
+          dateView = val.data[0].slice(range[0], range[1] + 1)
+          dataView = val.data[1].slice(range[0], range[1] + 1)
+        }
+      }
+
+      for (let result of compute.results('Simulation_1')) {
+        if (result.name === optionSelect) {
+          for (let r_1 in result.results) {
+            engineResults.push(r_1.slice(range[0], range[1] + 1))
+          }
+        }
+
+      }
+      for (let result of compute.results('Simulation_2')) {
+        if (result.name === optionSelect) {
+          for (let r_2 of result.results) {
+            engineResults.push(r_2.slice(range[0], range[1] + 1))
+          }
+        }
+      }
+
+      console.log(engineResults)
+
+
+      google.charts.load('current', {
+        callback: function () {
+
+          let data = new google.visualization.DataTable();
+
+          data.addColumn('date', 'Date');
+          data.addColumn('number', `${optionSelect}`)
+
+          for (let name of names) {
+            data.addColumn('number', name)
+          }
+
+          for (let j = 0; j < dateView.length; j++) {
+            data.addRow([new Date(dateView[j]), dataView[j], engineResults[0][j], engineResults[1][j], engineResults[2][j]])
+          }
+
+
+
+          var chart = new google.visualization.ChartWrapper({
+            chartType: 'LineChart',
+            containerId: "chart",
+            options: {
+              theme: "maximized"
+            }
+          });
+
+          var control = new google.visualization.ControlWrapper({
+            controlType: "ChartRangeFilter",
+            containerId: "control-div",
+            options: {
+              filterColumnIndex: 0
+            }
+          })
+
+          google.visualization.events.addListener(control, 'statechange', () => {
+            let state = control.getState();
+            let view = new google.visualization.DataView(data);
+            view.setRows(view.getFilteredRows([{ column: 0, minValue: state.range.start, maxValue: state.range.end }]))
+          })
+
+          let dashboard = new google.visualization.Dashboard(document.getElementById('dashboard-div'));
+          dashboard.bind([control], [chart]);
+          dashboard.draw(data)
+        },
+        packages: ['controls', 'corechart']
+      })
     }
 
   </script>

@@ -190,16 +190,16 @@ class hydrocompute {
       );
     let stgViewer = [];
     for (let resultName in this.engineResults[name]) {
+      let x = []
       if (resultName !== "engineName") {
-        let x = []
-        for (let stgRes of this.engineResults[name][resultName]['results']) {
+        for (let stgRes of this.engineResults[name][resultName].results) {
           //for (let result in this.engineResults[name][resultName][stgRes].results) {
-            if (!stgRes.byteLength === 0) {
-              x.push(new Float32Array(stgRes));
+            if (stgRes.byteLength !== 0) {
+              x.push(Array.from(new Float32Array(stgRes)));
             //}
           }
         }
-        stgViewer.push({name: resultName, results: x })
+      stgViewer.push({name: resultName, results: x })
       }
     }
     //this needs change
