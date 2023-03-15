@@ -144,6 +144,7 @@ class hydrocompute {
       engineName: this.currentEngine(),
       ...stgOb,
     };
+    // let totalExcTime = 
     console.log(`Simulation finished.`);
     //setting results to be saved in main class
     this.engine.setEngine();

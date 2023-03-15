@@ -17,7 +17,10 @@
 </head>
 
 <body>
-  <div class="container py-xl-12">
+  <div class="row">
+    <div class="col-3"></div>
+    <div class="col-xl-12">
+  <div class="container py-xl-9">
     <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header>
     <p>This case study retrieves and analyses on the fly streamflow data from different data sources within the Iowa
       City area. For each data source, it calculates the exponential moving average,
@@ -66,12 +69,14 @@
                 </div>
               </div>
               <div class="row align-items-sm-stretch">
-                <div class="col-md-3 py-2">
-                  <select class="form-select" style="visibility:hidden" name="resultSelect" id="resultSelect"
+                <div class="col-md-3 py-2" style="visibility: hidden;" id="result-div">
+                  <label for="resultSelect" class="form-label">Change Source</label>
+                  <select class="form-select" name="resultSelect" id="resultSelect"
                     onchange="populateRange()"></select>
                 </div>
-                <div class="col-md-3 py-2">
-                  <select class="form-select" style="visibility:hidden;" name="rangeSelect" id="rangeSelect"
+                <div class="col-md-3 py-2" style="visibility: hidden;" id="range-div">
+                  <label for="rangeSelect" class="form-label">Change Range</label>
+                  <select class="form-select" name="rangeSelect" id="rangeSelect"
                     onchange="visualizeDownloaded()"></select>
                 </div>
               </div>
@@ -82,6 +87,8 @@
       </div>
     </div>
   </div>
+</div>
+</div>
   <script>
     const sources = ['MOPEX', 'NOAA GHCN', 'Global Rivers', 'USGS Daily Values'];
     let stations = [];
@@ -119,9 +126,13 @@
         datatype: "GetSitesByBoxObject",
         proxyServer: "local-proxy"
       };
-      //Search query is done in the compute Iowa City Area
+      //Search query is done in the compute Iowa City Area, but can be expanded to the whole county
       let args_change = {
         sourceType: source,
+        // west: "-91.6650",
+        // south: "41.604",
+        // east: "-91.416",
+        // north: "41.714"
         west: "-91.6650",
         south: "41.604",
         east: "-91.416",
@@ -276,8 +287,8 @@
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'expoMovingAverage'];
-      let cFuns = ['_arima', '_acf'];
+      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'];
+      let cFuns = ['_arima', '_acf', 'exponentialMovingAverage'];
 
       for (let item of computeReady) {
         compute.data({ id: item.name, data: item.data[1] })
@@ -314,7 +325,8 @@
 
     const populateResults = () => {
       let resultSelect = document.getElementById('resultSelect');
-      resultSelect.style.visibility = "visible"
+      let resultDiv = document.getElementById('result-div');
+      resultDiv.style.visibility = "visible"
 
       for (let query of computeReady) {
         resultSelect.add(new Option(`${query.name}`, `${query.name}`))
@@ -327,13 +339,14 @@
     const populateRange = () => {
       let optionSelect = document.getElementById('resultSelect').value;
       let rangePopulate = document.getElementById('rangeSelect')
+      let rangeDiv = document.getElementById('range-div')
       rangePopulate.options.length = 0
-      rangePopulate.style.visibility = "visible"
+      rangeDiv.style.visibility = "visible"
 
 
       for (let computeValue of computeReady) {
         if (computeValue.name === optionSelect) {
-          let sliceSize = 3650
+          let sliceSize = 1825
           console.log(sliceSize)
           for (let i = 0; i < computeValue.data[0].length; i += sliceSize) {
             let start = i;
@@ -352,7 +365,7 @@
       let rangePopulate = document.getElementById('rangeSelect').value;
       let engineResults = []
 
-      let names = ['expoMovingAvg', 'arima', 'acf']
+      let names = ['simpleMovingAvg', 'arima', 'acf', 'expoMovingAverage']
 
       let dateView, dataView, resultView
       let range = JSON.parse(rangePopulate)
@@ -365,7 +378,7 @@
 
       for (let result of compute.results('Simulation_1')) {
         if (result.name === optionSelect) {
-          for (let r_1 in result.results) {
+          for (let r_1 of result.results) {
             engineResults.push(r_1.slice(range[0], range[1] + 1))
           }
         }
@@ -395,7 +408,7 @@
           }
 
           for (let j = 0; j < dateView.length; j++) {
-            data.addRow([new Date(dateView[j]), dataView[j], engineResults[0][j], engineResults[1][j], engineResults[2][j]])
+            data.addRow([new Date(dateView[j]), dataView[j], engineResults[0][j], engineResults[1][j], engineResults[2][j], engineResults[3][j]])
           }
 
 
