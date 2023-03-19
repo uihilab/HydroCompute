@@ -17,11 +17,33 @@
 </head>
 
 <body>
-  <div class="row">
-    <div class="col-3"></div>
-    <div class="col-xl-12">
-  <div class="container py-xl-9">
-    <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header>
+  <div class="navbar navbar-light bg-light container-fluid">
+    <button class="navbar-toggler mx-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand mx-auto">Analysis on Streamflow Forecasting</a>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+      <div class="offcanvas-header">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="navbar-nav justify-content-start flex-grow-1 pe-3">
+          <li class="nav-item">
+            <label for="time-select">Select Time Span</label>
+            <select id="time-select" class="form-select">
+            </select>
+          </li>
+          <li class="nav-item">
+            <label for="area-select">Select Different County</label>
+            <select id="area-select" class="form-select" onchange="onSelectSource()">
+            </select>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="container py-xl-15">
+    <!-- <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header> -->
     <p>This case study retrieves and analyses on the fly streamflow data from different data sources within the Iowa
       City area. For each data source, it calculates the exponential moving average,
       simple moving average, a simple ARIMA process, and an autocorrelation function using the multiple engines and
@@ -71,8 +93,7 @@
               <div class="row align-items-sm-stretch">
                 <div class="col-md-3 py-2" style="visibility: hidden;" id="result-div">
                   <label for="resultSelect" class="form-label">Change Source</label>
-                  <select class="form-select" name="resultSelect" id="resultSelect"
-                    onchange="populateRange()"></select>
+                  <select class="form-select" name="resultSelect" id="resultSelect" onchange="populateRange()"></select>
                 </div>
                 <div class="col-md-3 py-2" style="visibility: hidden;" id="range-div">
                   <label for="rangeSelect" class="form-label">Change Range</label>
@@ -87,38 +108,65 @@
       </div>
     </div>
   </div>
-</div>
-</div>
   <script>
     const sources = ['MOPEX', 'NOAA GHCN', 'Global Rivers', 'USGS Daily Values'];
     let stations = [];
+    let locations = document.getElementById('area-select')
     let source_sites = [];
     let runningData;
     let computeReady = [];
     let stations_to_query = [];
-    const initHydrocompute = () => {
+    let counties;
+
+    const setCounties = async() => {
+      counties = await fetch('coor.json').then(res => res.json()).then(data => {return data})
+      Object.keys(counties).forEach(key => {
+        for (let coor of counties[key]){
+          JSON.stringify(coor)
+        }
+      })
+    }
+
+    const initHydrocompute = async () => {
+      await setCounties()
       window.compute = new hydrocompute();
-      //window.wasmcompute = new hydrocompute('wasm');
+      let locations = document.getElementById('area-select')
       let e = document.getElementById('sourceSelect')
       for (let source of sources) {
         e.add(new Option(`${source}`, `${source}`))
       }
+
+      Object.keys(counties).forEach(key => {
+        locations.add(new Option(`${key}`, `${counties[key]}`))
+      })
+      locations.value = counties['Johnson']
     }
 
-    const initHydroLang = () => {
+    const initHydroLang = async () => {
       window.hydro = new Hydrolang();
-      Promise.resolve(hydro.map.loader({ params: { maptype: 'osm' } }))
-        .then(_ => hydro.map.renderMap({ args: { maptype: "osm", lat: 40, lon: -100 } }))
+      let locations = document.getElementById('area-select').value
+      locations = locations.split(',').map(num =>Number)
+
       let ele = document.getElementById('sourceSelect')
       ele.value = 'USGS Daily Values'
       ele.dispatchEvent(new Event('change'))
+      Promise.resolve(hydro.map.loader({ params: { maptype: "leaflet" } }))
+        .then(_ => hydro.map.renderMap({ args: { maptype: "leaflet", lat: (locations[0]+locations[1]) / 2, lon: (locations[2]+locations[3]) / 2 } }))
+    }
+
+    const updateMap = async() => {
+      let locations = document.getElementById('area-select').value
+      locations = locations.split(',').map(num =>JSON.parse(num))
+      hydro.map.recenter({args:{lat: (locations[0]+locations[1]) / 2, lon: (locations[2]+locations[3]) / 2 } })
     }
 
     const onSelectSource = async () => {
       stations = [];
       let source = document.getElementById('sourceSelect').value;
       let station_select = document.getElementById('stationSelect')
+      let location = document.getElementById('area-select').value;
       station_select.options.length = 0
+      location = location.split(',').map(num =>Number(num).toString())
 
       //Query locations using CUAHSI
       let params_fixed = {
@@ -129,14 +177,18 @@
       //Search query is done in the compute Iowa City Area, but can be expanded to the whole county
       let args_change = {
         sourceType: source,
-        // west: "-91.6650",
-        // south: "41.604",
-        // east: "-91.416",
-        // north: "41.714"
-        west: "-91.6650",
-        south: "41.604",
-        east: "-91.416",
-        north: "41.714"
+        east: location[1],
+        west: location[0],
+        north: location[2],
+        south: location[3]
+        // west: location[1],
+        // south: location[3],
+        // east: location[0],
+        // north: location[2],
+        // west: '-91.6650',
+        // south: '41.604',
+        // east: '-91.416',
+        // north: '41.714',
       }
 
       const setStations = (s) => {
@@ -156,9 +208,14 @@
         }
       }
 
+      try{
       let x = await hydro.data.retrieve({ params: params_fixed, args: args_change })
       let y = setStations(await x)
       source_sites.push(await y)
+      //updateMap()
+    } catch (error){
+      console.error(`There are no records for the selected county.`)
+    }
     }
 
     const onSelectStation = async () => {
@@ -174,7 +231,6 @@
           stations_to_query.push(opt.value || opt.text);
         }
       }
-      console.log(stations_to_query)
 
       let usgs_query = {
         source: "usgs",
@@ -198,37 +254,50 @@
 
 
       let executioner = []
-
-      for (let station of stations_to_query) {
-        args_query.site = station
+      let removed = []
+      for (let i = 0; i < stations_to_query.length; i++) {
+        args_query.site = stations_to_query[i]
         let exec = () => {
           return new Promise(async (resolve, reject) => {
             try {
               let x = await hydro.data.retrieve({ params: usgs_query, args: args_query })
-              let y = cleanData(await x, station)
-              resolve(await y)
+              let cleaned = cleanData(await x, stations_to_query[i], i)
+              if (cleaned){
+              computeReady.push({ name: (()=>{for (let st of stations){
+                if (st.siteCode === stations_to_query[i]) return st.name
+              }})(), id: stations_to_query[i], data: cleaned })
+              } else {
+                console.error(`There was an error with station ${stations_to_query[i]}. It was removed from the selected list.`)
+                removed.push(stations_to_query[i])
+              }  
+              resolve()
             } catch (error) {
-              reject(error)
+              reject()
             }
           })
         }
         executioner.push(exec())
       }
-      Promise.resolve(await Promise.all(executioner)).then(_ => {
+      Promise.allSettled(executioner).then(_ => {
+        stations_to_query = stations_to_query.filter(item => !removed.includes(item));
         tableParams()
         runCompute()
       })
     }
 
-    const cleanData = (item, station) => {
-      let new_item = hydro.data.transform({ params: { save: 'value' }, args: { keep: '["datetime", "value"]', type: 'ARR' }, data: item })
-      new_item.forEach(arr => arr.shift())
-      new_item[1] = new_item[1].map(y => JSON.parse(y))
-      computeReady.push({ name: station, data: new_item })
+    const cleanData = (item, station, index) => {
+      try {
+        let new_item = hydro.data.transform({ params: { save: 'value' }, args: { keep: '["datetime", "value"]', type: 'ARR' }, data: item })
+        new_item.forEach(arr => arr.shift())
+        new_item[1] = new_item[1].map(y => JSON.parse(y))
+        return new_item
+      } catch (error) {
+        return null
+      }
     }
 
     const tableParams = () => {
-      let colNames = ['Station', 'Number\nof\nRecords', 'Start\nDate', 'End\nDate']
+      let colNames = ['Station ID', 'Name', 'Number\nof\nRecords', 'Start\nDate', 'End\nDate']
       let rows = computeReady.length;
       let cols = colNames.length;
       let dv = document.getElementById('paramTable');
@@ -256,15 +325,18 @@
           let td = document.createElement('td')
           switch (j) {
             case 0:
-              td.appendChild(document.createTextNode(computeReady[i].name));
+              td.appendChild(document.createTextNode(computeReady[i].id));
               break;
             case 1:
-              td.appendChild(document.createTextNode(computeReady[i].data[0].length));
+              td.appendChild(document.createTextNode(computeReady[i].name));
               break;
             case 2:
-              td.appendChild(document.createTextNode(computeReady[i].data[0][0].slice(0, 10)));
+              td.appendChild(document.createTextNode(computeReady[i].data[0].length));
               break;
             case 3:
+              td.appendChild(document.createTextNode(computeReady[i].data[0][0].slice(0, 10)));
+              break;
+            case 4:
               td.appendChild(document.createTextNode(computeReady[i].data[0][computeReady[i].data[0].length - 1].slice(0, 10)));
               break;
             default:
@@ -287,14 +359,17 @@
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'];
-      let cFuns = ['_arima', '_acf', 'exponentialMovingAverage'];
+      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage'];
+
+      let jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'];
+      let cFuns = ['_arima', '_acf'];
+      let cFuns2 = ['_arima', '_acf']
 
       for (let item of computeReady) {
-        compute.data({ id: item.name, data: item.data[1] })
-        //wasmcompute.data({ id: item.name, data: item.data[1] })
+        compute.data({ id: item.id, data: item.data[1] })
+
       }
-      //for (let item of computeReady) {
+
 
       let x = Array.from({ length: cFuns.length }, (_, i) => [i - 1]);
       x[0] = [];
@@ -310,14 +385,30 @@
         dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y), funcArgs: []
       });
 
+      await compute.run({
+        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
+        functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns2),
+        dataIds: stations_to_query,
+        dependencies: [], funcArgs: []
+      });
+
       compute.setEngine('wasm')
 
       await compute.run({
-        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
-        functions: Array.from({ length: stations_to_query.length }, (_, i) => cFuns),
+        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
+        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns),
         dataIds: stations_to_query,
         dependencies: [], funcArgs: []
       })
+
+      await compute.run({
+        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
+        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns2),
+        dataIds: stations_to_query,
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x), funcArgs: []
+      })
+
+      compute.setTotalTime()
 
       console.log('Run has finished.')
       //getandSeeResult()
@@ -329,9 +420,9 @@
       resultDiv.style.visibility = "visible"
 
       for (let query of computeReady) {
-        resultSelect.add(new Option(`${query.name}`, `${query.name}`))
+        resultSelect.add(new Option(`${query.id}`, `${query.id}`))
       }
-      resultSelect.value = computeReady[0].name
+      resultSelect.value = computeReady[0].id
       populateRange()
     }
 
@@ -345,7 +436,7 @@
 
 
       for (let computeValue of computeReady) {
-        if (computeValue.name === optionSelect) {
+        if (computeValue.id === optionSelect) {
           let sliceSize = 1825
           console.log(sliceSize)
           for (let i = 0; i < computeValue.data[0].length; i += sliceSize) {
@@ -365,32 +456,26 @@
       let rangePopulate = document.getElementById('rangeSelect').value;
       let engineResults = []
 
-      let names = ['simpleMovingAvg', 'arima', 'acf', 'expoMovingAverage']
+      let names = ['trailedMovingAvg', 'simpleMovAvg', 'expoMovAv', 'arima', 'ACF', 'trailedACF']
 
       let dateView, dataView, resultView
       let range = JSON.parse(rangePopulate)
       for (let val of computeReady) {
-        if (val.name === optionSelect) {
+        if (val.id === optionSelect) {
           dateView = val.data[0].slice(range[0], range[1] + 1)
           dataView = val.data[1].slice(range[0], range[1] + 1)
         }
       }
 
-      for (let result of compute.results('Simulation_1')) {
-        if (result.name === optionSelect) {
-          for (let r_1 of result.results) {
-            engineResults.push(r_1.slice(range[0], range[1] + 1))
-          }
-        }
-
-      }
-      for (let result of compute.results('Simulation_2')) {
+      Object.keys(compute.engineResults).forEach(simResult => {
+        for (let result of compute.results(simResult)) {
         if (result.name === optionSelect) {
           for (let r_2 of result.results) {
             engineResults.push(r_2.slice(range[0], range[1] + 1))
           }
         }
       }
+      })
 
       console.log(engineResults)
 
@@ -407,8 +492,14 @@
             data.addColumn('number', name)
           }
 
+          
           for (let j = 0; j < dateView.length; j++) {
-            data.addRow([new Date(dateView[j]), dataView[j], engineResults[0][j], engineResults[1][j], engineResults[2][j], engineResults[3][j]])
+            let row = 
+            [new Date(dateView[j]), dataView[j]]
+            for (let i = 0; i < engineResults.length; i++){
+            row.push(engineResults[i][j])
+          }
+          data.addRow(row)
           }
 
 

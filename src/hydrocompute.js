@@ -150,6 +150,25 @@ class hydrocompute {
     this.engine.setEngine();
   }
 
+  //Computes the total time it took a simulation to run
+  //and appends to the engine result object
+  setTotalTime(){
+    Object.keys(this.engineResults).forEach(key => {
+      let ft = 0, st = 0;
+      let currentResult = this.engineResults[key];
+      for (let resName in currentResult){
+        if (resName !== "engineName"){
+          ft = ft + currentResult[resName].funcEx;
+          st = st + currentResult[resName].scriptEx;
+        }
+      }
+      currentResult.totalFuncTime = ft;
+      currentResult.totalScrTime = st;
+    })
+  }
+
+
+
   /**
    *
    * @returns name - current engine name set.
@@ -192,7 +211,7 @@ class hydrocompute {
     let stgViewer = [];
     for (let resultName in this.engineResults[name]) {
       let x = []
-      if (resultName !== "engineName") {
+      if (resultName !== "engineName" && resultName !== "totalFuncTime" && resultName !== "totalScrTime") {
         for (let stgRes of this.engineResults[name][resultName].results) {
           //for (let result in this.engineResults[name][resultName][stgRes].results) {
             if (stgRes.byteLength !== 0) {

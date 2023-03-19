@@ -213,6 +213,7 @@ export default class engine {
         `There was an error executing step: ${step}. More info: `,
         error
       );
+      return
     }
   }
 
