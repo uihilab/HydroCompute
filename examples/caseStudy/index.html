@@ -46,8 +46,7 @@
     <!-- <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header> -->
     <p>This case study retrieves and analyses on the fly streamflow data from different data sources within the Iowa
       City area. For each data source, it calculates the exponential moving average,
-      simple moving average, a simple ARIMA process, and an autocorrelation function using the multiple engines and
-      functions available through the hydrocompute framework.</p>
+      simple moving average, a simple ARIMA process, and an autocorrelation function using the multiple engines and functions available through the hydrocompute framework.</p>
     <div class="row align-items-md-stretch">
       <div class="col-md-6">
         <div class="container p-2 bg-light rounded" id="DataGen">
@@ -157,8 +156,8 @@
     const updateMap = async() => {
       let locations = document.getElementById('area-select').value
       locations = locations.split(',').map(num =>JSON.parse(num))
-      hydro.map.recenter({args:{lat: (locations[0]+locations[1]) / 2, lon: (locations[2]+locations[3]) / 2 } })
-    }
+      hydro.map.recenter({args:{lon: (locations[0]+locations[1]) / 2, lat: (locations[2]+locations[3]) / 2 } })
+    } 
 
     const onSelectSource = async () => {
       stations = [];
@@ -181,14 +180,6 @@
         west: location[0],
         north: location[2],
         south: location[3]
-        // west: location[1],
-        // south: location[3],
-        // east: location[0],
-        // north: location[2],
-        // west: '-91.6650',
-        // south: '41.604',
-        // east: '-91.416',
-        // north: '41.714',
       }
 
       const setStations = (s) => {
@@ -212,7 +203,7 @@
       let x = await hydro.data.retrieve({ params: params_fixed, args: args_change })
       let y = setStations(await x)
       source_sites.push(await y)
-      //updateMap()
+      updateMap(await x)
     } catch (error){
       console.error(`There are no records for the selected county.`)
     }
@@ -261,14 +252,17 @@
           return new Promise(async (resolve, reject) => {
             try {
               let x = await hydro.data.retrieve({ params: usgs_query, args: args_query })
-              let cleaned = cleanData(await x, stations_to_query[i], i)
+              let cleaned = cleanData(await x)
               if (cleaned){
               computeReady.push({ name: (()=>{for (let st of stations){
                 if (st.siteCode === stations_to_query[i]) return st.name
-              }})(), id: stations_to_query[i], data: cleaned })
+              }})(), id: stations_to_query[i], data: cleaned , stats: hydro.analyze.stats.basicstats({data: cleaned})})
               } else {
-                console.error(`There was an error with station ${stations_to_query[i]}. It was removed from the selected list.`)
                 removed.push(stations_to_query[i])
+                station_select.remove(stations_to_query.indexOf(stations_to_query[i])) //not working
+                hydro.map.Layers({ args: { type: 'removelayers', output: `${stations_to_query[i]}` } })
+                console.error(`There was an error with station ${stations_to_query[i]}. It was removed from the selected list.`)
+                return
               }  
               resolve()
             } catch (error) {
@@ -285,12 +279,17 @@
       })
     }
 
-    const cleanData = (item, station, index) => {
+    const cleanData = (item) => {
       try {
         let new_item = hydro.data.transform({ params: { save: 'value' }, args: { keep: '["datetime", "value"]', type: 'ARR' }, data: item })
         new_item.forEach(arr => arr.shift())
         new_item[1] = new_item[1].map(y => JSON.parse(y))
-        return new_item
+        let wrong_vals = hydro.analyze.stats.forwardFill({data: [...new_item[1]]})
+        console.log(wrong_vals)
+        if (wrong_vals.replaceIndices.length !== 0){
+          console.log(`Value at indeces ${wrong_vals} were replaced with previous or forward values.`)
+        }
+        return [new_item[0], wrong_vals.data]
       } catch (error) {
         return null
       }
@@ -359,11 +358,11 @@
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage'];
+      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage'],
 
-      let jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'];
-      let cFuns = ['_arima', '_acf'];
-      let cFuns2 = ['_arima', '_acf']
+      jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'],
+      cFuns = ['_arima', '_acf'],
+      cFuns2 = ['_arima', '_acf'];
 
       for (let item of computeReady) {
         compute.data({ id: item.id, data: item.data[1] })
@@ -418,6 +417,7 @@
       let resultSelect = document.getElementById('resultSelect');
       let resultDiv = document.getElementById('result-div');
       resultDiv.style.visibility = "visible"
+      resultSelect.options.length = 0
 
       for (let query of computeReady) {
         resultSelect.add(new Option(`${query.id}`, `${query.id}`))
@@ -476,9 +476,6 @@
         }
       }
       })
-
-      console.log(engineResults)
-
 
       google.charts.load('current', {
         callback: function () {
