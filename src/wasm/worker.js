@@ -28,6 +28,7 @@ self.onmessage = async (e) => {
               id,
               results: result,
               step,
+              funcName,
               funcExec: performance.measure(
                 "measure-execution",
                 "start-function",

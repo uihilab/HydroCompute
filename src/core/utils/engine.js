@@ -74,6 +74,7 @@ export default class engine {
 
     let stepArgs = [];
 
+    //Separating 
     for (let i = 0; i < steps; i++) {
       let thisFunctions = functions[i],
         thisFunArgs = funcArgs[i],
@@ -225,33 +226,35 @@ export default class engine {
    * @param {Object[]} dependencies
    * @returns
    */
-  async concurrentRun(args, step, dependencies) {
-    for (var i = 0; i < args.threadCount; i++) {
-      let d =           args.data.buffer !== undefined
-      ? args.data.buffer
-      : args.data[j].buffer;
-      var _args = {
-        //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-        data: d,
-        id: i,
-        funcName: args.functions[i],
-        length: args.length,
-        step: step,
-        funcArgs: args.funcArgs[i],
-      };
-      this.threads.initializeWorkerThread(i);
-    }
-    try {
-      let res = await DAG({
-        functions: Object.keys(this.threads.workerThreads).map((key) => {
-          return this.threads.workerThreads[key].worker;
-        }),
-        dag: dependencies,
-        args: _args,
-        type: "functions",
-      });
-      return res;
-    } catch (error) {
+    async concurrentRun(args, step, dependencies) {
+      let batchTasks = []
+      for (var i = 0; i < args.threadCount; i++) {
+        let d = args.data.buffer !== undefined
+        ? args.data.buffer
+        : args.data[i].buffer;
+        var _args = {
+          //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
+          data: d,
+          id: i,
+          funcName: args.functions[i],
+          length: args.length,
+          step: step,
+          funcArgs: args.funcArgs[i],
+        };
+        this.threads.initializeWorkerThread(i);
+        batchTasks.push(_args)
+      }
+      try {
+        let res = await DAG({
+          functions: Object.keys(this.threads.workerThreads).map((key) => {
+            return this.threads.workerThreads[key].worker;
+          }),
+          dag: dependencies,
+          args: batchTasks,
+          type: "functions",
+        });
+        return res;
+      } catch (error) {
       console.error(
         `There was an error executing the DAG for step: ${step}. More info: `,
         error
@@ -338,6 +341,7 @@ export default class engine {
         results: this.threads.results,
         funcEx: this.funcEx,
         scriptEx: this.scriptEx,
+        funcOrder: this.threads.functionOrder
       });
       //this.setEngine()
 

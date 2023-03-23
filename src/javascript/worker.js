@@ -18,6 +18,7 @@ self.onmessage = async (e) => {
           id,
           results: result.buffer,
           step,
+          funcName,
           funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
           workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
         },[result.buffer]);

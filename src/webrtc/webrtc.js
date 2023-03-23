@@ -177,7 +177,13 @@ export default class webrtc {
     this.setDataChannel()
   }
 
+  /**
+   * 
+   */
   oncloseReceiver(){}
 
+  /**
+   * 
+   */
   oncloseHost(){}
 }

@@ -118,7 +118,7 @@ class hydrocompute {
           dependencies: args.dependencies,
           linked: this.linked,
         });
-        this.setResults(args.dataIds);
+        this.setResults(args.dataIds, args.functions, args.dependencies);
       } catch (error) {
         console.error("There was an error with the given run", error);
         return error;
@@ -133,7 +133,7 @@ class hydrocompute {
    * @method setResults
    *
    */
-  setResults(names) {
+  setResults(names, functions, dependencies) {
     const stgOb = Object.fromEntries(
       Object.entries({ ...this.engine.results }).map(([key, value], index) => [
         names[index],
@@ -210,16 +210,19 @@ class hydrocompute {
       );
     let stgViewer = [];
     for (let resultName in this.engineResults[name]) {
-      let x = []
+      let x = [], y = []
       if (resultName !== "engineName" && resultName !== "totalFuncTime" && resultName !== "totalScrTime") {
-        for (let stgRes of this.engineResults[name][resultName].results) {
+        for (let k = 0; k < this.engineResults[name][resultName].results.length; k++) {
+          let stgRes = this.engineResults[name][resultName].results[k];
+          let stgFunc = this.engineResults[name][resultName].funcOrder[k]
           //for (let result in this.engineResults[name][resultName][stgRes].results) {
             if (stgRes.byteLength !== 0) {
               x.push(Array.from(new Float32Array(stgRes)));
+              y.push(stgFunc)
             //}
           }
         }
-      stgViewer.push({name: resultName, results: x })
+      stgViewer.push({name: resultName, results: x, functions: y })
       }
     }
     //this needs change
@@ -296,8 +299,23 @@ class hydrocompute {
    *
    * @returns
    */
-  getexecTime() {
-    return this.engine.execTime;
+  getresTimes(res) {
+    return [this.engineResults[res].totalFuncTime, this.engineResults[res].totalScrTime]
+  }
+
+  /**
+   * 
+   * @returns 
+   */
+
+  getTotalTime() {
+    let fnTotal = 0, scrTotal = 0;
+    for (let result of this.availableResults()){
+      let stgRes = this.getresTimes(result)
+      fnTotal += stgRes[0],
+      scrTotal += stgRes[1]
+    }
+    return [fnTotal, scrTotal]
   }
 
   /**

@@ -54,11 +54,12 @@ export default class threadManager {
         }
         w.onmessage = ({ data }) => {
           console.log(`working...`);
-          let { results, funcExec, workerExec } = data;
+          let { results, funcExec, workerExec, funcName } = data;
           resolve(results);
           this.results.push(results);
           (this.workerThreads[index].functionTime += funcExec),
             (this.workerThreads[index].workerTime += workerExec);
+          this.functionOrder.push(funcName);
           w.terminate();
         };
         w.onerror = (error) => {
@@ -84,6 +85,7 @@ export default class threadManager {
     this.maxWorkerCount = navigator.hardwareConcurrency - 1;
     this.workerThreads = {};
     this.results = [];
+    this.functionOrder = [];
     console.log(
       `Initialized ${this.engine} using worker scope with max workers:${this.maxWorkerCount}`
     );

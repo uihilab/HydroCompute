@@ -11,7 +11,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="module" onload="initHydrocompute() " src="../../src/hydrocompute.js"></script>
-  <script type="module" onload="initHydroLang() " src="../../hydrolang/hydro.js"></script>
+  <script type="module" onload="initHydroLang() " src="./hydrolang/hydro.js"></script>
 
   <title>HydroCompute Case Study</title>
 </head>
@@ -38,15 +38,21 @@
             <select id="area-select" class="form-select" onchange="onSelectSource()">
             </select>
           </li>
+          <li class="nav-item" id="other-locations" style="visibility: hidden;">
+            <label for="other-location-input">Please input your coordinates</label>
+            <input type="text" id="other-location-input" class="form-control"
+            placeholder="Enter coordinates in the format [east, west, north, south] ">
+            <br>
+            <button type="button" class="btn btn-outline-secondary"
+            onclick="onInputCoords()">Save changes</button>
+          </li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="container py-xl-15">
+  <div class="container py-xl-16">
     <!-- <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header> -->
-    <p>This case study retrieves and analyses on the fly streamflow data from different data sources within the Iowa
-      City area. For each data source, it calculates the exponential moving average,
-      simple moving average, a simple ARIMA process, and an autocorrelation function using the multiple engines and functions available through the hydrocompute framework.</p>
+    <p>This case study retrieves and analyzes on-the-fly streamflow data from different data sources within the counties of Iowa. The sources are selected based on the available gauging stations that fall within a box delineating each county. For each station selected, it calculates a 23-fold smoothing simple moving average, a 1-fold exponential and simple moving average, the time series autocorrelation function, and a linear detrending of the data. From this, a parameter set ARMA and autoparameter calculated ARMA function are calculated for the raw data and the detrended time series. All of this is done directly on the client side using the multiple functions and engines in the hydrocompute framework. The case study is meant to solely highlight the capabilities and scalability of the library.</p>
     <div class="row align-items-md-stretch">
       <div class="col-md-6">
         <div class="container p-2 bg-light rounded" id="DataGen">
@@ -68,29 +74,31 @@
       </div>
     </div>
     <div class="col-xl-12 py-2">
-      <div class="container p-3 bg-white border rounded" id="resultViewer">
+      <div class="container p-3 bg-white border rounded" id="resultViewer" style="visibility: hidden;">
         <h4 class="display-11">Analysis and Results</h4>
         <p class="lead">Overview of results</p>
         <hr class="my-4">
         <div class="container rounded">
-          <div class="row align-items-md-stretch">
+          <div class="row align-items-md">
             <div class="col-md-6 py-2">
               <h5 class="display-11 text-center">Retrieved Data</h5>
-              <div id="paramTable"></div>
+              <div id="paramTable" class="table table-striped overflow-x-scroll overflow-y-scroll"
+                style="max-height: 70vh;"></div>
               <button class="btn btn-outline-secondary float-start">Clear Data</button>
               <button class="btn btn-outline-secondary float-end">Download
                 Results</button>
             </div>
             <div class="col-md-6 py-2">
               <h5 class="display-11 text-center">Graphical output</h5>
-              <div class="row align-items-sm-stretch">
+              <div class="row align-items-md-stretch">
                 <div id="dashboard-div">
                   <div id="control-div"></div>
-                  <div id="chart"></div>
+                  <div id="chart1"></div>
+                  <div id="chart2"></div>
                 </div>
               </div>
               <div class="row align-items-sm-stretch">
-                <div class="col-md-3 py-2" style="visibility: hidden;" id="result-div">
+                <div class="col-md-6 py-2" style="visibility: hidden;" id="result-div">
                   <label for="resultSelect" class="form-label">Change Source</label>
                   <select class="form-select" name="resultSelect" id="resultSelect" onchange="populateRange()"></select>
                 </div>
@@ -117,10 +125,10 @@
     let stations_to_query = [];
     let counties;
 
-    const setCounties = async() => {
-      counties = await fetch('coor.json').then(res => res.json()).then(data => {return data})
+    const setCounties = async () => {
+      counties = await fetch('coor.json').then(res => res.json()).then(data => { return data })
       Object.keys(counties).forEach(key => {
-        for (let coor of counties[key]){
+        for (let coor of counties[key]) {
           JSON.stringify(coor)
         }
       })
@@ -138,34 +146,43 @@
       Object.keys(counties).forEach(key => {
         locations.add(new Option(`${key}`, `${counties[key]}`))
       })
+      locations.add(new Option(`Custom`, `Custom`))
       locations.value = counties['Johnson']
     }
 
     const initHydroLang = async () => {
       window.hydro = new Hydrolang();
       let locations = document.getElementById('area-select').value
-      locations = locations.split(',').map(num =>Number)
+      locations = locations.split(',').map(num => Number)
 
       let ele = document.getElementById('sourceSelect')
       ele.value = 'USGS Daily Values'
       ele.dispatchEvent(new Event('change'))
       Promise.resolve(hydro.map.loader({ params: { maptype: "leaflet" } }))
-        .then(_ => hydro.map.renderMap({ args: { maptype: "leaflet", lat: (locations[0]+locations[1]) / 2, lon: (locations[2]+locations[3]) / 2 } }))
+        .then(_ => hydro.map.renderMap({ args: { maptype: "leaflet", lat: (locations[0] + locations[1]) / 2, lon: (locations[2] + locations[3]) / 2 } }))
     }
 
-    const updateMap = async() => {
+    const updateMap = async () => {
       let locations = document.getElementById('area-select').value
-      locations = locations.split(',').map(num =>JSON.parse(num))
-      hydro.map.recenter({args:{lon: (locations[0]+locations[1]) / 2, lat: (locations[2]+locations[3]) / 2 } })
-    } 
+      locations = locations.split(',').map(num => JSON.parse(num))
+      hydro.map.recenter({ args: { lon: (locations[0] + locations[1]) / 2, lat: (locations[2] + locations[3]) / 2 } })
+    }
 
     const onSelectSource = async () => {
+      for (let station of stations) {
+        hydro.map.Layers({ args: { type: 'removelayers', output: `${station.siteCode}` } })
+      }
       stations = [];
       let source = document.getElementById('sourceSelect').value;
       let station_select = document.getElementById('stationSelect')
       let location = document.getElementById('area-select').value;
+      if (location === "Custom"){
+        let input = document.getElementById('other-locations')
+        input.style.visibility = 'visible'
+        return
+      }
       station_select.options.length = 0
-      location = location.split(',').map(num =>Number(num).toString())
+      location = location.split(',').map(num => Number(num).toString())
 
       //Query locations using CUAHSI
       let params_fixed = {
@@ -173,7 +190,7 @@
         datatype: "GetSitesByBoxObject",
         proxyServer: "local-proxy"
       };
-      //Search query is done in the compute Iowa City Area, but can be expanded to the whole county
+      //Search over all the counties available in Iowa. Could be expanded countrywise
       let args_change = {
         sourceType: source,
         east: location[1],
@@ -199,14 +216,75 @@
         }
       }
 
-      try{
-      let x = await hydro.data.retrieve({ params: params_fixed, args: args_change })
-      let y = setStations(await x)
-      source_sites.push(await y)
-      updateMap(await x)
-    } catch (error){
-      console.error(`There are no records for the selected county.`)
+      try {
+        let x = await hydro.data.retrieve({ params: params_fixed, args: args_change })
+        let y = setStations(await x)
+        source_sites.push(await y)
+        updateMap(await x)
+      } catch (error) {
+        alert(`There are no records for the selected county. Please select another county.`)
+        // source = document.getElementById('sourceSelect')
+        // source.value = "Johnson"
+        // let event = new Event('change')
+        // source.dispatchEvent(event)
+      }
     }
+
+    onInputCoords = async () => {
+
+      let source = document.getElementById('sourceSelect').value;
+      let station_select = document.getElementById('stationSelect')
+      let input = document.getElementById('other-location-input').value
+      input = JSON.parse(input)
+      input = input.map(val => JSON.parse(val))
+
+      station_select.options.length = 0
+
+      //Query locations using CUAHSI
+      let params_fixed = {
+        source: "waterOneFlow",
+        datatype: "GetSitesByBoxObject",
+        proxyServer: "local-proxy"
+      };
+      //Search over all the counties available in Iowa. Could be expanded countrywise
+      let args_change = {
+        sourceType: source,
+        east: input[1],
+        west: input[0],
+        north: input[2],
+        south: input[3]
+      }
+
+      const setStations = (s) => {
+        for (let sm of s
+          .GetSitesByBoxObjectResponse
+          .sitesResponse
+          .site) {
+          stgSmt = {};
+          stgSmt.name = sm.siteInfo.siteName;
+          stgSmt.location = sm.siteInfo.geoLocation.geogLocation;
+          stgSmt.siteCode = sm.siteInfo.siteCode;
+          stations.push(stgSmt)
+        }
+        for (let station of stations) {
+          station_select.add(new Option(`${station.name}`, `${station.siteCode}`))
+          hydro.map.Layers({ args: { type: 'marker', output: `${station.siteCode}` }, data: [JSON.parse(station.location.latitude), JSON.parse(station.location.longitude)] })
+        }
+      }
+
+      try {
+        let x = await hydro.data.retrieve({ params: params_fixed, args: args_change })
+        let y = setStations(await x)
+        source_sites.push(await y)
+        updateMap(await x)
+      } catch (error) {
+        alert(`There are no records for the selected county. Please select another county.`)
+        // source = document.getElementById('sourceSelect')
+        // source.value = "Johnson"
+        // let event = new Event('change')
+        // source.dispatchEvent(event)
+      }
+
     }
 
     const onSelectStation = async () => {
@@ -253,17 +331,20 @@
             try {
               let x = await hydro.data.retrieve({ params: usgs_query, args: args_query })
               let cleaned = cleanData(await x)
-              if (cleaned){
-              computeReady.push({ name: (()=>{for (let st of stations){
-                if (st.siteCode === stations_to_query[i]) return st.name
-              }})(), id: stations_to_query[i], data: cleaned , stats: hydro.analyze.stats.basicstats({data: cleaned})})
+              if (cleaned) {
+                computeReady.push({
+                  name: (() => {
+                    for (let st of stations) {
+                      if (st.siteCode === stations_to_query[i]) return st.name
+                    }
+                  })(), id: stations_to_query[i], data: cleaned, stats: hydro.analyze.stats.basicstats({ data: cleaned })
+                })
               } else {
                 removed.push(stations_to_query[i])
                 station_select.remove(stations_to_query.indexOf(stations_to_query[i])) //not working
                 hydro.map.Layers({ args: { type: 'removelayers', output: `${stations_to_query[i]}` } })
                 console.error(`There was an error with station ${stations_to_query[i]}. It was removed from the selected list.`)
-                return
-              }  
+              }
               resolve()
             } catch (error) {
               reject()
@@ -284,10 +365,9 @@
         let new_item = hydro.data.transform({ params: { save: 'value' }, args: { keep: '["datetime", "value"]', type: 'ARR' }, data: item })
         new_item.forEach(arr => arr.shift())
         new_item[1] = new_item[1].map(y => JSON.parse(y))
-        let wrong_vals = hydro.analyze.stats.forwardFill({data: [...new_item[1]]})
-        console.log(wrong_vals)
-        if (wrong_vals.replaceIndices.length !== 0){
-          console.log(`Value at indeces ${wrong_vals} were replaced with previous or forward values.`)
+        let wrong_vals = hydro.analyze.stats.forwardFill({ data: [...new_item[1]] })
+        if (wrong_vals.replaceIndices.length !== 0) {
+          console.log(`Values between indeces ${wrong_vals[0]} and ${wrong_vals[wrong_vals.length-1]} were replaced with previous or forward values.`)
         }
         return [new_item[0], wrong_vals.data]
       } catch (error) {
@@ -296,7 +376,7 @@
     }
 
     const tableParams = () => {
-      let colNames = ['Station ID', 'Name', 'Number\nof\nRecords', 'Start\nDate', 'End\nDate']
+      let colNames = ['Station ID', 'Name', 'Number\nof\nRecords', 'Start\nDate', 'End\nDate', 'Max\nValue', 'Min\nValue', 'Median', 'Standard\nDeviation', 'Skewness', 'Kurtosis']
       let rows = computeReady.length;
       let cols = colNames.length;
       let dv = document.getElementById('paramTable');
@@ -338,6 +418,24 @@
             case 4:
               td.appendChild(document.createTextNode(computeReady[i].data[0][computeReady[i].data[0].length - 1].slice(0, 10)));
               break;
+            case 5:
+              td.appendChild(document.createTextNode(computeReady[i].stats[1][3]));
+              break;
+            case 6:
+              td.appendChild(document.createTextNode(computeReady[i].stats[1][2]));
+              break;
+            case 7:
+              td.appendChild(document.createTextNode(computeReady[i].stats[1][6]));
+              break;
+            case 8:
+              td.appendChild(document.createTextNode(Math.round(computeReady[i].stats[1][7]), 2));
+              break;
+            case 9:
+              td.appendChild(document.createTextNode(Math.round(computeReady[i].stats[1][8]), 2));
+              break;
+            case 10:
+              td.appendChild(document.createTextNode(Math.round(computeReady[i].stats[1][9]), 2));
+              break;
             default:
               break;
           }
@@ -354,15 +452,19 @@
     }
 
     const runCompute = async () => {
+      performance.mark("start-computeExec");
+      let resViewer = document.getElementById('resultViewer')
+      resViewer.style.visibility = "visible"
 
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage' , 'expoMovingAverage', 'simpleMovingAverage'],
+      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage','expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage','expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'],
 
-      jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'],
-      cFuns = ['_arima', '_acf'],
-      cFuns2 = ['_arima', '_acf'];
+        jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'],
+        cFuns = [ '_acf', '_boxcox_transform', '_linear_detrend', '_arima_setParams'],
+        cFuns2 = ['_linear_detrend', '_arima_autoParams'];
+        cFuns3 = ['exponentialMovingAverage','_arima_autoParams'];
 
       for (let item of computeReady) {
         compute.data({ id: item.id, data: item.data[1] })
@@ -374,6 +476,15 @@
       x[0] = [];
       let y = Array.from({ length: jsFuns.length }, (_, i) => [i - 1]);
       y[0] = [];
+      let x2 = Array.from({ length: cFuns2.length }, (_, i) => [i - 1]);
+      x2[0] = [];
+      let y2 = Array.from({ length: jsFuns2.length }, (_, i) => [i - 1]);
+      y2[0] = [];
+
+      let x3 = Array.from({ length: cFuns3.length }, (_, i) => [i - 1]);
+      x3[0] = [];
+
+      //First simulation
 
       compute.setEngine('javascript')
 
@@ -384,12 +495,16 @@
         dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y), funcArgs: []
       });
 
+      //Second simulation
+
       await compute.run({
         callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
         functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns2),
         dataIds: stations_to_query,
         dependencies: [], funcArgs: []
       });
+
+      //Switch engine, third simulation
 
       compute.setEngine('wasm')
 
@@ -400,16 +515,34 @@
         dependencies: [], funcArgs: []
       })
 
+      //Fourth simulation
+
       await compute.run({
         callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
         functions: Array.from({ length: computeReady.length }, (_, i) => cFuns2),
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x), funcArgs: []
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x2), funcArgs: []
+      })
+
+      await compute.run({
+        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
+        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns3),
+        dataIds: stations_to_query,
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x3), funcArgs: []
       })
 
       compute.setTotalTime()
 
-      console.log('Run has finished.')
+      performance.mark('end-computeExec')
+      let totalcomputeTime = performance.measure(
+                "measure-execution",
+                "start-computeExec",
+                "end-computeExec"
+              ).duration;
+      
+      let times = compute.getTotalTime()
+
+      console.log(`Run has finished. Total compute execution time: ${totalcomputeTime} ms. Compute engine execution time: ${times[0]} for functions and ${times[1]} for scripts.`)
       //getandSeeResult()
     }
 
@@ -456,7 +589,8 @@
       let rangePopulate = document.getElementById('rangeSelect').value;
       let engineResults = []
 
-      let names = ['trailedMovingAvg', 'simpleMovAvg', 'expoMovAv', 'arima', 'ACF', 'trailedACF']
+      let names = [];
+      compute.availableResults().forEach(result => {names.push(...compute.results(result)[0].functions)})
 
       let dateView, dataView, resultView
       let range = JSON.parse(rangePopulate)
@@ -469,12 +603,12 @@
 
       Object.keys(compute.engineResults).forEach(simResult => {
         for (let result of compute.results(simResult)) {
-        if (result.name === optionSelect) {
-          for (let r_2 of result.results) {
-            engineResults.push(r_2.slice(range[0], range[1] + 1))
+          if (result.name === optionSelect) {
+            for (let r_2 of result.results) {
+              engineResults.push(r_2.slice(range[0], range[1] + 1))
+            }
           }
         }
-      }
       })
 
       google.charts.load('current', {
@@ -489,24 +623,36 @@
             data.addColumn('number', name)
           }
 
-          
           for (let j = 0; j < dateView.length; j++) {
-            let row = 
-            [new Date(dateView[j]), dataView[j]]
-            for (let i = 0; i < engineResults.length; i++){
-            row.push(engineResults[i][j])
-          }
-          data.addRow(row)
-          }
+            let row =
+              [new Date(dateView[j]), dataView[j]]
 
-
-
-          var chart = new google.visualization.ChartWrapper({
-            chartType: 'LineChart',
-            containerId: "chart",
-            options: {
-              theme: "maximized"
+            for (let i = 0; i < engineResults.length; i++) {
+              row.push(engineResults[i][j])
             }
+            data.addRow(row)
+          }
+
+
+
+          var chart1 = new google.visualization.ChartWrapper({
+            chartType: 'LineChart',
+            containerId: "chart1",
+            options: {
+              theme: "maximized",
+              width: "100%"
+            },
+            view: { columns: [0, 1, 2, 3, 4, 8] }
+          });
+
+          var chart2 = new google.visualization.ChartWrapper({
+            chartType: 'LineChart',
+            containerId: "chart2",
+            options: {
+              theme: "maximized",
+              width: "100%"
+            },
+            view: { columns: [0, 1, 5, 6, 7, 9, 10] }
           });
 
           var control = new google.visualization.ControlWrapper({
@@ -523,9 +669,14 @@
             view.setRows(view.getFilteredRows([{ column: 0, minValue: state.range.start, maxValue: state.range.end }]))
           })
 
-          let dashboard = new google.visualization.Dashboard(document.getElementById('dashboard-div'));
-          dashboard.bind([control], [chart]);
-          dashboard.draw(data)
+          const drawDashboard = () => {
+            let dashboard = new google.visualization.Dashboard(document.getElementById('dashboard-div'));
+            dashboard.bind([control], [chart1, chart2]);
+            dashboard.draw(data);
+          }
+
+          window.addEventListener('resize', drawDashboard);
+          drawDashboard()
         },
         packages: ['controls', 'corechart']
       })
