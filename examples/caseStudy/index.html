@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
     crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,18 +42,31 @@
           <li class="nav-item" id="other-locations" style="visibility: hidden;">
             <label for="other-location-input">Please input your coordinates</label>
             <input type="text" id="other-location-input" class="form-control"
-            placeholder="Enter coordinates in the format [east, west, north, south] ">
+              placeholder="Enter coordinates in the format [east, west, north, south] ">
             <br>
-            <button type="button" class="btn btn-outline-secondary"
-            onclick="onInputCoords()">Save changes</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="onInputCoords()">Save changes</button>
           </li>
         </ul>
       </div>
     </div>
+    <a class="navbar-brand pull-right" href="https://github.com/uihilab/HydroCompute" target="_blank"><i
+        class="fa fa-github"></i>
   </div>
+  </a>
   <div class="container py-xl-16">
     <!-- <header class="pb-3 mb-4 border-bottom text-center lead"><b>Analysis on Streamflow Forecasting</b></header> -->
-    <p>This case study retrieves and analyzes on-the-fly streamflow data from different data sources within the counties of Iowa. The sources are selected based on the available gauging stations that fall within a box delineating each county. For each station selected, it calculates a 23-fold smoothing simple moving average, a 1-fold exponential and simple moving average, the time series autocorrelation function, and a linear detrending of the data. From this, a parameter set ARMA and autoparameter calculated ARMA function are calculated for the raw data and the detrended time series. All of this is done directly on the client side using the multiple functions and engines in the hydrocompute framework. The case study is meant to solely highlight the capabilities and scalability of the library.</p>
+    <p>This case study retrieves and analyzes on-the-fly streamflow data from different data sources within the counties
+      of Iowa. The sources are selected based on the available gauging stations that fall within a box delineating each
+      county. For each station selected, it calculates a 23-fold smoothing simple moving average, a 1-fold exponential
+      and simple moving average, the time series autocorrelation function, and a linear detrending of the data. From
+      this, a parameter set ARMA and autoparameter calculated ARMA function are calculated for the raw data and the
+      detrended time series. All of this is done directly on the client side using the multiple functions and engines in
+      the hydrocompute framework. The case study is meant to solely highlight the capabilities and scalability of the
+      library.</p>
+    <p>
+      Start by selecting one the available data source below. This will query based on the locations within the area of
+      interest. Select the stations you'd like to retrieve and analyze from the list shown.
+    </p>
     <div class="row align-items-md-stretch">
       <div class="col-md-6">
         <div class="container p-2 bg-light rounded" id="DataGen">
@@ -176,9 +190,10 @@
       let source = document.getElementById('sourceSelect').value;
       let station_select = document.getElementById('stationSelect')
       let location = document.getElementById('area-select').value;
-      if (location === "Custom"){
+      if (location === "Custom") {
         let input = document.getElementById('other-locations')
         input.style.visibility = 'visible'
+        hydro.map.Layers({ args: { type: 'draw' } })
         return
       }
       station_select.options.length = 0
@@ -353,7 +368,7 @@
         }
         executioner.push(exec())
       }
-      Promise.allSettled(executioner).then(_ => {
+      Promise.allSettled(executioner).then(results => {
         stations_to_query = stations_to_query.filter(item => !removed.includes(item));
         tableParams()
         runCompute()
@@ -367,7 +382,7 @@
         new_item[1] = new_item[1].map(y => JSON.parse(y))
         let wrong_vals = hydro.analyze.stats.forwardFill({ data: [...new_item[1]] })
         if (wrong_vals.replaceIndices.length !== 0) {
-          console.log(`Values between indeces ${wrong_vals[0]} and ${wrong_vals[wrong_vals.length-1]} were replaced with previous or forward values.`)
+          console.log(`Values between indeces ${wrong_vals[0]} and ${wrong_vals[wrong_vals.length - 1]} were replaced with previous or forward values.`)
         }
         return [new_item[0], wrong_vals.data]
       } catch (error) {
@@ -459,12 +474,12 @@
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage','expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage','expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'],
+      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'],
 
         jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'],
-        cFuns = [ '_acf', '_boxcox_transform', '_linear_detrend', '_arima_setParams'],
+        cFuns = ['_acf', '_boxcox_transform', '_linear_detrend', '_arima_setParams'],
         cFuns2 = ['_linear_detrend', '_arima_autoParams'];
-        cFuns3 = ['exponentialMovingAverage','_arima_autoParams'];
+      cFuns3 = ['exponentialMovingAverage', '_arima_autoParams'];
 
       for (let item of computeReady) {
         compute.data({ id: item.id, data: item.data[1] })
@@ -535,11 +550,11 @@
 
       performance.mark('end-computeExec')
       let totalcomputeTime = performance.measure(
-                "measure-execution",
-                "start-computeExec",
-                "end-computeExec"
-              ).duration;
-      
+        "measure-execution",
+        "start-computeExec",
+        "end-computeExec"
+      ).duration;
+
       let times = compute.getTotalTime()
 
       console.log(`Run has finished. Total compute execution time: ${totalcomputeTime} ms. Compute engine execution time: ${times[0]} for functions and ${times[1]} for scripts.`)
@@ -570,7 +585,7 @@
 
       for (let computeValue of computeReady) {
         if (computeValue.id === optionSelect) {
-          let sliceSize = 1825
+          let sliceSize = 1000
           console.log(sliceSize)
           for (let i = 0; i < computeValue.data[0].length; i += sliceSize) {
             let start = i;
@@ -590,7 +605,7 @@
       let engineResults = []
 
       let names = [];
-      compute.availableResults().forEach(result => {names.push(...compute.results(result)[0].functions)})
+      compute.availableResults().forEach(result => { names.push(...compute.results(result)[0].functions) })
 
       let dateView, dataView, resultView
       let range = JSON.parse(rangePopulate)

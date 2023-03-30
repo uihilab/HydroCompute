@@ -6,8 +6,8 @@ import engine from "./core/utils/engine.js";
 import webrtc from "./webrtc/webrtc.js";
 
 /**
- * Main class for the compute modules.
- * It creates instances of the different engines available to run concurrent or parallel code instances.
+ * @description Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel code instances.
+ * @class hydrocompute
  */
 
 class hydrocompute {
@@ -20,8 +20,7 @@ class hydrocompute {
     this.availableData = [];
     this.engineResults = {};
 
-    //Initiate the module with the workers api. If required, the user can change to another
-    //backend product.
+    //Initiate the module with the workers api. If required, the user can change to another backend product
     args.length !== 0
       ? this.setEngine(args[0])
       : (() => {
@@ -31,8 +30,8 @@ class hydrocompute {
   }
 
   /**
-   * Verifies that an engine is set.
    * @method isEngineSet
+   * @description Verifies that an engine is set
    * @memberof hydrocompute
    */
   isEngineSet() {
@@ -46,9 +45,10 @@ class hydrocompute {
   }
 
   /**
-   * Available kernels, keeps track of available instances
    * @method setEngine
-   * @param {String} kernel - type of kernel setup by the computation.
+   * @description Available kernels, keeps track of available instances
+   * @memberof hydrocompute
+   * @param {String} kernel - type of kernel setup by the computation
    */
   setEngine(kernel) {
     this.currentEngineName = kernel;
@@ -67,14 +67,16 @@ class hydrocompute {
   }
 
   /**
-   *
+   * @method run
+   * @description Run function that used to trigger a simulation.
+   * @memberof hydrocompute
    * @param {Object{}} args - contains callbacks, functions, dataId, and dependencies
    * @param {Boolean} callbacks - true if there are multiple funcitons  to run
    * @param {Array} dataIds - data saved in the availableData object with a specific ID. Might be moved somewhere else in the future
    * @param {Array} funcArgs - array of aditional parameters for functions as strings. Each additional argument per function is an object.
    * @param {Array} dependencies - array of dependencies as numbers if callbacks is true. In format [[], [Dep0], [Dep0, Dep1]]
    * @param {Array} functions - array of functions as strings specifying the functions to run.
-   * @returns
+   * @returns {Object} result saved in the available Results namespace
    */
   async run(args) {
     args.engine !== undefined ? this.setEngine(args.engine) : null;
@@ -118,7 +120,8 @@ class hydrocompute {
           dependencies: args.dependencies,
           linked: this.linked,
         });
-        this.setResults(args.dataIds, args.functions, args.dependencies);
+        //Await for results from the engine to finish
+        this.setResults(args.dataIds);
       } catch (error) {
         console.error("There was an error with the given run", error);
         return error;
@@ -129,11 +132,11 @@ class hydrocompute {
   }
 
   /**
-   * Result setter once the simulation is finished.
    * @method setResults
-   *
+   * @description Result setter once the simulation is finished.
+   * @memberof setResults
    */
-  setResults(names, functions, dependencies) {
+  setResults(names) {
     const stgOb = Object.fromEntries(
       Object.entries({ ...this.engine.results }).map(([key, value], index) => [
         names[index],
@@ -150,8 +153,11 @@ class hydrocompute {
     this.engine.setEngine();
   }
 
-  //Computes the total time it took a simulation to run
-  //and appends to the engine result object
+  /**
+   * @method setTotalTime
+   * @description Computes the total time it took a simulation to run and appends to the engine result object
+   * @memberof hydrocompute
+   */
   setTotalTime(){
     Object.keys(this.engineResults).forEach(key => {
       let ft = 0, st = 0;
@@ -167,19 +173,24 @@ class hydrocompute {
     })
   }
 
-
-
   /**
-   *
-   * @returns name - current engine name set.
+   * @method currentEngine
+   * @description returns the name of the current engine
+   * @memberof hydrocompute
+   * @returns {String} name - current engine name set.
    */
   currentEngine() {
     return this.currentEngineName;
   }
 
   /**
-   *
-   * @param {*} args
+   * @method data
+   * @description sets data to the available data namespace and transforms JS arrays into typed arrays.
+   * @memberof hydrocompute
+   * @param {Object} args - contains id and data
+   * @param {String} id - name of the item to be saved. If not ID is provided, then a random name will be given
+   * @param {Array} data - n-d array that will be transformed into a typed array
+   * @param {String} splits - number of splits to be done on a dataset. See splits namespace for more details
    */
   data(args) {
     let container = {
@@ -200,8 +211,11 @@ class hydrocompute {
   }
 
   /**
-   *
-   * @returns
+   * @method results
+   * @description function to return the result for a specific simulation saved in the available results namespace
+   * @memberof hydrocompute
+   * @param {String} name - name of the simulation as "Simulation_#"
+   * @returns {Object} - Object containing the details of the run given
    */
   results(name) {
     if (typeof this.engine === "undefined")
@@ -225,21 +239,24 @@ class hydrocompute {
       stgViewer.push({name: resultName, results: x, functions: y })
       }
     }
-    //this needs change
     return stgViewer;
   }
 
   /**
-   *
-   * @returns
+   * @method availableEngines
+   * @description returns the names of the available engines in the hydrocompute library
+   * @memberof hydrocompute
+   * @returns {Array} - names of engines
    */
   availableEngines() {
     return Object.keys(kernels);
   }
 
   /**
-   *
-   * @param {Object{}} args - contains steps and connectivity
+   * @method config
+   * @description sets configuration for steps and linkeage for a particular simulation
+   * @memberof hydrocompute
+   * @param {Object} args - contains steps and connectivity
    * @param {Number} steps - number of steps to run
    * @param {Boolean} linked - specifies if the steps are linked (results trail downwards the execution)
    */
@@ -249,10 +266,11 @@ class hydrocompute {
   }
 
   /**
-   *
-   * @returns
+   * @method engineScripts
+   * @description returns the available functions for all the engines
+   * @memberof hydrocompute
+   * @returns {Object} object containing the name of the engine and the available functions
    */
-
   async engineScripts() {
     let m = await this.engine.availableScripts();
     if (this.currentEngineName === "wasm") {
@@ -270,8 +288,10 @@ class hydrocompute {
   }
 
   /**
-   *
-   * @returns {Object{}} map containing the available split functions in the engines
+   * @method availableSplits
+   * @description searches the function splits available for data manipulation
+   * @memberof hydrocompute
+   * @returns {Object} map containing the available split functions in the engines
    */
   availableSplits() {
     let r = Object.keys(splits);
@@ -280,9 +300,11 @@ class hydrocompute {
   }
 
   /**
-   * Generates random name conventions for data storage
-   * @param {*} length
-   * @returns
+   * @method makeid
+   * @memberof hydrocompute
+   * @description Generates random name conventions for data storage
+   * @param {Number} length - lenght of the string to be set as name
+   * @returns {String} random name to set data
    */
   makeid(length) {
     let result = "",
@@ -296,18 +318,21 @@ class hydrocompute {
   }
 
   /**
-   *
-   * @returns
+   * @method getresTimes
+   * @description helper function that groups the total times for each function for a given simulation
+   * @memberof hydrocompute
+   * @returns {Array} 
    */
   getresTimes(res) {
     return [this.engineResults[res].totalFuncTime, this.engineResults[res].totalScrTime]
   }
 
   /**
-   * 
-   * @returns 
+   * @method getTotalTime
+   * @description getter function for obtaining the total time for functions and script runs
+   * @memberof hydrocompute
+   * @returns {Array} array containing function and script total times
    */
-
   getTotalTime() {
     let fnTotal = 0, scrTotal = 0;
     for (let result of this.availableResults()){
@@ -319,7 +344,9 @@ class hydrocompute {
   }
 
   /**
-   *
+   * @method availableResults
+   * @description available functions for 
+   * @memberof hydrocompute
    * @returns
    */
   availableResults() {

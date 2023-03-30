@@ -129,7 +129,7 @@ async function Layers({ params, args, data } = {}) {
         //Caller for drawing tool renderer.
         drawings = new L.FeatureGroup();
         draw({ params: mapconfig });
-        osmap.addLayer(mapdrawings);
+        osmap.addLayer(drawings);
       } else if (type === "removelayers") {
         //If using HydroLang-ML, there is no need to use this functions since the layers that are not to be included in a map
         //Are simply not added into the request as a layer.
@@ -592,15 +592,16 @@ function draw({ params, args, data } = {}) {
     //Event triggers added to clicking inside the maps through different types of markers and styles..
     osmap.on("draw:created", function (e) {
       var type = e.layerType,
-        layer = e.layer;
+        layer = e.layer,
+        latLngs = layer.getLatLngs();
       if (type === "marker") {
         layer.on("click", function () {
-          layer.bindPopup(`Marker coordinates: ${layer.getLatLng()}.`);
+          layer.bindPopup(`Marker coordinates: ${latLngs}.`);
         });
       } else if (type === "rectangle") {
         layer.on("click", function () {
           layer.bindPopup(
-            `Rectangle corners coordinates: ${layer.getLatLngs()}.`
+            `Rectangle corners coordinates: ${latLngs}.`
           );
         });
       } else if (type === "circle") {
