@@ -2,7 +2,7 @@
 import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
 import { dataCloner } from "./core/utils/globalUtils.js";
-import engine from "./core/utils/engine.js";
+import engine from "./core/engine.js";
 import webrtc from "./webrtc/webrtc.js";
 
 /**

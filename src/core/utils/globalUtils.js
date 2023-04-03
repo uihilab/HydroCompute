@@ -1,9 +1,13 @@
 /**
- * Directed Acyclic Graph implementation for solving promised-based functions
+ * @method DAG
+ * @memberof globalUtils
+ * @description Directed Acyclic Graph implementation for solving promised-based functions
  * adopted from https://github.com/daanmichiels/promiseDAG
- * @param {*} functions
- * @param {*} dag
- * @returns
+ * @param {Array} functions - functions required to run during a simulation as promised using the order [func1, func2...]
+ * @param {Array} dag - dependency array listing the sequential executions for each funciton as [[0], [1], [0,1]...]
+ * @param {Object} args - argument list used to run a specific function. This will change already on the engine
+ * @param {String} type - running either a function DAG or a step DAG
+ * @returns {Promise} fulfills th
  */
 
 export const DAG = ({ functions, dag, args, type } = {}) => {
@@ -196,9 +200,11 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
 
 
 /**
- * Deep clones either objects or arrays
- * @param {Object{}} data - array or object
- * @returns
+ * @method dataCloner
+ * @memberof globalUtils
+ * @description Deep clones either objects or arrays
+ * @param {Object} data - array or object
+ * @returns {Object} deep clone of the object to copy
  */
 
 export const dataCloner = (data) => {
@@ -248,6 +254,9 @@ export const dataCloner = (data) => {
 };
 
 /**
+ * @method arrayChanger
+ * @memberof globalUtils
+ * @description switches the rows/columns of an array
  *
  */
 

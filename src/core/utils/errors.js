@@ -1,8 +1,7 @@
 /**
- * Error classes to divert issues throughout the code.
+ * @class ValueErr
+ * @description Used whenever there is a value type error when running the engine
  */
-
-//This needs expansion
 export class ValueErr extends Error {
     constructor(message){
         super(message);
@@ -10,6 +9,10 @@ export class ValueErr extends Error {
     }
 }
 
+/**
+ * @class NotImplemented
+ * @description Used whenever there is a DOM Exception for not found / not impleemented in the compute
+ */
 export class NotImplemented extends Error {
     constructor(message){
         super(message)
@@ -17,6 +20,10 @@ export class NotImplemented extends Error {
     }
 }
 
+/**
+ * @class NotFound
+ * @description Used whenever there is an error raised because of not found file(s)
+ */
 export class NotFound extends Error {
     constructor(message){
         super(message)

@@ -1,9 +1,9 @@
-import { DAG } from "./globalUtils.js";
+import { DAG } from "./utils/globalUtils.js";
 import threadManager from "./workers.js";
-import { splits } from "./splits.js";
-import { jsScripts } from "../../javascript/scripts/jsScripts.js";
-import { avScripts } from "../../wasm/modules/modules.js";
-import { gpuScripts } from "../../webgpu/gpuScripts.js";
+import { splits } from "./utils/splits.js";
+import { jsScripts } from "../javascript/scripts/jsScripts.js";
+import { avScripts } from "../wasm/modules/modules.js";
+import { gpuScripts } from "../webgpu/gpuScripts.js";
 
 /**
  * @class
