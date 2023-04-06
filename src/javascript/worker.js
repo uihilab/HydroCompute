@@ -1,57 +1,71 @@
 self.onmessage = async (e) => {
   performance.mark("start-script");
-  const scripts = null;
-  //Correcting to import either an already found available script in the scripts folder, or using an outside script
+  let scripts = null;
   if (e.data.scriptType === "fetched") {
-    //the path to the script must be relative to the location of the hydrocompute driver OR coming from an outside source
     scripts = await import(e.data.scriptName);
   } else {
     scripts = await import("./scripts/scripts.js");
   }
-  //Need to correct firefox imports
-  //const scripts = self.importScripts('./scripts/scripts.js')
-
-  const { funcName, id, step } = e.data;
+  const { funcName, id, step, scriptName } = e.data;
   const data = new Float32Array(e.data.data);
   let result = null;
   try {
-    //first initinialization in case the script type import is fetched
+    //in the case the script is given as a relative path by the user
     if (e.data.scriptType === "fetched") {
-      //logic for when the script type is fetched
-    } else {
-      for (const script in scripts) {
-        performance.mark("start-function");
-        //IMPLEMENT CHANGE THAT SEARCHES BOTH THE NAME OF MAIN AND FUNCTION NAME IN SCRIPT OBJECT
-        //NOT FINISHED!
-        if (Object.keys(scripts[script]).includes("main") && Object.keys(scripts[script]).includes(funcName)) {
-          result = scripts[script]["main"](funcName, data);
-          //Case the script used does not include the main interface, runs the function directly
-        } else if (!Object.keys(scripts[script]).includes("main")) {
-          result = scripts[script][funcName](data);
-        }
-        performance.mark("end-function");
-        performance.mark("end-script");
-        self.postMessage(
-          {
-            id,
-            results: result.buffer,
-            step,
-            funcName,
-            funcExec: performance.measure(
-              "measure-execution",
-              "start-function",
-              "end-function"
-            ).duration,
-            workerExec: performance.measure(
-              "measure-execution",
-              "start-script",
-              "end-script"
-            ).duration,
-          },
-          [result.buffer]
-        );
-        break;
+      performance.mark("start-function");
+      let script = await import(scriptName);
+      if (
+        Object.keys(script).includes("main") &&
+        Object.keys(script).includes(funcName)
+      ) {
+        result = script["main"](funcName, data);
+      } else if (!Object.keys(script).includes("main")) {
+        result = script[funcName](data);
+      } else if (funcName === undefined && Object.keys(script).includes("main")){
+        result = script["main"](data)
       }
+      performance.mark("end-function");
+    } else {
+      //in the case the script is found within the available scripts in js library
+      for (const script in scripts) {
+        if (
+          Object.keys(scripts[script]).includes("main") &&
+          Object.keys(scripts[script]).includes(funcName)
+        ) {
+          performance.mark("start-function");
+          result = scripts[script]["main"](funcName, data);
+          performance.mark("end-function");
+          break;
+        } else if (
+          !Object.keys(scripts[script]).includes("main") &&
+          Object.keys(scripts[script]).includes(funcName)
+        ) {
+          performance.mark("start-function");
+          result = scripts[script][funcName](data);
+          performance.mark("end-function");
+          break;
+        }
+      }
+      performance.mark("end-script");
+      self.postMessage(
+        {
+          id,
+          results: result.buffer,
+          step,
+          funcName,
+          funcExec: performance.measure(
+            "measure-execution",
+            "start-function",
+            "end-function"
+          ).duration,
+          workerExec: performance.measure(
+            "measure-execution",
+            "start-script",
+            "end-script"
+          ).duration,
+        },
+        [result.buffer]
+      );
     }
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {

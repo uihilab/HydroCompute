@@ -1,7 +1,7 @@
 import { DAG } from "./utils/globalUtils.js";
 import threadManager from "./workers.js";
 import { splits } from "./utils/splits.js";
-import { jsScripts } from "../javascript/scripts/jsScripts.js";
+import { jsScripts } from "../javascript/jsScripts.js";
 import { avScripts } from "../wasm/modules/modules.js";
 import { gpuScripts } from "../webgpu/gpuScripts.js";
 
@@ -41,7 +41,7 @@ export default class engine {
    * @method run
    * @memberof engine
    * @description interface method from the compute layer. it resets the values for each of the
-   * @param {Object} args - containing the values for each step of splitBool, data, length, functions, funcArgs, dependencies, linked. See documentation for the HydroCompute class for more details
+   * @param {Object} args - containing the values for each step of isSplit, data, length, functions, funcArgs, dependencies, linked. See documentation for the HydroCompute class for more details
    */
   async run(args) {
     //Default behavior for when no data or no functions are passed.
@@ -66,7 +66,7 @@ export default class engine {
       //Length of the data submitted for analysis per step.
       length = [],
       //Array of data splits to be performed per step: [true, false, false, true...]
-      splitBool = [],
+      isSplit = [],
     } = args;
 
     //The total number of steps will be infered from the number of functions per step.
@@ -80,7 +80,7 @@ export default class engine {
         thisFunArgs = funcArgs[i],
         thisDep = dependencies[i],
         thisData = data[i],
-        thisSplits = splitBool[i],
+        thisSplits = isSplit[i],
         thisThreadCount = thisFunctions.length,
         thisDataLength = length[i];
 
@@ -100,7 +100,7 @@ export default class engine {
         id: i,
         functions: thisFunctions,
         funcArgs: thisFunArgs,
-        splitBool: thisSplits,
+        isSplit: thisSplits,
         threadCount: thisThreadCount,
         dependencies: thisDep,
         length: thisDataLength,
@@ -157,7 +157,7 @@ export default class engine {
       dependencies = [],
       step = 0,
       data = [],
-      splitBool = false,
+      isSplit = false,
       length = 1,
       threadCount = 0,
     } = args;
@@ -174,13 +174,13 @@ export default class engine {
       case functions.length === 1:
         dataSplits = data;
         break;
-      case functions.length > 0 && dependencies.length === 0 && splitBool:
+      case functions.length > 0 && dependencies.length === 0 && isSplit:
         dataSplits = splits.main("split1DArray", {
           data: data,
           n: functions.length,
         });
         break;
-      case functions.length > 0 && dependencies.length === 0 && !splitBool:
+      case functions.length > 0 && dependencies.length === 0 && !isSplit:
         for (let i = 0; i < functions.length; i++) {
           dataSplits.push(data.slice());
         }
@@ -197,7 +197,7 @@ export default class engine {
 
     let _args = {
       data: dataSplits,
-      splitting: splitBool,
+      splitting: isSplit,
       functions,
       funcArgs,
       threadCount,

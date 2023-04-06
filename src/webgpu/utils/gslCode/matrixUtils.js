@@ -60,6 +60,12 @@ export const matrixUtils = {
       `;
   },
 
+  /**
+   * @method matrixExpo
+   * @description powers up the elements in a matrix to the given number
+   * @param {Number} num - number to exponentiate all elements in the matrix 
+   * @returns 
+   */
   matrixExpo: (num = 2.0) => {
     return `
     struct Matrix {
@@ -85,6 +91,11 @@ export const matrixUtils = {
     `;
   },
 
+  /**
+   * @method LUDecomposition
+   * @description decomposition of a matrix to its LeftUpper form
+   * @returns 
+   */
   LUDecomposition: () => {
     return `
     struct Matrix {
@@ -127,7 +138,7 @@ export const matrixUtils = {
     }    
     `;
   },
-  main: (name) => {
-    if ()
-  }
+  // main: (name) => {
+  //   if ()
+  // }
 };

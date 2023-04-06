@@ -1,10 +1,11 @@
 /**
- *
- * @param {*} matrices
- * @param {*} args
- * @returns
+ * @method matrixSize
+ * @description returns the sizes of two square matrices
+ * @param {Array} matrix - matrix as a 1d array
+ * @param {Object} args - additional partitions required
+ * @returns 
  */
-export const matrixSize = (matrix, count, args = undefined) => {
+export const matrixSize = (matrix, args = undefined) => {
   const isSquare = matrix.length % Math.sqrt(matrix.length) === 0;
   const sizes = args || (isSquare ? [Math.sqrt(matrix.length), Math.sqrt(matrix.length)] : console.error("Please input the sizes of your matrices."));
   return sizes;

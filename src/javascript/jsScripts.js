@@ -1,4 +1,4 @@
-import * as scripts from './scripts.js'
+import * as scripts from './scripts/scripts.js'
 
 export const jsScripts = () => { 
     let r = Object.keys(scripts).map((script) => {

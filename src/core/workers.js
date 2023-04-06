@@ -10,7 +10,7 @@
 export default class threadManager {
   constructor(name, location) {
     window.Worker
-      ? console.log("Web workers engine set.")
+      ? console.log(`Web workers engine set for engine: ${name}`)
       : (() => {
           return console.error("Web workers API not supported!");
         })();
@@ -40,7 +40,12 @@ export default class threadManager {
    */
   initializeWorkerThread(index) {
     this.workerThreads[index].worker = (args) => {
-      let buffer = args.data;
+      let {
+        data,
+        funcName,
+        step
+      } = args
+      let buffer = data;
       return new Promise(async (resolve, reject) => {
         let w;
         //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
@@ -64,7 +69,7 @@ export default class threadManager {
         };
         w.onerror = (error) => {
           console.error(
-            `There was an error executing thread: ${index}, function: ${args.funcName}, step: ${args.step}. More info: `,
+            `There was an error executing thread: ${index}, function: ${funcName}, step: ${step}. More info: `,
             error
           );
           reject(error);

@@ -12,8 +12,8 @@ import webrtc from "./webrtc/webrtc.js";
 
 class hydrocompute {
   constructor(...args) {
-    this.enginesCalled = {};
-    this.engine;
+    this.calledEngines = {};
+    this.currentEngine;
     this.currentEngineName = null;
     this.engineFactory;
     this.instanceRun = 0;
@@ -25,7 +25,7 @@ class hydrocompute {
       ? this.setEngine(args[0])
       : (() => {
           console.log("The javascript engine has been set as default.");
-          this.setEngine(args.engine || "javascript");
+          this.setEngine(args.currentEngine || "javascript");
         })();
   }
 
@@ -35,7 +35,7 @@ class hydrocompute {
    * @memberof hydrocompute
    */
   isEngineSet() {
-    typeof this.engine === "undefined"
+    typeof this.currentEngine === "undefined"
       ? () => {
           console.error(
             "Please set the required engine first before initializing!"
@@ -53,16 +53,16 @@ class hydrocompute {
   setEngine(kernel) {
     this.currentEngineName = kernel;
     this.currentEngineName === "webrtc"
-      ? (this.engine = new webrtc())
-      : (this.engine = new engine(
+      ? (this.currentEngine = new webrtc())
+      : (this.currentEngine = new engine(
           this.currentEngineName,
           kernels[this.currentEngineName]
         ));
 
-    if (Object.keys(this.enginesCalled).includes(kernel)) {
-      this.enginesCalled[kernel] += 1;
+    if (Object.keys(this.calledEngines).includes(kernel)) {
+      this.calledEngines[kernel] += 1;
     } else {
-      this.enginesCalled[kernel] = 1;
+      this.calledEngines[kernel] = 1;
     }
   }
 
@@ -79,49 +79,62 @@ class hydrocompute {
    * @returns {Object} result saved in the available Results namespace
    */
   async run(args) {
-    args.engine !== undefined ? this.setEngine(args.engine) : null;
+    const {
+      engine = this.currentEngine,
+      dataIds,
+      scriptName = undefined,
+      functions,
+      funcArgs = [],
+      dependencies = [],
+      dataSplits = Array.from({length: functions.length}, (_, i) => false)
+      
+      
+    } = args;
+    engine !== undefined ? this.setEngine(engine) : null;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
-      let d = [],
-        l = [];
+      let dataArray = [],
+        lengthArray = [];
       try {
         for (let item of this.availableData) {
-          for (let id of args.dataIds) {
+          for (let id of dataIds) {
             if (id === item.id) {
-              d.push(item.data.slice());
-              l.push(item.length);
+              //create a copy that will be cloned down the execution
+              dataArray.push(item.data.slice());
+              //keep track of the length of items
+              lengthArray.push(item.length);
             }
           }
         }
-        return [d, l];
+        return [dataArray, lengthArray];
       } catch (error) {
-        return console.error(
+        console.error(
           `Data with nametag: "${id}" not found in the storage.`,
           error
         );
+        return null
       }
     })();
     if (
-      (data.length > 0 && args.functions.length > 0) ||
-      (data.length === 0 &&
-        args.funcArgs.length > 0 &&
-        args.functions.length > 0)
+      (data !== null && functions.length > 0) ||
+      (data === null && funcArgs.length > 0 && functions.length > 0)
     ) {
       //Data passed in raw without splitting
       try {
         this.instanceRun += 1;
-        await this.engine.run({
-          splitBool: args.callbacks,
-          data: data[0],
-          length: data[1],
-          functions: args.functions,
-          funcArgs: args.funcArgs,
-          dependencies: args.dependencies,
+        await this.currentEngine.run({
+          isSplit: dataSplits,
+          scriptName: scriptName,
+          data: data !== null ? data[0] : [],
+          length: data !== null ? data[1] : 0,
+          functions: functions,
+          funcArgs: funcArgs,
+          dependencies: dependencies,
           linked: this.linked,
         });
         //Await for results from the engine to finish
-        this.setResults(args.dataIds);
+        this.setResults(dataIds);
       } catch (error) {
         console.error("There was an error with the given run", error);
         return error;
@@ -138,7 +151,7 @@ class hydrocompute {
    */
   setResults(names) {
     const stgOb = Object.fromEntries(
-      Object.entries({ ...this.engine.results }).map(([key, value], index) => [
+      Object.entries({ ...this.currentEngine.results }).map(([key, value], index) => [
         names[index],
         value,
       ])
@@ -150,7 +163,7 @@ class hydrocompute {
     // let totalExcTime = 
     console.log(`Simulation finished.`);
     //setting results to be saved in main class
-    this.engine.setEngine();
+    this.currentEngine.setEngine();
   }
 
   /**
@@ -218,7 +231,7 @@ class hydrocompute {
    * @returns {Object} - Object containing the details of the run given
    */
   results(name) {
-    if (typeof this.engine === "undefined")
+    if (typeof this.currentEngine === "undefined")
       return console.error(
         "Please set the required engine first before initializing!"
       );
@@ -272,7 +285,7 @@ class hydrocompute {
    * @returns {Object} object containing the name of the engine and the available functions
    */
   async engineScripts() {
-    let m = await this.engine.availableScripts();
+    let m = await this.currentEngine.availableScripts();
     if (this.currentEngineName === "wasm") {
       let _m = new Map();
       let stgM = Object.keys(m);
