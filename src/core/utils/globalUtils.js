@@ -82,6 +82,7 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
       stopped = true;
       console.error('There was an error executing a function. More details: ', error)
       reject(error);
+      return;
     };
 
     for (let i = 0; i < N; ++i) {

@@ -2,7 +2,7 @@
 import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
 import { dataCloner } from "./core/utils/globalUtils.js";
-import engine from "./core/engine.js";
+import engine from "./core/mainEngine.js";
 import webrtc from "./webrtc/webrtc.js";
 
 /**
@@ -15,7 +15,6 @@ class hydrocompute {
     this.calledEngines = {};
     this.currentEngine;
     this.currentEngineName = null;
-    this.engineFactory;
     this.instanceRun = 0;
     this.availableData = [];
     this.engineResults = {};
@@ -80,17 +79,15 @@ class hydrocompute {
    */
   async run(args) {
     const {
-      engine = this.currentEngine,
+      //engine = this.currentEngine,
       dataIds,
-      scriptName = undefined,
       functions,
       funcArgs = [],
       dependencies = [],
-      dataSplits = Array.from({length: functions.length}, (_, i) => false)
-      
-      
+      scriptName = [],
+      dataSplits = Array.from({length: dataIds.length}, (_, i) => false)
     } = args;
-    engine !== undefined ? this.setEngine(engine) : null;
+    //engine !== undefined ? this.setEngine(engine) : null;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -125,12 +122,12 @@ class hydrocompute {
         this.instanceRun += 1;
         await this.currentEngine.run({
           isSplit: dataSplits,
-          scriptName: scriptName,
+          scriptName,
           data: data !== null ? data[0] : [],
           length: data !== null ? data[1] : 0,
-          functions: functions,
-          funcArgs: funcArgs,
-          dependencies: dependencies,
+          functions,
+          funcArgs,
+          dependencies,
           linked: this.linked,
         });
         //Await for results from the engine to finish
@@ -157,7 +154,7 @@ class hydrocompute {
       ])
     );
     this.engineResults[`Simulation_${this.instanceRun}`] = {
-      engineName: this.currentEngine(),
+      engineName: this.currentEngineName,
       ...stgOb,
     };
     // let totalExcTime = 

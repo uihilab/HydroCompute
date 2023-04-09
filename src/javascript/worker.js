@@ -1,7 +1,7 @@
 self.onmessage = async (e) => {
   performance.mark("start-script");
   let scripts = null;
-  if (e.data.scriptType === "fetched") {
+  if (e.data.scriptName !== undefined){
     scripts = await import(e.data.scriptName);
   } else {
     scripts = await import("./scripts/scripts.js");
@@ -11,7 +11,7 @@ self.onmessage = async (e) => {
   let result = null;
   try {
     //in the case the script is given as a relative path by the user
-    if (e.data.scriptType === "fetched") {
+    if (e.data.scriptType !== undefined) {
       performance.mark("start-function");
       let script = await import(scriptName);
       if (
@@ -73,11 +73,13 @@ self.onmessage = async (e) => {
         `There was an error executing:\nfunction: ${funcName}\nid: ${id}`,
         error
       );
+      return 
     } else {
       console.error(
         "There was an error running the script. More info: ",
         error
       );
+       return
     }
   }
 };

@@ -119,5 +119,6 @@ self.onmessage = async (e) => {
     );
   } catch (e) {
     console.error(e);
+    return
   }
 };

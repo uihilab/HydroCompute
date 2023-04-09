@@ -73,6 +73,7 @@ export default class threadManager {
             error
           );
           reject(error);
+          return;
         };
 
         buffer.byteLength === 0

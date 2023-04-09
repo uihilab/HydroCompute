@@ -504,19 +504,16 @@
       compute.setEngine('javascript')
 
       await compute.run({
-        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
         functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns),
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y), funcArgs: []
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y)
       });
 
       //Second simulation
 
       await compute.run({
-        callbacks: Array.from({ length: stations_to_query.length }, (_, i) => false),
         functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns2),
         dataIds: stations_to_query,
-        dependencies: [], funcArgs: []
       });
 
       //Switch engine, third simulation
@@ -524,26 +521,22 @@
       compute.setEngine('wasm')
 
       await compute.run({
-        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
         functions: Array.from({ length: computeReady.length }, (_, i) => cFuns),
         dataIds: stations_to_query,
-        dependencies: [], funcArgs: []
       })
 
       //Fourth simulation
 
       await compute.run({
-        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
         functions: Array.from({ length: computeReady.length }, (_, i) => cFuns2),
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x2), funcArgs: []
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x2)
       })
 
       await compute.run({
-        callbacks: Array.from({ length: computeReady.length }, (_, i) => false),
         functions: Array.from({ length: computeReady.length }, (_, i) => cFuns3),
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x3), funcArgs: []
+        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x3)
       })
 
       compute.setTotalTime()

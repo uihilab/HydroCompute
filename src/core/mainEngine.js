@@ -1,5 +1,5 @@
 import { DAG } from "./utils/globalUtils.js";
-import threadManager from "./workers.js";
+import threadManager from "./threadEngine.js";
 import { splits } from "./utils/splits.js";
 import { jsScripts } from "../javascript/jsScripts.js";
 import { avScripts } from "../wasm/modules/modules.js";
@@ -34,7 +34,7 @@ export default class engine {
    */
   initialize(engine) {
     this.engineName = engine;
-    this.threads = new threadManager(engine, this.workerLocation);
+    this.threads = new threadManager(this.engineName, this.workerLocation);
   }
 
   /**
@@ -67,6 +67,8 @@ export default class engine {
       length = [],
       //Array of data splits to be performed per step: [true, false, false, true...]
       isSplit = [],
+      //Name of the script used from the passed arguments.
+      scriptName = [],
     } = args;
 
     //The total number of steps will be infered from the number of functions per step.
@@ -82,7 +84,8 @@ export default class engine {
         thisData = data[i],
         thisSplits = isSplit[i],
         thisThreadCount = thisFunctions.length,
-        thisDataLength = length[i];
+        thisDataLength = length[i],
+        thisScriptName = scriptName[i];
 
       //defaults in case there are no inputs from the user
       thisDep =
@@ -104,6 +107,7 @@ export default class engine {
         threadCount: thisThreadCount,
         dependencies: thisDep,
         length: thisDataLength,
+        scriptName: thisScriptName
       });
     }
 
@@ -160,6 +164,7 @@ export default class engine {
       isSplit = false,
       length = 1,
       threadCount = 0,
+      scriptName = []
     } = args;
 
     for (var i = 0; i < threadCount; i++) {
@@ -202,6 +207,7 @@ export default class engine {
       funcArgs,
       threadCount,
       length,
+      scriptName
     };
 
     try {
@@ -240,6 +246,7 @@ export default class engine {
           length: args.length,
           step: step,
           funcArgs: args.funcArgs[i],
+          scriptName: args.scriptName
         };
         this.threads.initializeWorkerThread(i);
         batchTasks.push(_args)
@@ -304,6 +311,7 @@ export default class engine {
           funcArgs: args.funcArgs[i],
           step,
           length,
+          scriptName: args.scriptName[i]
         };
         this.threads.initializeWorkerThread(i);
         batchTasks.push(this.threads.workerThreads[i].worker(workerArgs));
