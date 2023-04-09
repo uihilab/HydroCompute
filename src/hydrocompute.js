@@ -78,7 +78,7 @@ class hydrocompute {
    * @returns {Object} result saved in the available Results namespace
    */
   async run(args) {
-    const {
+  let {
       //engine = this.currentEngine,
       dataIds,
       functions,
@@ -87,6 +87,10 @@ class hydrocompute {
       scriptName = [],
       dataSplits = Array.from({length: dataIds.length}, (_, i) => false)
     } = args;
+
+    //CHANGED: This just moved the mapping done before here but stil needs update!!
+    functions = Array.from({length: dataIds.length}, (_, i) => functions)
+    dependencies = dependencies.length > 0 ? Array.from({length: dataIds.length}, (_, i) => dependencies) : dependencies
     //engine !== undefined ? this.setEngine(engine) : null;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
@@ -130,6 +134,7 @@ class hydrocompute {
           dependencies,
           linked: this.linked,
         });
+        //functions = Array.from({length: dataIds.length}, (_, i) => functions)
         //Await for results from the engine to finish
         this.setResults(dataIds);
       } catch (error) {

@@ -164,7 +164,7 @@ export default class engine {
       isSplit = false,
       length = 1,
       threadCount = 0,
-      scriptName = []
+      scriptName = undefined
     } = args;
 
     for (var i = 0; i < threadCount; i++) {
@@ -311,7 +311,7 @@ export default class engine {
           funcArgs: args.funcArgs[i],
           step,
           length,
-          scriptName: args.scriptName[i]
+          scriptName: args.scriptName
         };
         this.threads.initializeWorkerThread(i);
         batchTasks.push(this.threads.workerThreads[i].worker(workerArgs));

@@ -504,15 +504,15 @@
       compute.setEngine('javascript')
 
       await compute.run({
-        functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns),
+        functions: jsFuns,
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => y)
+        dependencies: y
       });
 
       //Second simulation
 
       await compute.run({
-        functions: Array.from({ length: stations_to_query.length }, (_, i) => jsFuns2),
+        functions: jsFuns2,
         dataIds: stations_to_query,
       });
 
@@ -521,22 +521,22 @@
       compute.setEngine('wasm')
 
       await compute.run({
-        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns),
+        functions: cFuns,
         dataIds: stations_to_query,
       })
 
       //Fourth simulation
 
       await compute.run({
-        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns2),
+        functions: cFuns2,
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x2)
+        dependencies: x2
       })
 
       await compute.run({
-        functions: Array.from({ length: computeReady.length }, (_, i) => cFuns3),
+        functions: cFuns3,
         dataIds: stations_to_query,
-        dependencies: Array.from({ length: stations_to_query.length }, (_, i) => x3)
+        dependencies: x3
       })
 
       compute.setTotalTime()
