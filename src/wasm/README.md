@@ -1,1 +1,1 @@
-## Further info about the Web Assembly engine
+## Web Assembly Engine
