@@ -1,4 +1,5 @@
 import { AScriptUtils, getAllModules } from "./modules/modules.js";
+import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
 
 //Single worker instance that goes through the while process of data digestion/ingestion
 self.onmessage = async (e) => {
@@ -21,44 +22,49 @@ self.onmessage = async (e) => {
           else if (scr === "C") {
             result = handleC(module, funcName, data, mod);
           }
+          //Any other webassembly module handles would go here
 
           performance.mark("end-script");
+
+          let getPerformance = getPerformanceMeasures()
           self.postMessage(
             {
               id,
               results: result,
               step,
               funcName,
-              funcExec: performance.measure(
-                "measure-execution",
-                "start-function",
-                "end-function"
-              ).duration,
-              workerExec: performance.measure(
-                "measure-execution",
-                "start-script",
-                "end-script"
-              ).duration,
+              ...getPerformance
             },
             [result]
           );
         }
       }
     }
-  } catch (e) {
-    console.error(e);
-    return
+  } catch (error) {
+    if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
+      console.error(
+        `There was an error executing:\nfunction: ${funcName}\nid: ${id}`,
+        error
+      );
+      return 
+    } else {
+      console.error(
+        "There was an error running the script. More info: ",
+        error
+      );
+       return
+    }
   }
 };
 
 /**
  * 
- * @param {*} moduleName 
- * @param {*} ref 
- * @param {*} data 
- * @param {*} mod 
- * @param {*} funcArgs 
- * @returns 
+ * @param {String} moduleName 
+ * @param {Object} ref - Object used for running setting arguments in a funciton
+ * @param {Array} data - data object to be used for the run 
+ * @param {Object} mod - module object used with function 
+ * @param {Array} funcArgs - array containing the additional arguments to be used in the function
+ * @returns {ArrayBuffer} result object to be sent back from the worker
  */
 const handleAS = (moduleName, ref, data, mod, funcArgs) => {
   let views = new AScriptUtils(),
@@ -103,7 +109,13 @@ const handleAS = (moduleName, ref, data, mod, funcArgs) => {
 };
 
 /**
- *
+ * @method handleC
+ * @description function for handling parametrization of C-based Web Assembly functions
+ * @param {String} moduleName - name of the module running the script
+ * @param {String} funcName - name of the function to run in the module
+ * @param {Array} data - data object to use for the run
+ * @param {Object} module - module run containing the memory alloc functions
+ * @returns {ArrayBuffer} - result buffer to be sent back from the worker
  */
 const handleC = (moduleName, functionName, data, module) => {
   let stgRes = null;

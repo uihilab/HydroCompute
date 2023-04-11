@@ -1,6 +1,6 @@
 /**
- * @description main kernels used for computation. Any additional backends will be added here.
- * 
+ * @module kernels
+ * @description main kernel workers used for computation. Any additional backends will be added here.
  */
 
 export const kernels = {

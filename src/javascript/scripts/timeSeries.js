@@ -7,7 +7,7 @@ export const timeSeries = {
    * @returns
    */
   expoMovingAverage: (d, alpha = 0.5) => {
-    let result = new Float32Array(d.length-1);
+    let result = new Array(d.length-1);
     result[0] = d[0];
     for (let i = 1; i < d.length; i++) {
       result[i] = alpha * d[i] + (1 - alpha) * result[i - 1];
@@ -24,10 +24,10 @@ export const timeSeries = {
    * @returns
    */
   simpleMovingAverage: (d, window = 5, n = Infinity) => {
-    if (!d || d.length < window) return new Float32Array(0);
+    if (!d || d.length < window) return new Array(0);
     let index = window - 1;
     let num = 0;
-    const res = new Float32Array(Math.min(n, d.length - window + 1));
+    const res = new Array(Math.min(n, d.length - window + 1));
     while (++index < d.length + 1 && num++ < n) {
       let sum = 0;
       for (let i = index - window; i < index; i++) {

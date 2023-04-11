@@ -16,23 +16,27 @@ import {
   deviceConnect,
 } from "./utils/bufferCreators.js";
 import * as scripts from "./utils/gslCode/gslScripts.js";
+import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
 
 const adapter = new deviceConnect()
 
 self.onmessage = async (e) => {
   performance.mark('start-script');
-  const device = await adapter.initialize()
-    //
 
+  const device = await adapter.initialize()
+    //  
   let result = null,
     matData = [],
     matSize = [],
     matBuffers = [],
     lays = [],
     groups = [],
-    { funcName, funcArgs, id, step, data} = e.data;
-  
+    { funcName, funcArgs, id, step, data, scriptName} = e.data;
     data = new Float32Array(data);
+
+    if (scriptName !== undefined) {
+      let scr = await import (e.data.scriptName);
+    }
 
   try {
     for (const scr in scripts) {
@@ -105,6 +109,7 @@ self.onmessage = async (e) => {
       }
     }
     performance.mark('end-script');
+    let getPerformance = getPerformanceMeasures()
 
     self.postMessage(
       {
@@ -112,13 +117,23 @@ self.onmessage = async (e) => {
         results: result,
         step,
         funcName,
-        funcExec: performance.measure('measure-execution', 'start-function', 'end-function').duration,
-        workerExec: performance.measure('measure-execution', 'start-script', 'end-script').duration
+        ...getPerformance
       },
       [result]
     );
-  } catch (e) {
-    console.error(e);
-    return
+  } catch (error) {
+    if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
+      console.error(
+        `There was an error executing:\nfunction: ${funcName}\nid: ${id}`,
+        error
+      );
+      return 
+    } else {
+      console.error(
+        "There was an error running the script. More info: ",
+        error
+      );
+       return
+    }
   }
 };

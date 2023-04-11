@@ -1,28 +1,24 @@
+import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
+
 self.onmessage = async (e) => {
   performance.mark("start-script");
-  let scripts = null;
-  if (e.data.scriptName !== undefined){
-    scripts = await import(e.data.scriptName);
-  } else {
-    scripts = await import("./scripts/scripts.js");
-  }
   const { funcName, id, step, scriptName } = e.data;
-  const data = new Float32Array(e.data.data);
+  let data = new Float32Array(e.data.data)
+    let scripts = await import(scriptName || "./scripts/scripts.js");
   let result = null;
   try {
     //in the case the script is given as a relative path by the user
-    if (e.data.scriptType !== undefined) {
+    if (scriptName !== undefined) {
       performance.mark("start-function");
-      let script = await import(scriptName);
       if (
-        Object.keys(script).includes("main") &&
-        Object.keys(script).includes(funcName)
+        Object.keys(scripts).includes("main") &&
+        Object.keys(scripts).includes(funcName)
       ) {
-        result = script["main"](funcName, data);
-      } else if (!Object.keys(script).includes("main")) {
-        result = script[funcName](data);
-      } else if (funcName === undefined && Object.keys(script).includes("main")){
-        result = script["main"](data)
+        result = new Float32Array(scripts["main"](funcName, [...data]));
+      } else if (!Object.keys(scripts).includes("main")) {
+        result = new Float32Array(scripts[funcName]([...data]));
+      } else if (funcName === undefined && Object.keys(scripts).includes("main")){
+        result = scripts["main"](data)
       }
       performance.mark("end-function");
     } else {
@@ -33,7 +29,7 @@ self.onmessage = async (e) => {
           Object.keys(scripts[script]).includes(funcName)
         ) {
           performance.mark("start-function");
-          result = scripts[script]["main"](funcName, data);
+          result = new Float32Array(scripts[script]["main"](funcName, [...data]));
           performance.mark("end-function");
           break;
         } else if (
@@ -41,32 +37,24 @@ self.onmessage = async (e) => {
           Object.keys(scripts[script]).includes(funcName)
         ) {
           performance.mark("start-function");
-          result = scripts[script][funcName](data);
+          result = new Float32Array(scripts[script][funcName]([...data]));
           performance.mark("end-function");
           break;
         }
       }
       performance.mark("end-script");
-      self.postMessage(
-        {
-          id,
-          results: result.buffer,
-          step,
-          funcName,
-          funcExec: performance.measure(
-            "measure-execution",
-            "start-function",
-            "end-function"
-          ).duration,
-          workerExec: performance.measure(
-            "measure-execution",
-            "start-script",
-            "end-script"
-          ).duration,
-        },
-        [result.buffer]
-      );
     }
+    let getPerformance = getPerformanceMeasures()
+    self.postMessage(
+      {
+        id,
+        results: result.buffer,
+        step,
+        funcName,
+        ...getPerformance
+      },
+      [result.buffer]
+    );
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
       console.error(

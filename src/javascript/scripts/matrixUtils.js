@@ -20,7 +20,7 @@ export const matrixUtils = {
     const [m, n, p] = sizes;
     const a = d[0];
     const b = d[1];
-    const c = new Float32Array(m * p);
+    const c = new Array(m * p);
 
     for (let i = 0; i < m; i++) {
       for (let j = 0; j < p; j++) {
@@ -46,7 +46,7 @@ export const matrixUtils = {
       return;
     } else {
       d = [d.slice(0, d.length / 2), d.slice(d.length / 2, d.length)];
-      var res = new Float32Array(d.length);
+      var res = new Array(d.length);
       for (var i = 0; i < d[0].length; i++) {
         res.push(d[0][i] + d[1][i]);
       }

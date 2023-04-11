@@ -324,3 +324,22 @@ export const flattenFloat32Array = (arr) => {
   });
   return new Float32Array(flatArray);
 }
+
+/**
+ * 
+ * @returns {Object} execution times for functions and scripts 
+ */
+export const getPerformanceMeasures = () => {
+  return {
+    funcExec: performance.measure(
+      "measure-execution",
+      "start-function",
+      "end-function"
+    ).duration,
+    workerExec: performance.measure(
+      "measure-execution",
+      "start-script",
+      "end-script"
+    ).duration
+  }
+}
