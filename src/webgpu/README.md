@@ -2,9 +2,9 @@
 ### Introduction
 The WebGPU engine has been tailored to efficiently compute different types of functions, particularly matrix calculations or highly-scalable big data, using a GPU-accelerated environment by running WebGPU Shader Language (WGSL) code. It has been written in JavaScript, utilizing functions that employ the WebGPU API, which include:
 
-Bind groups: functions for binding buffers, creating layout, and group entries.
-Shader modules: computing pipelines, dispatchers for calculations, and ingestion of shader modules.
-Buffers: functions for matrix manipulation and results.
+* `Bind groups`: functions for binding buffers, creating layout, and group entries.
+* `Shader modules`: computing pipelines, dispatchers for calculations, and ingestion of shader modules.
+* `Buffers`: functions for matrix manipulation and results.
 
 ### Set Up
 Upon initialization of the HydroCompute instance, call the engine as:
