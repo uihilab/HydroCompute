@@ -15,7 +15,7 @@ main: (nameOfFunction, data) => {...}
 If the ```main``` function exists within the script, it is used as the point of interaction between the worker and the script. If it doesn't, the function name will be used as entry point directly.
 
 ### Usage
-After defining the data that wil be used within the compute, with a specific nametag or the generated one by the library, the engine can be used calling the ````run``` method as follows:
+After defining the data that wil be used within the compute, with a specific nametag or the generated one by the library, the engine can be used calling the ```run``` method as follows:
 ```javascript
 compute.run({ 
 functions: [collection of functions in array format], 
