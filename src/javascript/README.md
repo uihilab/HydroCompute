@@ -3,7 +3,15 @@
 This engine is tailored towards any JavaScript-based functions that are to be used, whether from the `scripts` folder within this engine or outside scripts given as relative paths to the HydroCompute library. The engine calls the functions directly using the web workers API to run the specific commands that the user provides when running a computation. It is the main engine set up through the HydroCompute library for initialization.
 
 ### Set Up
-Scripts have been developed using object-like structure that follow this convention:
+Upon initialization of the HydroCompute instance, call the engine as:
+```javascript
+const compute = new hydrocompute("javascript");
+``` 
+Or if the instance already has a different engine, change it as:
+```javascript
+compute.setEngine("javascript");
+```
+Once changed, all the methods and scripts found in the scripts folder will be ready for usage. Scripts have been developed using object-like structure that follow this convention:
 ```javascript
 const scriptName = {
 nameOfFunction1: (data, additionalArgs) => {JS Code...},
