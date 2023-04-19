@@ -5,6 +5,7 @@ self.onmessage = async (e) => {
   const { funcName, id, step, scriptName } = e.data;
   let data = new Float32Array(e.data.data)
     let scripts = await import(scriptName || "./scripts/scripts.js");
+    scripts = Object.keys(scripts).includes("default") ? scripts.default : scripts
   let result = null;
   try {
     //in the case the script is given as a relative path by the user
@@ -12,13 +13,14 @@ self.onmessage = async (e) => {
       performance.mark("start-function");
       if (
         Object.keys(scripts).includes("main") &&
-        Object.keys(scripts).includes(funcName)
+        Object.keys(scripts).includes(funcName) && funcName !== "main"
       ) {
         result = new Float32Array(scripts["main"](funcName, [...data]));
       } else if (!Object.keys(scripts).includes("main")) {
+        //CHANGE HERE!!
         result = new Float32Array(scripts[funcName]([...data]));
-      } else if (funcName === undefined && Object.keys(scripts).includes("main")){
-        result = scripts["main"](data)
+      } else if ((funcName === undefined || funcName === "main") && Object.keys(scripts).includes("main")){
+        result = new Float32Array(scripts["main"]([...data]))
       }
       performance.mark("end-function");
     } else {
@@ -42,8 +44,8 @@ self.onmessage = async (e) => {
           break;
         }
       }
-      performance.mark("end-script");
     }
+    performance.mark("end-script");
     let getPerformance = getPerformanceMeasures()
     self.postMessage(
       {

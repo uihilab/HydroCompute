@@ -67,7 +67,7 @@ class hydrocompute {
 
   /**
    * @method run
-   * @description Run function that used to trigger a simulation.
+   * @description Run function that used to trigger a simulation. It is initiated with the asumption that the "main" function is on the script.
    * @memberof hydrocompute
    * @param {Object{}} args - contains callbacks, functions, dataId, and dependencies
    * @param {Boolean} callbacks - true if there are multiple funcitons  to run
@@ -77,20 +77,24 @@ class hydrocompute {
    * @param {Array} functions - array of functions as strings specifying the functions to run.
    * @returns {Object} result saved in the available Results namespace
    */
-  async run(args) {
-  let {
+  async run(args = {dataIds: [[]], functions: ["main"], scriptName: ["../../examples/externalScripts/scriptExample.js"]}) {
+    let {
       //engine = this.currentEngine,
       dataIds,
       functions,
       funcArgs = [],
       dependencies = [],
       scriptName = [],
-      dataSplits = Array.from({length: dataIds.length}, (_, i) => false)
+      dataSplits = Array.from({ length: dataIds.length }, (_, i) => false),
     } = args;
 
-    //CHANGED: This just moved the mapping done before here but stil needs update!!
-    functions = Array.from({length: dataIds.length}, (_, i) => functions)
-    dependencies = dependencies.length > 0 ? Array.from({length: dataIds.length}, (_, i) => dependencies) : dependencies
+    //CHANGE: This just moved the mapping done before here but stil needs update!!
+    functions = Array.from({ length: dataIds.length }, (_, i) => functions);
+    dependencies =
+      dependencies.length > 0
+        ? Array.from({ length: dataIds.length }, (_, i) => dependencies)
+        : dependencies;
+    scriptName = Array.from({length: dataIds.length}, (_, i) => scriptName)
     //engine !== undefined ? this.setEngine(engine) : null;
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
@@ -98,13 +102,20 @@ class hydrocompute {
       let dataArray = [],
         lengthArray = [];
       try {
-        for (let item of this.availableData) {
-          for (let id of dataIds) {
-            if (id === item.id) {
-              //create a copy that will be cloned down the execution
-              dataArray.push(item.data.slice());
-              //keep track of the length of items
-              lengthArray.push(item.length);
+        //Case there is only one dataset available within the framework
+        if (this.availableData.length === 1) {
+          dataArray.push(this.availableData[0].data.slice());
+          lengthArray.push(this.availableData[0].length);
+        } else {
+          for (let item of this.availableData) {
+            //if the user has passed multiple data into the framework
+            for (let id of dataIds) {
+              if (id === item.id) {
+                //create a copy that will be cloned down the execution
+                dataArray.push(item.data.slice());
+                //keep track of the length of items
+                lengthArray.push(item.length);
+              }
             }
           }
         }
@@ -114,7 +125,7 @@ class hydrocompute {
           `Data with nametag: "${id}" not found in the storage.`,
           error
         );
-        return null
+        return null;
       }
     })();
     if (
@@ -153,16 +164,15 @@ class hydrocompute {
    */
   setResults(names) {
     const stgOb = Object.fromEntries(
-      Object.entries({ ...this.currentEngine.results }).map(([key, value], index) => [
-        names[index],
-        value,
-      ])
+      Object.entries({ ...this.currentEngine.results }).map(
+        ([key, value], index) => [names[index], value]
+      )
     );
     this.engineResults[`Simulation_${this.instanceRun}`] = {
       engineName: this.currentEngineName,
       ...stgOb,
     };
-    // let totalExcTime = 
+
     console.log(`Simulation finished.`);
     //setting results to be saved in main class
     this.currentEngine.setEngine();
@@ -173,19 +183,20 @@ class hydrocompute {
    * @description Computes the total time it took a simulation to run and appends to the engine result object
    * @memberof hydrocompute
    */
-  setTotalTime(){
-    Object.keys(this.engineResults).forEach(key => {
-      let ft = 0, st = 0;
+  setTotalTime() {
+    Object.keys(this.engineResults).forEach((key) => {
+      let ft = 0,
+        st = 0;
       let currentResult = this.engineResults[key];
-      for (let resName in currentResult){
-        if (resName !== "engineName"){
+      for (let resName in currentResult) {
+        if (resName !== "engineName") {
           ft = ft + currentResult[resName].funcEx;
           st = st + currentResult[resName].scriptEx;
         }
       }
       currentResult.totalFuncTime = ft;
       currentResult.totalScrTime = st;
-    })
+    });
   }
 
   /**
@@ -239,19 +250,28 @@ class hydrocompute {
       );
     let stgViewer = [];
     for (let resultName in this.engineResults[name]) {
-      let x = [], y = []
-      if (resultName !== "engineName" && resultName !== "totalFuncTime" && resultName !== "totalScrTime") {
-        for (let k = 0; k < this.engineResults[name][resultName].results.length; k++) {
+      let x = [],
+        y = [];
+      if (
+        resultName !== "engineName" &&
+        resultName !== "totalFuncTime" &&
+        resultName !== "totalScrTime"
+      ) {
+        for (
+          let k = 0;
+          k < this.engineResults[name][resultName].results.length;
+          k++
+        ) {
           let stgRes = this.engineResults[name][resultName].results[k];
-          let stgFunc = this.engineResults[name][resultName].funcOrder[k]
+          let stgFunc = this.engineResults[name][resultName].funcOrder[k];
           //for (let result in this.engineResults[name][resultName][stgRes].results) {
-            if (stgRes.byteLength !== 0) {
-              x.push(Array.from(new Float32Array(stgRes)));
-              y.push(stgFunc)
+          if (stgRes.byteLength !== 0) {
+            x.push(Array.from(new Float32Array(stgRes)));
+            y.push(stgFunc);
             //}
           }
         }
-      stgViewer.push({name: resultName, results: x, functions: y })
+        stgViewer.push({ name: resultName, results: x, functions: y });
       }
     }
     return stgViewer;
@@ -336,10 +356,13 @@ class hydrocompute {
    * @method getresTimes
    * @description helper function that groups the total times for each function for a given simulation
    * @memberof hydrocompute
-   * @returns {Array} 
+   * @returns {Array}
    */
   getresTimes(res) {
-    return [this.engineResults[res].totalFuncTime, this.engineResults[res].totalScrTime]
+    return [
+      this.engineResults[res].totalFuncTime,
+      this.engineResults[res].totalScrTime,
+    ];
   }
 
   /**
@@ -349,18 +372,18 @@ class hydrocompute {
    * @returns {Array} array containing function and script total times
    */
   getTotalTime() {
-    let fnTotal = 0, scrTotal = 0;
-    for (let result of this.availableResults()){
-      let stgRes = this.getresTimes(result)
-      fnTotal += stgRes[0],
-      scrTotal += stgRes[1]
+    let fnTotal = 0,
+      scrTotal = 0;
+    for (let result of this.availableResults()) {
+      let stgRes = this.getresTimes(result);
+      (fnTotal += stgRes[0]), (scrTotal += stgRes[1]);
     }
-    return [fnTotal, scrTotal]
+    return [fnTotal, scrTotal];
   }
 
   /**
    * @method availableResults
-   * @description available functions for 
+   * @description available functions for
    * @memberof hydrocompute
    * @returns
    */

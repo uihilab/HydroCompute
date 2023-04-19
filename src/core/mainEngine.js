@@ -246,7 +246,7 @@ export default class engine {
           length: args.length,
           step: step,
           funcArgs: args.funcArgs[i],
-          scriptName: args.scriptName
+          scriptName: args.scriptName[i]
         };
         this.threads.initializeWorkerThread(i);
         batchTasks.push(_args)
@@ -311,7 +311,7 @@ export default class engine {
           funcArgs: args.funcArgs[i],
           step,
           length,
-          scriptName: args.scriptName
+          scriptName: args.scriptName[i]
         };
         this.threads.initializeWorkerThread(i);
         batchTasks.push(this.threads.workerThreads[i].worker(workerArgs));
