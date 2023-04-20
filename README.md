@@ -50,35 +50,35 @@ If no id is passed, the library will save a random name generated for the data. 
 compute.availableData()
 ```
 
-The configuration for steps and linkeage between steps is done using the following command. If no configuration is passed, then it is assummed that it is a single step execution.
+Steps are inferred from the configuration for each 
+
+If there is only 1 data souce available inside the available data namespace, then just calling run would suffice.
 
 ```javascript
-compute.config({
-    steps: '#ofsteps',
-    linked: 'True or false'
-})
+compute.run()
 ```
 
-To runa batch work, do:
+To run a batch work, do:
 
 ```javascript
 compute.run({
-    callbacks: 'boolean',
+    linked: Boolean stating linkeage between steps
     functions: [Array of functions per step],
-    dataId: 'String with name',
-    dependencies: [Array of dependencies as numbers],
-    funcArgs: [Array of additional configurations per function]
-
+    dataId: [Array of names of saved data],
+    dependencies: [Array of dependencies as numbers, if applicable],
+    funcArgs: [Array of additional configurations per function, if applicable]
 })
 ```
 The console of the browser will show the number of executions done by the engine once the results are finished. To retrieve the results, prompt the following command.
 
 ```javascript
-compute.results()
+compute.availableResults()
 ```
+The results per simulation will be saved with nametag `Simulation_N`.
 
 ## Expansions and Test Cases
 ### Expansions
+Currently the library works fully with Chromium based browsers. Mozilla implementations will be added in future releases.
 
 ## Community
 It is possible for the library to expand by becoming a community-based framework with collaborations from research institutes or knowledgeable individuals thanks to the flexibility of employing a modular architecture, open-source libraries, and not requiring installation. Interested parties can adapt and expand HydroLang to fit their unique use cases, development environments, project requirements, and data resources. Everyone is encouraged to contribute to the growth of HydroLang by:
