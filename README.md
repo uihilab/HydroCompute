@@ -78,7 +78,6 @@ compute.results()
 ```
 
 ## Expansions and Test Cases
-
 ### Expansions
 
 ## Community
@@ -87,17 +86,19 @@ It is possible for the library to expand by becoming a community-based framework
 * implementing the desired capability on a fork, and submitting a pull request.
 
 ## Feedback
-
+Please feel free to send feedback to us on any issues found by filing an issue.
 
 ## Scalability and To-Do's
+New engines and functions for the existing engines will be added into the library for easier implementation and usage.
 
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/uihilab/HydroLang/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/uihilab/HydroCompute/blob/master/LICENSE) file for details.
 
 ## Acknowledgements
-
+This work was funded by the University of Iowa's HydroInformatics Lab.
 
 ## References
 
-* Erazo Ramirez, C., Demir, I. Future manuscript reference here
+* Erazo Ramirez, C., Sermet, Y., Demir, I. HydroCompute: An Open Source Web-based Client-side Computational Library 
+for Hydrology And Environmental Sciences. In review.
