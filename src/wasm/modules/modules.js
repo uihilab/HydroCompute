@@ -80,7 +80,13 @@ const CModule = async (modName) => {
 };
 
 /**
- * Helper functions for AssemblyScript compiled modules
+ * @description Helper functions for AssemblyScript compiled modules
+ * @class AScriptUtils
+ * @method liftTypedArray - lift array into a dataview
+ * @method lowerTypedArray - lowering array from the dataview into results
+ * @method retainP - raining a pointer for use into the functions
+ * @method setU32 - setting unsigned 32 bits to array
+ * @method getU32 - getting unsigned 32 bits from array
  */
 
 class AScriptUtils {

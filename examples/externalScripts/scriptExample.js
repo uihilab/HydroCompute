@@ -1,3 +1,4 @@
+//Tester script to evaluate if a function will run.
 const example = {
     // Cube each element in the input array and return the result
     cube: (input) => {

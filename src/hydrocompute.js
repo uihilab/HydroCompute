@@ -78,6 +78,21 @@ class hydrocompute {
    * @returns {Object} result saved in the available Results namespace
    */
   async run(args = {dataIds: [[]], functions: ["main"], scriptName: ["../../examples/externalScripts/scriptExample.js"]}) {
+    //When having to run a script, the user can pass the relative path directly and the compute will do the rest
+    if (typeof args === 'string'){
+      let stgScript = args.slice()
+      args = {
+        dataIds: [[]],
+        functions: ["main"],
+        scriptName: [stgScript],
+        dependencies: [],
+      }
+      args.dataSplits =  Array.from({length: args.dataIds.length}, (_, i) => false)
+    } 
+    //This will run in case there are no arguments or a configuration object has been passed
+    else {
+      args= args
+    }
     let {
       //engine = this.currentEngine,
       dataIds,
@@ -95,7 +110,7 @@ class hydrocompute {
         ? Array.from({ length: dataIds.length }, (_, i) => dependencies)
         : dependencies;
     scriptName = Array.from({length: dataIds.length}, (_, i) => scriptName)
-    //engine !== undefined ? this.setEngine(engine) : null;
+
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
     let data = (() => {
@@ -218,7 +233,19 @@ class hydrocompute {
    * @param {Array} data - n-d array that will be transformed into a typed array
    * @param {String} splits - number of splits to be done on a dataset. See splits namespace for more details
    */
-  data(args) {
+  async data(args) {
+    //Assuming the args is being passed as a string fetching a JSON object
+    if (typeof args === 'string') {
+      let jsonData = await fetch(args).then(res => res.json()).then(object => {
+        return object.data
+      })
+      console.log(jsonData)
+      args = {data: jsonData}
+    } else {
+      //Assuming the user is passing an object with di, data, and splitting definition
+      args = args
+    }
+    //Set container
     let container = {
       id: typeof args.id === "undefined" ? this.makeid(5) : args.id,
       length: args.data[0] instanceof Array ? args.data.length : 1,
