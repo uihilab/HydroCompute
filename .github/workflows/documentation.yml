@@ -15,7 +15,7 @@ jobs:
       - name: Build
         uses: andstor/jsdoc-action@v1
         with:
-          source_dir: ./hydrocompute/
+          source_dir: ./src/
           output_dir: ./docs/
           config_file: ./.github/workflows/config_doc.json
           template: clean-jsdoc-theme
