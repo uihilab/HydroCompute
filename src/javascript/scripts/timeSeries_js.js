@@ -1,5 +1,6 @@
 /**
- * Collection of time series analysis functions.
+ * @description Collection of time series analysis functions.
+ * @namespace
  */
 export const timeSeries = {
   /**

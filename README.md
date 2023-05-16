@@ -17,7 +17,6 @@
 ## Introduction
 This work introduces hydrocompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
 
-
 ## How to Use
 Please download the library and run `index.html`. If a new html file should be created, the library must be onloaded onto the file as a script
 
@@ -80,8 +79,10 @@ The results per simulation will be saved with nametag `Simulation_N`.
 ### Expansions
 Currently the library works fully with Chromium based browsers. Mozilla implementations will be added in future releases.
 
+New modules for dealing with Web Assembly compiled code will be implemented as well as new working examples for a more comprehensive view of what the library can do.
+
 ## Community
-It is possible for the library to expand by becoming a community-based framework with collaborations from research institutes or knowledgeable individuals thanks to the flexibility of employing a modular architecture, open-source libraries, and not requiring installation. Interested parties can adapt and expand HydroLang to fit their unique use cases, development environments, project requirements, and data resources. Everyone is encouraged to contribute to the growth of HydroLang by:
+It is possible for the library to expand by becoming a community-based framework with collaborations from research institutes or knowledgeable individuals thanks to the flexibility of employing a modular architecture, open-source libraries, and not requiring installation. Interested parties can adapt and expand HydroLang to fit their unique use cases, development environments, project requirements, and data resources. Everyone is encouraged to contribute to the growth of HydroCompute by:
 * filing an issue to request certain features, functionality, and data,
 * implementing the desired capability on a fork, and submitting a pull request.
 
@@ -101,4 +102,4 @@ This work was funded by the University of Iowa's HydroInformatics Lab.
 ## References
 
 * Erazo Ramirez, C., Sermet, Y., Demir, I. HydroCompute: An Open Source Web-based Client-side Computational Library 
-for Hydrology And Environmental Sciences. In review.
+for Hydrology And Environmental Sciences. In revision.

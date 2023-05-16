@@ -1,5 +1,16 @@
+/**
+ * Utility functions for matrix operations using GPU shaders.
+ * @namespace matrixUtils
+ * @memberof gpuUtils
+*/
 export const matrixUtils = {
-  //Multiplication of 2 matrices
+  /** 
+   * Performs matrix multiplication using a GPU shader.
+   * @function matrixMultiply_gpu
+   * @memberof matrixUtils
+   * @returns {string} - GLSL code for matrix multiplication shader.
+   * 
+  */
   matrixMultiply_gpu: () => {
     return `
         struct Matrix {
@@ -33,6 +44,14 @@ export const matrixUtils = {
         };
       `;
   },
+
+    /** 
+   * Performs matrix multiplication using a GPU shader.
+   * @function matrixAdd_gpu
+   * @memberof matrixUtils
+   * @returns {string} - GLSL code for matrix Addition shader.
+   * 
+  */
   matrixAdd_gpu: () => {
     return `
     struct Matrix {
@@ -64,7 +83,7 @@ export const matrixUtils = {
    * @method matrixExpo
    * @description powers up the elements in a matrix to the given number
    * @param {Number} num - number to exponentiate all elements in the matrix
-   * @returns
+   * @returns {string} GLSL code for matrix exponentiation shader.
    */
   matrixExpo_gpu: (num = 2.0) => {
     return `
@@ -94,7 +113,7 @@ export const matrixUtils = {
   /**
    * @method LUDecomposition
    * @description decomposition of a matrix to its LeftUpper form
-   * @returns
+   * @returns {string} string for running LUDecomposition
    */
   LUDecomposition_gpu: () => {
     return `

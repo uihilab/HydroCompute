@@ -1,5 +1,6 @@
 /**
  * Utility functions for matrix operations.
+ * @namespace
  */
 export const matrixUtils = {
   /**

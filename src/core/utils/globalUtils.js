@@ -7,7 +7,7 @@
  * @param {Array} dag - dependency array listing the sequential executions for each funciton as [[0], [1], [0,1]...]
  * @param {Object} args - argument list used to run a specific function. This will change already on the engine
  * @param {String} type - running either a function DAG or a step DAG
- * @returns {Promise} fulfills th
+ * @returns {Promise} fulfills the resolution for the DAG or returns error with the execution context.
  */
 
 export const DAG = ({ functions, dag, args, type } = {}) => {
@@ -31,7 +31,6 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
     values = [];
 
     const handleResolution = (promise, i, value) => {
-      console.log(args[i].funcName)
       //Assumming that the worker is giving back a Float32Array. This slicing might be done some other way. Keep on mind!
       values[i] = value;
       if (stopped) {
@@ -184,8 +183,8 @@ export const arrayChanger = (arr, width) =>
 
 /**
  * Helper function for concatenating arrays.
- * @param {Array} arrays -
- * @returns
+ * @param {Array} arrays - collection of arrays to concatenate
+ * @returns {Array} array - concatenated array
  */
 
 export const concatArrays = (arrays) => {
@@ -208,8 +207,8 @@ export const concatArrays = (arrays) => {
 /**
  * Helper function for flatennizing a 2D array
  * @memberof globalUtils
- * @param {Array} arr  - 2D array to be flattened
- * @returns
+ * @param {Array} arr  - N-D array to be flattened
+ * @returns {Array} flattenized ND array
  */
 export const flattenFloat32Array = (arr) => {
   if (typeof arr[0] !== "object") return arr;
@@ -226,6 +225,7 @@ export const flattenFloat32Array = (arr) => {
  * @returns {object} - The performance measures.
  * @property {number} funcExec - The duration of function execution.
  * @property {number} workerExec - The duration of worker execution.
+ * @returns {Object} object containing execution times for both script and function exeuctions.
  */
 export const getPerformanceMeasures = () => {
   return {

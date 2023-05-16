@@ -155,7 +155,7 @@ export default class engine {
    * @description main method for running a simulation. It sets up the way of running
    * the computational engine for each module
    * @param {*} args
-   * @returns
+   * @returns {Promise} Resolves the type of run to take.
    */
   async stepRun(args) {
     let {
