@@ -2,7 +2,8 @@
  * Function returns a shader module back for usage in the compute section
  * @param {GPUDevice} device - instance of the GPU device stored within the GPU class
  * @param {String} code - string of code that is in webgl  format
- * @returns
+ * @memberof gpuUtils 
+ * @returns {Object} shader
  */
 export const shaderModule = (device, code) => {
   return device.createShaderModule({
@@ -14,7 +15,8 @@ export const shaderModule = (device, code) => {
  *
  * @param {GPUDevice} device - instance of the GPU device stored within the GPU class
  * @param {Object[]} bindGroups - containing all possible bindgroups required for a computation
- * @returns
+ * @memberof gpuUtils
+ * @returns {Object} pipeline
  */
 export const computingPipelines = (device, shaderModule, bindGroups) => {
   return device.createComputePipeline({
@@ -29,13 +31,15 @@ export const computingPipelines = (device, shaderModule, bindGroups) => {
 };
 
 /**
- *
- * @param {*} device
- * @param {*} pipeline
- * @param {*} bindgroup
- * @param {*} data
- * @param {*} result
- */
+*Dispatches a compute shader operation on the GPU.
+* @memberof gpuUtils
+*@param {GPUDevice} device - The GPU device.
+*@param {GPUPipeline} pipeline - The compute pipeline to use.
+*@param {GPUBindGroup} bindgroup - The bind group containing the required resources for the shader.
+*@param {Array<Array<number>>} data - The input data for the compute operation.
+*@param {Array<number>} result - The result configuration for the compute operation.
+*@returns {Promise<ArrayBuffer>} - The computed result data.
+*/
 export const dispatchers = async (
   device,
   pipeline,

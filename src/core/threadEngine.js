@@ -24,6 +24,7 @@ export default class threadManager {
 
   /**
    * @method createWorkerThread
+   * @memberof threadManager
    * @description Holder for the workers created by the class. It creates an object that contains the workers defined
    * by the execution context holding the execution time of each thread and the worker itself.
    * @param {Number} number - number of thread to run
@@ -38,6 +39,7 @@ export default class threadManager {
 
   /**
    * @method initializeWorkerThread
+   * @memberof threadManager
    * @description Method initializer of the threads found in the workerThread object. It attaches each of the properties into the object.
    * @param {Number} index - number of the thread.
    */
@@ -113,6 +115,7 @@ export default class threadManager {
 
   /**
    * @method resetWorkers
+   * @memberof threadManager
    * @description Resets all the workers set to work in the compute engine.
    */
   resetWorkers() {
@@ -124,6 +127,7 @@ export default class threadManager {
 
   /**
    * @method execTime
+   * @memberof threadManager
    * @description Retrives all the execution times of a worker thread. It is triggered within the engine class.
    */
   get execTimes() {

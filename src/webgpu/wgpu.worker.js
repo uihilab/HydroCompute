@@ -1,6 +1,8 @@
 /**
  * Web worker script for executing GPU computations.
  * @module WebWorker
+ * @memberof Worker
+ * @name GPUWorker
  */
 import {
   layoutEntry,

@@ -2,8 +2,9 @@ import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
 
 /**
  * Event listener for the 'message' event.
- * @param {MessageEvent} e - The message event.
- * @returns {Promise<void>} - A Promise that resolves when the function completes.
+ * @memberof Workers
+ * @module WebWorker
+ * @name JSWorker
  */
 self.onmessage = async (e) => {
   performance.mark("start-script");

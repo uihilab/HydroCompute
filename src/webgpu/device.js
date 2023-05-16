@@ -1,5 +1,7 @@
 /**
  * Class representing device connection and management for WebGPU.
+ * @class deviceConnect
+ * @memberof gpuUtils
  */
 export class deviceConnect {
   constructor() {

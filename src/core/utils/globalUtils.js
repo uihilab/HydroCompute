@@ -207,6 +207,7 @@ export const concatArrays = (arrays) => {
 
 /**
  * Helper function for flatennizing a 2D array
+ * @memberof globalUtils
  * @param {Array} arr  - 2D array to be flattened
  * @returns
  */
@@ -221,6 +222,7 @@ export const flattenFloat32Array = (arr) => {
 
 /**
  * Retrieves the performance measures for function execution and worker execution.
+ * @memberof globalUtils
  * @returns {object} - The performance measures.
  * @property {number} funcExec - The duration of function execution.
  * @property {number} workerExec - The duration of worker execution.
@@ -242,6 +244,7 @@ export const getPerformanceMeasures = () => {
 
 /**
  * Imports JSON data from a file.
+ * @memberof globalUtils
  * @param {string} jsonFile - The path or URL to the JSON file.
  * @param {string} [dataFieldName="data"] - The name of the field containing the data in the JSON file.
  * @returns {Promise<*>} - A promise that resolves to the imported data.

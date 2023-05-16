@@ -1,6 +1,7 @@
 import * as scripts from "./utils/gslCode/gslScripts.js"
 /**
  * Retrieves the available GPU scripts and their corresponding functions.
+ * @name gpuUtils
  * @returns {Map} - A map of GPU scripts and their functions.
  */
 export const gpuScripts = () =>{

@@ -1,5 +1,6 @@
 /**
  * @class ValueErr
+ * @memberof ErrorTypes
  * @description Used whenever there is a value type error when running the engine
  */
 export class ValueErr extends Error {
@@ -11,6 +12,7 @@ export class ValueErr extends Error {
 
 /**
  * @class NotImplemented
+ * @memberof ErrorTypes
  * @description Used whenever there is a DOM Exception for not found / not impleemented in the compute
  */
 export class NotImplemented extends Error {
@@ -22,6 +24,7 @@ export class NotImplemented extends Error {
 
 /**
  * @class NotFound
+ * @memberof ErrorTypes
  * @description Used whenever there is an error raised because of not found file(s)
  */
 export class NotFound extends Error {

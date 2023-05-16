@@ -5,6 +5,8 @@ import { splits } from "../core/utils/splits.js";
 /**
  * Web worker script for executing WASM computations.
  * @module WebWorker
+ * @memberof Workers
+ * @name WASMWorker
  */
 self.onmessage = async (e) => {
   performance.mark("start-script");

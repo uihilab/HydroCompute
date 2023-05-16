@@ -151,6 +151,7 @@ export default class engine {
 
   /**
    * @method stepRun
+   * @memberof engine
    * @description main method for running a simulation. It sets up the way of running
    * the computational engine for each module
    * @param {*} args
@@ -228,6 +229,7 @@ export default class engine {
 /**
  * Runs multiple tasks concurrently using worker threads and dependency graph.
  * @param {object} args - The arguments for concurrent execution.
+ * @memberof engine
  * @param {number} step - The step value.
  * @param {Array} dependencies - The dependency graph.
  * @returns {Promise} - A promise that resolves to the result of concurrent execution.
@@ -272,6 +274,7 @@ export default class engine {
 /**
  * Runs multiple tasks in parallel using worker threads.
  * @param {object} args - The arguments for parallel execution.
+ * @memberof engine
  * @param {number} args.threadCount - The total number of threads.
  * @param {function[]} args.functions - The array of functions to execute.
  * @param {Array} args.funcArgs - The array of arguments for each function.
@@ -329,6 +332,7 @@ export default class engine {
 /**
  * Executes tasks based on the provided dependencies and step counter.
  * @param {object} args - The arguments for task execution.
+ * @memberof engine
  * @param {number} stepCounter - The step counter.
  * @param {Array} dependencies - The dependency graph.
  * @returns {Promise} - A promise that resolves to the result of task execution.
@@ -370,6 +374,7 @@ export default class engine {
 
   /**
    *@description resets all properties of the class
+   * @memberof engine
    *@method setEngine
    */
   setEngine() {

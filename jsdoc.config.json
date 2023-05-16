@@ -1,0 +1,18 @@
+{
+    "source": {
+      "include": ["./src/"],
+      "includePattern": ".+\\.js(doc)?$",
+      "excludePattern": "(node_modules/|docs)"
+    },
+    "plugins": [],
+    "templates": {
+      "cleverLinks": true,
+      "monospaceLinks": false
+    },
+    "opts": {
+      "recurse": true,
+      "destination": "./docs",
+      "template": "C:/Users/cerazoramirez/AppData/Roaming/npm/node_modules/jsdoc/templates/toast-jsdoc"
+    }
+  }
+  
