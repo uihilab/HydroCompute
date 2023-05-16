@@ -1,8 +1,8 @@
 /**
- * Creates multiple entries to be binded into the layout group
- * @param {*} btype
- * @param {*} bufferType
- * @returns
+ * Creates a layout entry to be bound into the layout group.
+ * @param {number} btype - The binding type.
+ * @param {string} bufferType - The buffer type.
+ * @returns {object} - The layout entry object.
  */
 export const layoutEntry = (btype, bufferType) => {
   return {
@@ -15,10 +15,10 @@ export const layoutEntry = (btype, bufferType) => {
 };
 
 /**
- *
- * @param {*} bind
- * @param {*} bufferLength
- * @returns
+ * Creates a group entry to be bound into the layout group.
+ * @param {number} bind - The binding number.
+ * @param {object} bufferLength - The buffer length resource.
+ * @returns {object} - The group entry object.
  */
 export const groupEntry = (bind, bufferLength) => {
   return {
@@ -30,10 +30,10 @@ export const groupEntry = (bind, bufferLength) => {
 };
 
 /**
- *
- * @param {*} device
- * @param {*} entries
- * @returns
+ * Creates a bind group layout.
+ * @param {GPUDevice} device - The GPU device.
+ * @param {object[]} entries - The layout entries.
+ * @returns {GPUBindGroupLayout} - The bind group layout.
  */
 export const bindLayout = (device, entries) => {
   return device.createBindGroupLayout({
@@ -42,11 +42,11 @@ export const bindLayout = (device, entries) => {
 };
 
 /**
- *
- * @param {*} device
- * @param {*} layout
- * @param {*} entries
- * @returns
+ * Creates a bind group.
+ * @param {GPUDevice} device - The GPU device.
+ * @param {GPUBindGroupLayout} layout - The bind group layout.
+ * @param {object[]} entries - The bind group entries.
+ * @returns {GPUBindGroup} - The bind group.
  */
 export const bindGroup = (device, layout, entries) => {
   return device.createBindGroup({

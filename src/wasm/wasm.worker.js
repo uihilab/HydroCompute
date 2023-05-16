@@ -1,11 +1,16 @@
 import { AScriptUtils, getAllModules } from "./modules/modules.js";
 import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
+import { splits } from "../core/utils/splits.js";
 
-//Single worker instance that goes through the while process of data digestion/ingestion
+/**
+ * Web worker script for executing WASM computations.
+ * @module WebWorker
+ */
 self.onmessage = async (e) => {
   performance.mark("start-script");
   let { funcName, funcArgs = [], id, step, length } = e.data;
   let data = new Float32Array(e.data.data);
+  data = splits.split1DArray({data: data, n: length})
   let wasmSc = await getAllModules();
   let result = null;
   try {
@@ -23,7 +28,6 @@ self.onmessage = async (e) => {
             result = handleC(module, funcName, data, mod);
           }
           //Any other webassembly module handles would go here
-
           performance.mark("end-script");
 
           let getPerformance = getPerformanceMeasures()
@@ -43,16 +47,14 @@ self.onmessage = async (e) => {
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
       console.error(
-        `There was an error executing:\nfunction: ${funcName}\nid: ${id}`,
-        error
+        `There was an error executing:\nfunction: ${funcName}\nid: ${id} at the worker.`
       );
-      return 
+      throw error
     } else {
       console.error(
-        "There was an error running the script. More info: ",
-        error
+        "There was an error running the WebAssembly worker script. More info: "
       );
-       return
+      throw error
     }
   }
 };
@@ -72,10 +74,10 @@ const handleAS = (moduleName, ref, data, mod, funcArgs) => {
   funcArgs === null ? (funcArgs = []) : funcArgs;
   if (moduleName === "matrixUtils") {
     //THIS NEEDS TO CHANGE!
-    data = [
-      data.slice(0, data.length >> 1),
-      data.slice(data.length >> 1, data.length),
-    ];
+    // data = [
+    //   data.slice(0, data.length >> 1),
+    //   data.slice(data.length >> 1, data.length),
+    // ];
     funcArgs = [...Array(4)].map((_, i) => Math.sqrt(data[0].length));
     let mat1 = views.retainP(
       views.lowerTypedArray(Float32Array, 4, 2, data[0], mod),
@@ -125,17 +127,9 @@ const handleC = (moduleName, functionName, data, module) => {
   let d = null;
 
   const bytes = Float32Array.BYTES_PER_ELEMENT;
-  let inputData = [data];
-  let inputCount = 1;
+  let inputData = data;
+  let inputCount = data.length;
 
-  // Check if we are working with the "matrixUtils" module, and adjust inputs accordingly
-  if (moduleName === "matrixUtils") {
-    inputData = [
-      data.slice(0, data.length >> 1),
-      data.slice(data.length >> 1, data.length),
-    ];
-    inputCount = 2;
-  }
   try {
     let len = inputData[0].length;
     r_ptr = module._createMem(len * bytes);
@@ -154,7 +148,7 @@ const handleC = (moduleName, functionName, data, module) => {
 
     // Call the C function and measure execution time
     performance.mark("start-function");
-    if (moduleName === "matrixUtils") {
+    if (moduleName === "matrixUtils_c") {
       module[functionName](...ptrs, r_ptr, Math.sqrt(len));
     } else {
       module[functionName](...ptrs, r_ptr, len);

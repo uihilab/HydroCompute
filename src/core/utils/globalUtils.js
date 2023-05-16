@@ -109,97 +109,6 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
   });
 };
 
-// export const DAG = ({ functions, dag, args, type } = {}) => {
-//   dag = dag || [];
-//   return new Promise((resolve, reject) => {
-//     const N = functions.length;
-//     // A DAG can be both stepwise or functionwise. The next definition
-//     // asserts that there is a dag ready for each step linearly
-//     // e.g. step0->step1->step2...
-//     dag =
-//       type === "steps"
-//         ? (() => {
-//             let x = Array.from({ length: N }, (_, i) => [i - 1]);
-//             x[0] = [];
-//             return x;
-//           })()
-//         : dag;
-//     const counts = dag.map((x) => x.length);
-//     let stopped = false,
-//       remaining = N,
-//       values = Array.from({ length: N }, () => []);
-
-//     const handleResolution = (promise, i, value) => {
-//       //Assumming that it is giving back a Float32Array
-//       values[i] = value.buffer;
-//       if (stopped) {
-//         return;
-//       }
-//       remaining -= 1;
-//       if (remaining == 0) {
-//         resolve(values);
-//       }
-//       for (let j = 0; j < N; ++j) {
-//         if (counts[j] < 1) {
-//           continue;
-//         }
-//         if (dag[j].indexOf(i) >= 0) {
-//           counts[j] -= 1;
-//           if (counts[j] == 0) {
-//             let _args = [];
-//             for (let k = 0; k < dag[j].length; k++) {
-//               // Collect output values from all predecessors
-//               _args.push(
-//                 type === "steps"
-//                   ? values[dag[j][k]][args.functions.length - 1]
-//                   : [...values[dag[j][k]]]
-//               );
-//             }
-//             args.data = _args;
-//             console.log(args)
-//             var promise = functions[j](args);
-//             promise.then(
-//               (value) => {
-//                 // Save output values in corresponding inner array
-//                 values[j] = value.buffer;
-//                 handleResolution(promise, j, value);
-//               },
-//               (error) => {
-//                 handleRejection(promise, j, error);
-//               }
-//             );
-//           }
-//         }
-//       }
-//     };
-
-//     const handleRejection = (promise, i, error) => {
-//       stopped = true;
-//       console.log(error);
-//       reject(error);
-//     };
-
-//     for (let i = 0; i < N; ++i) {
-//       if (counts[i] > 0) {
-//         continue;
-//       }
-//       var promise = functions[i](args);
-//       promise.then(
-//         (value) => {
-//           // Save output values in corresponding inner array
-//           values[i] = value.buffer;
-//           handleResolution(promise, i, value);
-//         },
-//         (error) => {
-//           handleRejection(promise, i, error);
-//         }
-//       );
-//     }
-//   });
-// };
-
-
-
 /**
  * @method dataCloner
  * @memberof globalUtils
@@ -242,16 +151,19 @@ export const dataCloner = (data) => {
     return tempOb;
   };
 
-  try{
-  if (Array.isArray(data)) {
-    let stgD = arrayCloner(data)
-    return flattenFloat32Array(stgD);
-  } else {
-    return objectCloner(data);
+  try {
+    if (Array.isArray(data)) {
+      let stgD = arrayCloner(data);
+      return flattenFloat32Array(stgD);
+    } else {
+      return objectCloner(data);
+    }
+  } catch (error) {
+    return console.error(
+      `There was an error cloning the data. More info: `,
+      error
+    );
   }
-} catch (error) {
-  return console.error(`There was an error cloning the data. More info: `, error)
-}
 };
 
 /**
@@ -260,9 +172,6 @@ export const dataCloner = (data) => {
  * @description switches the rows/columns of an array
  *
  */
-
-//This is meant to be filled with any sort of helper functions for matricial purposes.
-//Similar approaches can be taken for other types of workloads diverted into a worker.
 
 export const arrayChanger = (arr, width) =>
   arr.reduce(
@@ -274,24 +183,9 @@ export const arrayChanger = (arr, width) =>
   );
 
 /**
- * 
- * @returns 
- */
-export const checkSharedArrays = () => {
-  try{
-    var sab = new SharedArrayBuffer(1024);
-    if (sab !== undefined) return true
-  }
-  catch(e) {
-    console.log(`Shared Array Buffer not supported.\nPleasee use another type of data partition.`);
-    return false
-  }
-}
-
-/**
  * Helper function for concatenating arrays.
- * @param {Array} arrays - 
- * @returns 
+ * @param {Array} arrays -
+ * @returns
  */
 
 export const concatArrays = (arrays) => {
@@ -309,25 +203,27 @@ export const concatArrays = (arrays) => {
   }
 
   return finalArray;
-}
+};
 
 /**
  * Helper function for flatennizing a 2D array
  * @param {Array} arr  - 2D array to be flattened
- * @returns 
+ * @returns
  */
 export const flattenFloat32Array = (arr) => {
-  if(typeof arr[0] !== 'object') return arr
+  if (typeof arr[0] !== "object") return arr;
   let flatArray = [];
-  arr.forEach(function(subArray) {
+  arr.forEach(function (subArray) {
     flatArray = flatArray.concat(Array.from(subArray));
   });
   return new Float32Array(flatArray);
-}
+};
 
 /**
- * 
- * @returns {Object} execution times for functions and scripts 
+ * Retrieves the performance measures for function execution and worker execution.
+ * @returns {object} - The performance measures.
+ * @property {number} funcExec - The duration of function execution.
+ * @property {number} workerExec - The duration of worker execution.
  */
 export const getPerformanceMeasures = () => {
   return {
@@ -340,6 +236,19 @@ export const getPerformanceMeasures = () => {
       "measure-execution",
       "start-script",
       "end-script"
-    ).duration
-  }
-}
+    ).duration,
+  };
+};
+
+/**
+ * Imports JSON data from a file.
+ * @param {string} jsonFile - The path or URL to the JSON file.
+ * @param {string} [dataFieldName="data"] - The name of the field containing the data in the JSON file.
+ * @returns {Promise<*>} - A promise that resolves to the imported data.
+ */
+export const importJSONdata = async (jsonFile, dataFieldName = "data") => {
+  const response = await fetch(`${jsonFile}.json`);
+  const json = await response.json();
+  const data = json[dataFieldName];
+  return data;
+};

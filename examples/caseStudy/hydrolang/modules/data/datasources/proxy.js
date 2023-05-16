@@ -24,7 +24,7 @@
   
     //Required node application to be available on the local machine.
     "local-proxy":{
-      endpoint: "http://localhost:3000/"
+      endpoint: "https://hydroinformatics.uiowa.edu/lab/cors/"
     }
   };
   

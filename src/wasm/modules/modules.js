@@ -1,53 +1,64 @@
 import { CUtils } from "./C/mods.js";
 import { ASUtils } from "./assemblyScript/mods.js";
 
-
 /**
  * Anything else that has to be imported into the library's
  * usage has to be added here
  */
 const availableScripts = {
-  C: "../../../src/wasm/modules/C",
+  C: "../../wasm/modules/C",
   //assemblyScrpt utils
-  AS: "../../../src/wasm/modules/assemblyScript",
+  AS: "../../wasm/modules/assemblyScript",
 };
 
 /**
- *
- * @param {String} name - folder and wasm module name to import
- * @returns
+ * Returns the location of a specified utility in a given script or module.
+ * @param {string} scName - The name of the script or module.
+ * @param {string} utilName - The name of the utility.
+ * @returns {string} - The location of the specified utility in the given script or module.
  */
-const _location = (scName, utilName) => {
-  let n = (ob, name) => {
-    if (ob.hasOwnProperty(name)) {
-      return ob[name];
-    } else {
-      return console.error("No utils found with that name in the given module");
+const _location = (scriptName, utilName) => {
+  const getModule = (utils, name) => {
+    if (utils.hasOwnProperty(name)) {
+      return utils[name];
     }
+    throw new Error(
+      `No utils found with the name '${name}' in the given module`
+    );
   };
-  if (scName === "C") {
-    let stgMod = n(CUtils, utilName);
-    return `${availableScripts.C}/${utilName}/${stgMod}`;
-  } else if (scName === "AS") {
-    let stgMod = n(ASUtils, utilName);
-    return `${availableScripts.AS}/${utilName}/${stgMod}`;
-  } else {
-    return console.error("No script or module with the given parameters");
+
+  switch (scriptName) {
+    case "C":
+      const cUtils = getModule(CUtils, utilName);
+      return new URL(
+        `${availableScripts.C}/${utilName}/${cUtils}`,
+        import.meta.url
+      );
+    case "AS":
+      const asUtils = getModule(ASUtils, utilName);
+      return new URL(
+        `${availableScripts.AS}/${utilName}/${asUtils}`,
+        import.meta.url
+      );
+    default:
+      throw new Error(`No script or module with the name '${scriptName}'`);
   }
 };
 
 /**
- *
- * @param {*} name
- * @returns
+ * Load and instantiate a WebAssembly module from the ASUtils script directory.
+ * @async
+ * @param {string} name - The name of the module to load.
+ * @returns {Promise} - An object representing the exports of the instantiated module.
+ * @throws {Error} - If the module cannot be loaded or instantiated.
  */
 const ASModule = async (name) => {
+  const memory = new WebAssembly.Memory({
+    initial: 1,
+    //maximum: 100,
+    //shared: true,
+  });
   try {
-    const memory = new WebAssembly.Memory({
-      initial: 1,
-      //maximum: 100,
-      //shared: true,
-    });
     const module = await WebAssembly.instantiateStreaming(
       fetch(_location("AS", name)),
       {
@@ -60,35 +71,32 @@ const ASModule = async (name) => {
       }
     );
     return module.instance.exports;
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    throw new Error(`Failed to load AS module '${name}'.`, error);
   }
 };
 
 /**
- *
- * @param {String} modName - module available on the C/C++ modules.
- * @returns
+ * Asynchronously loads and creates a module from a C script.
+ * @param {string} moduleName - The name of the module to load.
+ * @returns {Promise} A promise that resolves to the module.
+ * @throws Will throw an error if there was an error loading the module.
  */
 const CModule = async (modName) => {
   try {
     let { default: Module } = await import(_location("C", modName));
     return Module();
   } catch (error) {
-    console.error(`There was an error pulling the following module: ${modName}`, error);
+    console.error(
+      `There was an error pulling the following module: ${modName}`,
+      error
+    );
   }
 };
 
 /**
- * @description Helper functions for AssemblyScript compiled modules
- * @class AScriptUtils
- * @method liftTypedArray - lift array into a dataview
- * @method lowerTypedArray - lowering array from the dataview into results
- * @method retainP - raining a pointer for use into the functions
- * @method setU32 - setting unsigned 32 bits to array
- * @method getU32 - getting unsigned 32 bits from array
+ * Utility class for AScript.
  */
-
 class AScriptUtils {
   constructor() {
     this.dataview = undefined;
@@ -97,7 +105,11 @@ class AScriptUtils {
   }
 
   /**
-   * s
+   * Lifts a TypedArray from the module's memory.
+   * @param {TypedArrayConstructor} constructor - The constructor of the TypedArray.
+   * @param {number} pointer - The memory pointer to the TypedArray.
+   * @param {object} module - The AScript module.
+   * @returns {TypedArray|null} - The lifted TypedArray.
    */
   liftTypedArray(constructor, pointer, module) {
     if (!pointer) return null;
@@ -109,13 +121,13 @@ class AScriptUtils {
   }
 
   /**
-   * 
-   * @param {*} constructor 
-   * @param {*} id 
-   * @param {*} align 
-   * @param {*} values 
-   * @param {*} module 
-   * @returns 
+   * Lowers a TypedArray to the module's memory.
+   * @param {TypedArrayConstructor} constructor - The constructor of the TypedArray.
+   * @param {number} id - The identifier of the TypedArray.
+   * @param {number} align - The alignment of the TypedArray.
+   * @param {TypedArray} values - The TypedArray to lower.
+   * @param {object} module - The AScript module.
+   * @returns {number} - The memory pointer to the lowered TypedArray.
    */
   lowerTypedArray(constructor, id, align, values, module) {
     if (values == null) return 0;
@@ -133,10 +145,10 @@ class AScriptUtils {
   }
 
   /**
-   * 
-   * @param {*} pointer 
-   * @param {*} module 
-   * @returns 
+   * Retains a memory pointer and increments its reference count.
+   * @param {number} pointer - The memory pointer to retain.
+   * @param {object} module - The AScript module.
+   * @returns {number} - The retained memory pointer.
    */
   retainP(pointer, module) {
     if (pointer) {
@@ -148,9 +160,9 @@ class AScriptUtils {
   }
 
   /**
-   * 
-   * @param {*} pointer 
-   * @param {*} module 
+   * Releases a memory pointer and decrements its reference count.
+   * @param {number} pointer - The memory pointer to release.
+   * @param {object} module - The AScript module.
    */
   releaseP(pointer, module) {
     if (pointer) {
@@ -160,17 +172,17 @@ class AScriptUtils {
       else if (refcount) this.refCounts.set(pointer, refcount - 1);
       else
         throw Error(
-          `no refcounter "${refcount}" for the reference "${pointer}"`
+          `No refcounter "${refcount}" for the reference "${pointer}".`
         );
     }
   }
 
-  /**
-   * 
-   * @param {*} pointer 
-   * @param {*} value 
-   * @param {*} module 
-   */
+/**
+ * Sets a 32-bit unsigned integer value at the specified memory pointer.
+ * @param {number} pointer - The memory pointer.
+ * @param {number} value - The value to set.
+ * @param {object} module - The AScript module.
+ */
   setU32(pointer, value, module) {
     try {
       this.dataview.setUint32(pointer, value, true);
@@ -180,12 +192,12 @@ class AScriptUtils {
     }
   }
 
-  /**
-   * 
-   * @param {*} pointer 
-   * @param {*} module 
-   * @returns 
-   */
+/**
+ * Gets a 32-bit unsigned integer value from the specified memory pointer.
+ * @param {number} pointer - The memory pointer.
+ * @param {object} module - The AScript module.
+ * @returns {number} - The 32-bit unsigned integer value.
+ */
   getU32(pointer, module) {
     try {
       return this.dataview.getUint32(pointer, true);
@@ -197,10 +209,11 @@ class AScriptUtils {
 }
 
 /**
- * 
- * @param {*} scriptName 
- * @param {*} moduleName 
- * @returns 
+ * Loads a module based on the script name and module name.
+ * @param {string} scriptName - The script name.
+ * @param {string} moduleName - The module name.
+ * @returns {Promise<object>} - A promise that resolves to the loaded module.
+ * @throws {NotFound} - If the module is not found in the available scripts.
  */
 const loadModule = async (scriptName, moduleName) => {
   try {
@@ -214,14 +227,14 @@ const loadModule = async (scriptName, moduleName) => {
     });
     return myCurrentModule;
   } catch (e) {
-    console.error(e)
+    console.error(e);
     throw new NotFound(`Module not found in available scripts.`);
   }
 };
 
 /**
- * 
- * @returns 
+ * Retrieves all available modules.
+ * @returns {Promise<object>} - A promise that resolves to an object containing all the available modules.
  */
 const getAllModules = async () => {
   let wasmMods = {};
@@ -235,50 +248,67 @@ const getAllModules = async () => {
     wasmMods[sc] = {};
     for (var mod of availableMods) {
       let stgMod = await loadModule(sc, mod);
-      wasmMods[sc][sc === 'AS' ? mod.substring(0, mod.length-5) : mod.substring(0, mod.length-3)] = stgMod;
+      wasmMods[sc][
+        sc === "AS"
+          ? mod.substring(0, mod.length - 5)
+          : mod.substring(0, mod.length - 3)
+      ] = stgMod;
     }
   }
   return wasmMods;
 };
 
 /**
- *
- * @returns
+ * Retrieves all available scripts and their modules.
+ * @returns {Promise<object>} - A promise that resolves to an object containing all the available scripts and their modules.
  */
 const avScripts = async () => {
-  let wasmMods = await getAllModules();
-  console.log(wasmMods)
-  let main = {};
+  const wasmMods = await getAllModules();
+  const main = {};
 
-  Object.keys(wasmMods).forEach((scr) => {
-    let modules = new Map();
-    main[scr] = modules
-    Object.keys(wasmMods[scr]).map((fn) => {
-      let fun = Object.keys(wasmMods[scr][fn]);
-      fun = fun.filter((ele) =>
-        ele === undefined ||
-        ele === "memory" ||
-        ele === "__collect" ||
-        ele === "__new" ||
-        ele === "__pin" ||
-        ele === "__rtti_base" ||
-        ele === "__unpin" ||
-        ele === "__setArgumentsLength" ||
-        ele.includes("HEAP") ||
-        ele === "ready" ||
-        ele === "calledRun" ||
-        ele === "ready" ||
-        ele === "asm" ||
-        ele === '_createMem' ||
-        ele === '_destroy'
-          ? null
-          : ele
-      );
+  for (const scr of Object.keys(wasmMods)) {
+    const modules = new Map();
+    main[scr] = modules;
+    for (const fn of Object.keys(wasmMods[scr])) {
+      const fun = Array.from(filterFunctionKeys(wasmMods[scr][fn]));
       modules.set(fn, fun);
-    });
-  });
+    }
+  }
+
   return main;
 };
+
+/**
+ * Filters the function keys of an object, excluding specific keys.
+ * @param {object} obj - The object to filter.
+ * @returns {string[]} - An array of filtered function keys.
+ */
+function filterFunctionKeys(obj) {
+  const excludeKeys = new Set([
+    undefined,
+    "memory",
+    "__collect",
+    "__new",
+    "__pin",
+    "__rtti_base",
+    "__unpin",
+    "__setArgumentsLength",
+    "ready",
+    "calledRun",
+    "asm",
+    "_createMem",
+    "_destroy",
+    "HEAP8",
+    "HEAP16",
+    "HEAP32",
+    "HEAPU8",
+    "HEAPU16",
+    "HEAPU32",
+    "HEAPF32",
+    "HEAPF64",
+  ]);
+  return Object.keys(obj).filter((key) => !excludeKeys.has(key));
+}
 
 export {
   getAllModules,

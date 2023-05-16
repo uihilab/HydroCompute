@@ -1,6 +1,10 @@
+/**
+ * CUtils object containing the names of C module files to be interfaced.
+ * @type {object}
+ */
 export const CUtils = {
-    //anything else that has to be interfaced needs to be called from here
-    matrixUtils: 'matrixUtils.js',
-    transforms: 'transforms.js',
-    arima: 'arima.js'
-}
+    matrixUtils_c: 'matrixUtils_c.js',
+    arima_c: 'arima_c.js',
+    monteCarlo_c: 'monteCarlo_c.js'
+  };
+  

@@ -1,5 +1,9 @@
 import * as scripts from './scripts/scripts.js'
 
+/**
+ * Retrieves the JavaScript scripts and their associated functions.
+ * @returns {Map<string, string[]>} - A map of scripts and their functions.
+ */
 export const jsScripts = () => { 
     let r = Object.keys(scripts).map((script) => {
       return script;

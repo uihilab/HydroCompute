@@ -1,6 +1,6 @@
 export const matrixUtils = {
   //Multiplication of 2 matrices
-  matrixMul: () => {
+  matrixMultiply_gpu: () => {
     return `
         struct Matrix {
           size: vec2<f32>,
@@ -33,7 +33,7 @@ export const matrixUtils = {
         };
       `;
   },
-  matrixAdd: () => {
+  matrixAdd_gpu: () => {
     return `
     struct Matrix {
       size: vec2<f32>,
@@ -63,10 +63,10 @@ export const matrixUtils = {
   /**
    * @method matrixExpo
    * @description powers up the elements in a matrix to the given number
-   * @param {Number} num - number to exponentiate all elements in the matrix 
-   * @returns 
+   * @param {Number} num - number to exponentiate all elements in the matrix
+   * @returns
    */
-  matrixExpo: (num = 2.0) => {
+  matrixExpo_gpu: (num = 2.0) => {
     return `
     struct Matrix {
       size: vec2<f32>,
@@ -94,9 +94,9 @@ export const matrixUtils = {
   /**
    * @method LUDecomposition
    * @description decomposition of a matrix to its LeftUpper form
-   * @returns 
+   * @returns
    */
-  LUDecomposition: () => {
+  LUDecomposition_gpu: () => {
     return `
     struct Matrix {
       size: vec2<f32>,

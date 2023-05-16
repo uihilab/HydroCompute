@@ -17,6 +17,9 @@ export default class threadManager {
     this.engine = name;
     this.workerLocation = location;
     this.resetWorkers();
+    console.log(
+      `Initialized ${this.engine} using worker scope with max number of parallel threads:${this.maxWorkerCount}`
+    );
   }
 
   /**
@@ -40,23 +43,40 @@ export default class threadManager {
    */
   initializeWorkerThread(index) {
     this.workerThreads[index].worker = (args) => {
-      let {
-        data,
-        funcName,
-        step
-      } = args
-      let buffer = data;
+      let { data, funcName, step } = args;
+      let buffer;
+      if (data instanceof ArrayBuffer) {
+        buffer = data;
+      } else if (data.buffer instanceof ArrayBuffer) {
+        buffer = data.buffer;
+      } else {
+        // Convert to ArrayBuffer
+        const float32Array = new Float32Array(data);
+        buffer = float32Array.buffer;
+      }
+
       return new Promise(async (resolve, reject) => {
         let w;
         //CRITICAL INFO: WORKER NOT EXECUTE IF THE PATH IS "TOO RELATIVE", KEEP LONG SOURCE
-        if (typeof importScripts === "function") {
-          importScripts(this.workerLocation);
-          w = self;
+        // if (typeof importScripts === "function") {
+        //   importScripts(this.workerLocation);
+        //   w = self;
+        // } else {
+        if (this.engine === "webgpu") {
+          w = new Worker(new URL("../../src/webgpu/wgpu.worker.js", import.meta.url), {
+            type: "module",
+          });
+        } else if (this.engine === "wasm") {
+          w = new Worker(new URL("../../src/wasm/wasm.worker.js", import.meta.url), {
+            type: "module",
+          });
         } else {
-          w = new Worker(this.workerLocation, {
+          w = new Worker(new URL("../../src/javascript/js.worker.js", import.meta.url), {
             type: "module",
           });
         }
+
+        // }
         w.onmessage = ({ data }) => {
           console.log(`working...`);
           let { results, funcExec, workerExec, funcName } = data;
@@ -69,16 +89,24 @@ export default class threadManager {
         };
         w.onerror = (error) => {
           console.error(
-            `There was an error executing thread: ${index}, function: ${funcName}, step: ${step}. More info: `,
-            error
+            `There was an error executing thread: ${index}, function: ${funcName}, step: ${step}.`
           );
+          w.terminate();
           reject(error);
           return;
         };
 
-        buffer.byteLength === 0
-          ? w.postMessage(args)
-          : w.postMessage(args, [buffer]);
+        try {
+          buffer.byteLength === 0
+            ? w.postMessage(args)
+            : w.postMessage(args, [buffer]);
+        } catch (error) {
+          console.error(
+            `There was an error with the execution of function: ${funcName}, step: ${step}.`
+          );
+          reject(error);
+          w.terminate();
+        }
       });
     };
   }
@@ -92,9 +120,6 @@ export default class threadManager {
     this.workerThreads = {};
     this.results = [];
     this.functionOrder = [];
-    console.log(
-      `Initialized ${this.engine} using worker scope with max workers:${this.maxWorkerCount}`
-    );
   }
 
   /**

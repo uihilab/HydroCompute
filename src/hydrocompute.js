@@ -1,23 +1,68 @@
 // import * as engines from "./core/core.js";
 import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
-import { dataCloner } from "./core/utils/globalUtils.js";
+import { dataCloner, importJSONdata } from "./core/utils/globalUtils.js";
 import engine from "./core/mainEngine.js";
 import webrtc from "./webrtc/webrtc.js";
 
 /**
- * @description Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel code instances.
- * @class hydrocompute
+ * Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel code instances.
+ * @class hydroCompute
  */
 
-class hydrocompute {
+class hydroCompute {
+  /**
+   * Constructs a new hydroCompute instance.
+   * @param {...string} args - Optional argument to set the initial engine.
+   */
   constructor(...args) {
     this.calledEngines = {};
     this.currentEngine;
     this.currentEngineName = null;
     this.instanceRun = 0;
+
     this.availableData = [];
     this.engineResults = {};
+    this.utils = {
+      /**
+       * Generates random data.
+       * @param {number} size - Size of each array element.
+       * @param {number} maxValue - Maximum value for random number generation.
+       * @param {number} length - Length of the generated array.
+       * @param {boolean} [save=false] - Whether to save the data or not.
+       * @returns {Array|void} - Generated random data array or void if saved.
+       */
+      genRandomData: (size, maxValue, length, save = false) => {
+        let name = `${this.makeId(5)}`;
+        const data = Array.from({ length: length }, () =>
+          Array.from({ length: size }, () =>
+            Math.floor(Math.random() * maxValue)
+          )
+        );
+        if (save) {
+          this.data({ id: name, data: data });
+          {
+            return console.log(`Data has been saved with nametag ${name}`);
+          }
+        } else return data;
+      },
+      /**
+       * Cleans the array by removing Infinity, null, undefined, and NaN values.
+       * @param {Array} array - The array to be cleaned.
+       * @returns {Array} - The cleaned array.
+       */
+      cleanArray: (array) => {
+        return array.filter((value) => {
+          // Exclude Infinity, null, undefined, and NaN values
+          return (
+            value !== Infinity &&
+            value !== null &&
+            value !== undefined &&
+            !Number.isNaN(value)
+          );
+        });
+      },
+    };
 
     //Initiate the module with the workers api. If required, the user can change to another backend product
     args.length !== 0
@@ -44,19 +89,38 @@ class hydrocompute {
   }
 
   /**
-   * @method setEngine
-   * @description Available kernels, keeps track of available instances
-   * @memberof hydrocompute
-   * @param {String} kernel - type of kernel setup by the computation
+   * Sets the current engine based on the specified kernel.
+   * @param {string} kernel - The name of the kernel.
+   * @returns {Promise<void>} - A Promise that resolves once the engine is set.
    */
-  setEngine(kernel) {
+  async setEngine(kernel) {
     this.currentEngineName = kernel;
-    this.currentEngineName === "webrtc"
-      ? (this.currentEngine = new webrtc())
-      : (this.currentEngine = new engine(
+
+    if (this.currentEngineName === "webgpu") {
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        this.currentEngine = new engine(
           this.currentEngineName,
           kernels[this.currentEngineName]
-        ));
+        );
+      } catch (error) {
+        console.error(
+          "WebGPU is not available in your browser. Returning to JavaScript engine."
+        );
+        this.currentEngineName = "javascript";
+        this.currentEngine = new engine(
+          this.currentEngineName,
+          kernels[this.currentEngineName]
+        );
+      }
+    } else {
+      this.currentEngineName === "webrtc"
+        ? (this.currentEngine = new webrtc())
+        : (this.currentEngine = new engine(
+            this.currentEngineName,
+            kernels[this.currentEngineName]
+          ));
+    }
 
     if (Object.keys(this.calledEngines).includes(kernel)) {
       this.calledEngines[kernel] += 1;
@@ -66,50 +130,83 @@ class hydrocompute {
   }
 
   /**
-   * @method run
-   * @description Run function that used to trigger a simulation. It is initiated with the asumption that the "main" function is on the script.
-   * @memberof hydrocompute
-   * @param {Object{}} args - contains callbacks, functions, dataId, and dependencies
-   * @param {Boolean} callbacks - true if there are multiple funcitons  to run
-   * @param {Array} dataIds - data saved in the availableData object with a specific ID. Might be moved somewhere else in the future
-   * @param {Array} funcArgs - array of aditional parameters for functions as strings. Each additional argument per function is an object.
-   * @param {Array} dependencies - array of dependencies as numbers if callbacks is true. In format [[], [Dep0], [Dep0, Dep1]]
-   * @param {Array} functions - array of functions as strings specifying the functions to run.
-   * @returns {Object} result saved in the available Results namespace
+   * Runs the specified functions with the given arguments using the current engine.
+   * @param {Object|string} args - The configuration object or the relative path of the script to run.
+   * @param {Array} args.dataIds - An array of data IDs.
+   * @param {Array} args.functions - An array of function names.
+   * @param {Array} [args.funcArgs=[]] - An array of function arguments.
+   * @param {Array} [args.dependencies=[]] - An array specifying the dependencies between functions.
+   * @param {Array} [args.scriptName=[]] - An array of script names.
+   * @param {Array} [args.dataSplits=[]] - An array specifying if data should be split for each function.
+   * @returns {Promise<void>} - A Promise that resolves once the functions are executed.
    */
-  async run(args = {dataIds: [[]], functions: ["main"], scriptName: ["../../examples/externalScripts/scriptExample.js"]}) {
+  async run(
+    //CASE 1: functions running on "main" or "_mainFunction" saved on local dev and passing a string
+    args = {
+      dataIds: [[]],
+      functions: ["main"],
+      scriptName: [
+        this.currentEngineName == "javascript"
+          ? "jsExample.js"
+          : this.currentEngineName == "webgpu"
+          ? "webgpuExample.js"
+          : "wasmExample",
+      ],
+    }
+  ) {
     //When having to run a script, the user can pass the relative path directly and the compute will do the rest
-    if (typeof args === 'string'){
-      let stgScript = args.slice()
+    if (typeof args === "string") {
+      let stgScript = args.slice();
       args = {
         dataIds: [[]],
         functions: ["main"],
         scriptName: [stgScript],
         dependencies: [],
-      }
-      args.dataSplits =  Array.from({length: args.dataIds.length}, (_, i) => false)
-    } 
+      };
+      args.dataSplits = Array.from(
+        { length: args.dataIds.length },
+        (_, i) => false
+      );
+    }
     //This will run in case there are no arguments or a configuration object has been passed
     else {
-      args= args
+      args = args;
     }
     let {
       //engine = this.currentEngine,
-      dataIds,
+      dataIds = [[]],
       functions,
       funcArgs = [],
       dependencies = [],
       scriptName = [],
       dataSplits = Array.from({ length: dataIds.length }, (_, i) => false),
     } = args;
-
     //CHANGE: This just moved the mapping done before here but stil needs update!!
     functions = Array.from({ length: dataIds.length }, (_, i) => functions);
-    dependencies =
-      dependencies.length > 0
-        ? Array.from({ length: dataIds.length }, (_, i) => dependencies)
-        : dependencies;
-    scriptName = Array.from({length: dataIds.length}, (_, i) => scriptName)
+
+    if (dependencies === true) {
+      dependencies = [];
+
+      for (let i = 0; i < functions.length; i++) {
+        const innerLoop = [];
+        for (let j = 0; j < functions[i].length; j++) {
+          innerLoop.push(j > 0 ? [j - 1] : []);
+        }
+        dependencies.push(innerLoop);
+      }
+    } else if (dependencies.length > 0 && dataIds.length === 1) {
+      dependencies = Array.from({ length: functions[0].length }, () => []);
+    } else if (dependencies.length > 0 && dataIds.length > 1) {
+      dependencies = Array.from({ length: dataIds.length }, () => dependencies);
+    }
+
+    scriptName = Array.from({ length: dataIds.length }, (_, i) => scriptName);
+
+    for (let i = 0; i < dataIds.length; i++) {
+      if (typeof dataIds[i] === "number") {
+        dataIds[i] = JSON.stringify(dataIds[i]);
+      }
+    }
 
     //Single data passed into the function.
     //It is better if the split function does the legwork of data allocation per function instead.
@@ -145,12 +242,13 @@ class hydrocompute {
     })();
     if (
       (data !== null && functions.length > 0) ||
-      (data === null && funcArgs.length > 0 && functions.length > 0)
+      (data === null && funcArgs.length > 0 && functions.length > 0) ||
+      (typeof data[0].length !== "undefined" && data[0].length !== 0)
     ) {
       //Data passed in raw without splitting
       try {
         this.instanceRun += 1;
-        await this.currentEngine.run({
+        let flag = await this.currentEngine.run({
           isSplit: dataSplits,
           scriptName,
           data: data !== null ? data[0] : [],
@@ -158,24 +256,29 @@ class hydrocompute {
           functions,
           funcArgs,
           dependencies,
-          linked: this.linked,
+          linked: args.linked || false,
         });
         //functions = Array.from({length: dataIds.length}, (_, i) => functions)
         //Await for results from the engine to finish
-        this.setResults(dataIds);
+        if (flag) {
+          this.setResults(dataIds);
+        }
       } catch (error) {
-        console.error("There was an error with the given run", error);
-        return error;
+        console.error(
+          "There was an error with the given run. More info: ",
+          error
+        );
+        return;
       }
     } else {
-      return console.error("There was an error pulling the data.");
+      return console.error("There was an error pulling the data.", error);
     }
   }
 
   /**
-   * @method setResults
-   * @description Result setter once the simulation is finished.
-   * @memberof setResults
+   * Sets the results of the current engine and stores them in the `engineResults` object.
+   * @param {Array} names - An array of names corresponding to the data IDs.
+   * @returns {void}
    */
   setResults(names) {
     const stgOb = Object.fromEntries(
@@ -194,9 +297,8 @@ class hydrocompute {
   }
 
   /**
-   * @method setTotalTime
-   * @description Computes the total time it took a simulation to run and appends to the engine result object
-   * @memberof hydrocompute
+   * Calculates and sets the total function time and total script time for each result in the `engineResults` object.
+   * @returns {void}
    */
   setTotalTime() {
     Object.keys(this.engineResults).forEach((key) => {
@@ -215,60 +317,59 @@ class hydrocompute {
   }
 
   /**
-   * @method currentEngine
-   * @description returns the name of the current engine
-   * @memberof hydrocompute
-   * @returns {String} name - current engine name set.
+   * Returns the name of the current engine.
+   * @returns {string} The name of the current engine.
    */
   currentEngine() {
     return this.currentEngineName;
   }
 
   /**
-   * @method data
-   * @description sets data to the available data namespace and transforms JS arrays into typed arrays.
-   * @memberof hydrocompute
-   * @param {Object} args - contains id and data
-   * @param {String} id - name of the item to be saved. If not ID is provided, then a random name will be given
-   * @param {Array} data - n-d array that will be transformed into a typed array
-   * @param {String} splits - number of splits to be done on a dataset. See splits namespace for more details
+   * Saves the provided data into the available data storage.
+   * @param {Object|string} args - The data to be saved. It can be passed as an object or a string.
+   * @param {string} args.id - (Optional) The ID of the data container. If not provided, a random ID will be generated.
+   * @param {Array|number|string} args.data - The data to be saved. It can be an array, a number, or a string.
+   * @param {Object} args.splits - (Optional) The splitting configuration for the data.
    */
   async data(args) {
-    //Assuming the args is being passed as a string fetching a JSON object
-    if (typeof args === 'string') {
-      let jsonData = await fetch(args).then(res => res.json()).then(object => {
-        return object.data
-      })
-      console.log(jsonData)
-      args = {data: jsonData}
-    } else {
-      //Assuming the user is passing an object with di, data, and splitting definition
-      args = args
-    }
-    //Set container
-    let container = {
-      id: typeof args.id === "undefined" ? this.makeid(5) : args.id,
-      length: args.data[0] instanceof Array ? args.data.length : 1,
-    };
-    if (typeof args.splits === "undefined") {
-      container.data = dataCloner(args.data);
-      this.availableData.push(container);
-    } else {
-      let partition = splits.main(args.splits.function, {
-        ...args.splits,
-        data: dataCloner(args.data),
-      });
-      container.data = partition;
-      this.availableData.push(container);
+    try {
+      //Assuming the args is being passed as a string fetching a JSON object
+      if (typeof args === "string") {
+        let jsonData = await importJSONdata(args);
+        args = { data: jsonData };
+      } else {
+        //Assuming the user is passing an object with di, data, and splitting definition
+        args = args;
+      }
+      //Set container
+      let container = {
+        id: typeof args.id === "undefined" ? this.makeId(5) : args.id,
+        length: args.data[0] instanceof Array ? args.data.length : 1,
+      };
+      typeof args.data[0] === "string"
+        ? (args.data = args.data.map(Number))
+        : null;
+      if (typeof args.splits === "undefined") {
+        container.data = dataCloner(args.data);
+        this.availableData.push(container);
+      } else {
+        let partition = splits.main(args.splits.function, {
+          ...args.splits,
+          data: dataCloner(args.data),
+        });
+        container.data = partition;
+        this.availableData.push(container);
+      }
+    } catch (error) {
+      console.log("Data could not be saved. More info: \n", error);
+      return;
     }
   }
 
   /**
-   * @method results
-   * @description function to return the result for a specific simulation saved in the available results namespace
-   * @memberof hydrocompute
-   * @param {String} name - name of the simulation as "Simulation_#"
-   * @returns {Object} - Object containing the details of the run given
+   * Retrieves the results for a specific simulation by name.
+   * @param {string} name - The name of the simulation.
+   * @returns {Array} - An array of objects containing the results and associated functions.
    */
   results(name) {
     if (typeof this.currentEngine === "undefined")
@@ -305,33 +406,16 @@ class hydrocompute {
   }
 
   /**
-   * @method availableEngines
-   * @description returns the names of the available engines in the hydrocompute library
-   * @memberof hydrocompute
-   * @returns {Array} - names of engines
+   * Retrieves the available engines.
+   * @returns {Array} - An array containing the names of the available engines.
    */
   availableEngines() {
     return Object.keys(kernels);
   }
 
   /**
-   * @method config
-   * @description sets configuration for steps and linkeage for a particular simulation
-   * @memberof hydrocompute
-   * @param {Object} args - contains steps and connectivity
-   * @param {Number} steps - number of steps to run
-   * @param {Boolean} linked - specifies if the steps are linked (results trail downwards the execution)
-   */
-  config(args) {
-    this.steps = args.steps ? args.steps : 0;
-    this.linked = args.linked ? args.linked : false;
-  }
-
-  /**
-   * @method engineScripts
-   * @description returns the available functions for all the engines
-   * @memberof hydrocompute
-   * @returns {Object} object containing the name of the engine and the available functions
+   * Retrieves the available engine scripts.
+   * @returns {Promise<Map>} - A Promise that resolves to a Map object containing the available engine scripts.
    */
   async engineScripts() {
     let m = await this.currentEngine.availableScripts();
@@ -345,14 +429,15 @@ class hydrocompute {
         }
       }
       return _m;
-    }
-    return m;
+    } else if (this.currentEngineName === "webrtc")
+      console.log(
+        "No scripts available to run in the webrtc engine. Please checkout documentation"
+      );
+    else return m;
   }
 
   /**
-   * @method availableSplits
-   * @description searches the function splits available for data manipulation
-   * @memberof hydrocompute
+   * Searches the function splits available for data manipulation
    * @returns {Object} map containing the available split functions in the engines
    */
   availableSplits() {
@@ -362,13 +447,11 @@ class hydrocompute {
   }
 
   /**
-   * @method makeid
-   * @memberof hydrocompute
-   * @description Generates random name conventions for data storage
-   * @param {Number} length - lenght of the string to be set as name
-   * @returns {String} random name to set data
+   * Generates a random ID string.
+   * @param {number} length - The length of the ID string.
+   * @returns {string} - The generated ID string.
    */
-  makeid(length) {
+  makeId(length) {
     let result = "",
       characters =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
@@ -380,12 +463,11 @@ class hydrocompute {
   }
 
   /**
-   * @method getresTimes
-   * @description helper function that groups the total times for each function for a given simulation
-   * @memberof hydrocompute
-   * @returns {Array}
+   * Retrieves the total function time and total script time for a specific result.
+   * @param {string} res - The name of the result.
+   * @returns {number[]} - An array containing the total function time and total script time.
    */
-  getresTimes(res) {
+  getResTimes(res) {
     return [
       this.engineResults[res].totalFuncTime,
       this.engineResults[res].totalScrTime,
@@ -393,31 +475,27 @@ class hydrocompute {
   }
 
   /**
-   * @method getTotalTime
-   * @description getter function for obtaining the total time for functions and script runs
-   * @memberof hydrocompute
-   * @returns {Array} array containing function and script total times
+   * Calculates the total function time and total script time for all available results.
+   * @returns {number[]} - An array containing the total function time and total script time.
    */
   getTotalTime() {
     let fnTotal = 0,
       scrTotal = 0;
     for (let result of this.availableResults()) {
-      let stgRes = this.getresTimes(result);
+      let stgRes = this.getResTimes(result);
       (fnTotal += stgRes[0]), (scrTotal += stgRes[1]);
     }
     return [fnTotal, scrTotal];
   }
 
   /**
-   * @method availableResults
-   * @description available functions for
-   * @memberof hydrocompute
-   * @returns
+   * Retrieves the available results stored in the `engineResults` object.
+   * @returns {string[]} - An array containing the names of the available results.
    */
   availableResults() {
     return Object.keys(this.engineResults);
   }
 }
 
-typeof window !== "undefined" ? (window.hydrocompute = hydrocompute) : null;
-export default hydrocompute;
+typeof window !== "undefined" ? (window.hydroCompute = hydroCompute) : null;
+export default hydroCompute;

@@ -32,8 +32,8 @@ export default class engine {
    * @description setter for the current engine name and worker location
    * @param {String} engine - engine worker location to be fetched
    */
-  initialize(engine) {
-    this.engineName = engine;
+  initialize(engineName) {
+    this.engineName = engineName;
     this.threads = new threadManager(this.engineName, this.workerLocation);
   }
 
@@ -46,9 +46,10 @@ export default class engine {
   async run(args) {
     //Default behavior for when no data or no functions are passed.
     if (args.data.length === 0 || args.functions.length === 0) {
-      return console.error(
+      console.error(
         "Please pass the data required for analysis and/or the functions to run."
       );
+      return false
     }
 
     let {
@@ -139,11 +140,12 @@ export default class engine {
           await this.stepRun(stepArg);
         }
       }
+      return true
     } catch (error) {
       console.error(
-        "There was an error with the execution of the steps. More info:",
-        error
+        "There was an error with the execution of the steps."
       );
+      throw error;
     }
   }
 
@@ -217,21 +219,19 @@ export default class engine {
       return r;
     } catch (error) {
       console.error(
-        `There was an error executing step: ${step}. More info: `,
-        error
+        `There was an error executing step: ${step}.`,
       );
-      return
+      throw error
     }
   }
 
-  /**
-   * @method concurrentRun
-   * @description running jobs concurrently based on a DAG. It can also run parallel jobs if the dependencies array is passed as empty.
-   * @param {Object{}} args
-   * @param {Number} step
-   * @param {Object[]} dependencies
-   * @returns
-   */
+/**
+ * Runs multiple tasks concurrently using worker threads and dependency graph.
+ * @param {object} args - The arguments for concurrent execution.
+ * @param {number} step - The step value.
+ * @param {Array} dependencies - The dependency graph.
+ * @returns {Promise} - A promise that resolves to the result of concurrent execution.
+ */
     async concurrentRun(args, step, dependencies) {
       let batchTasks = []
       for (var i = 0; i < args.threadCount; i++) {
@@ -263,18 +263,21 @@ export default class engine {
         return res;
       } catch (error) {
       console.error(
-        `There was an error executing the DAG for step: ${step}. More info: `,
-        error
+        `There was an error executing the DAG for step: ${step}.`,
       );
+      throw error
     }
   }
 
-  /**
-   *
-   * @param {*} args
-   * @param {*} step
-   * @returns
-   */
+/**
+ * Runs multiple tasks in parallel using worker threads.
+ * @param {object} args - The arguments for parallel execution.
+ * @param {number} args.threadCount - The total number of threads.
+ * @param {function[]} args.functions - The array of functions to execute.
+ * @param {Array} args.funcArgs - The array of arguments for each function.
+ * @param {number} step - The step value.
+ * @returns {Promise<Array>} - A promise that resolves to an array of results.
+ */
   async parallelRun(args, step) {
     const batches = [];
     let results = [];
@@ -310,7 +313,7 @@ export default class engine {
           funcName: args.functions[i],
           funcArgs: args.funcArgs[i],
           step,
-          length,
+          length: args.length,
           scriptName: args.scriptName[i]
         };
         this.threads.initializeWorkerThread(i);
@@ -323,43 +326,47 @@ export default class engine {
     return results;
   }
 
-  /**
-   *
-   * @param {*} args
-   * @param {*} stepCounter
-   * @param {*} dependencies
-   * @returns
-   */
+/**
+ * Executes tasks based on the provided dependencies and step counter.
+ * @param {object} args - The arguments for task execution.
+ * @param {number} stepCounter - The step counter.
+ * @param {Array} dependencies - The dependency graph.
+ * @returns {Promise} - A promise that resolves to the result of task execution.
+ */
   async taskRunner(args, stepCounter, dependencies) {
-    //this.workers.results.push([]);
-    let x;
-    if (dependencies.length > 0) {
-      // Sequential Execution
-      x = await this.concurrentRun(args, stepCounter, dependencies);
-    } else {
-      //Parallel Execution
-      x = await this.parallelRun(args, stepCounter);
-      //console.log(await x)
-    }
-    if (args.threadCount === this.threads.results.length) {
-      [this.funcEx, this.scriptEx] = this.threads.execTimes;
-
-      this.results.push({
-        //step: stepCounter,
-        results: this.threads.results,
-        funcEx: this.funcEx,
-        scriptEx: this.scriptEx,
-        funcOrder: this.threads.functionOrder
-      });
-      //this.setEngine()
-
-      console.log(
-        `Total function execution time: ${this.funcEx} ms\nTotal worker execution time: ${this.scriptEx} ms`
-      );
+    try {
+      let x;
+      if (dependencies.length > 0) {
+        // Sequential Execution
+        x = await this.concurrentRun(args, stepCounter, dependencies);
+      } else {
+        // Parallel Execution
+        x = await this.parallelRun(args, stepCounter);
+      }
+      if (args.threadCount === this.threads.results.length) {
+        [this.funcEx, this.scriptEx] = this.threads.execTimes;
+  
+        this.results.push({
+          //step: stepCounter,
+          results: this.threads.results,
+          funcEx: this.funcEx,
+          scriptEx: this.scriptEx,
+          funcOrder: this.threads.functionOrder
+        });
+  
+        console.log(
+          `Total function execution time: ${this.funcEx} ms\nTotal worker execution time: ${this.scriptEx} ms`
+        );
+        this.threads.resetWorkers();
+      }
+      return x;
+    } catch (error) {
       this.threads.resetWorkers();
+      console.error("An error occurred during task execution.");
+      throw error;
     }
-    return x;
   }
+  
 
   /**
    *@description resets all properties of the class

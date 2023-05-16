@@ -1,12 +1,14 @@
+/**
+ * Utility functions for matrix operations.
+ */
 export const matrixUtils = {
-  //Matrix multiplication. Accepts 2d arrays as [Arr1, Arr2]
   /**
-   * @description matrix multiplication using naive dot product
-   * @param {Array} d
-   * @param {*} sizes
-   * @returns
+   * Performs matrix multiplication using the naive dot product.
+   * @param {number[]} d - The input matrices as a 2D array.
+   * @param {number[]} sizes - The sizes of the matrices [m, n, p].
+   * @returns {number[]} - The result of matrix multiplication.
    */
-  matrixMultiply: (d, sizes) => {
+  matrixMultiply_js: (d, sizes) => {
     d = [d.slice(0, d.length / 2), d.slice(d.length / 2, d.length)];
 
     if (!sizes) {
@@ -34,13 +36,12 @@ export const matrixUtils = {
     return c;
   },
 
-  //Matrix addition. Accepts 2d arrays like [Arr1, Arr2]
   /**
-   *
-   * @param {*} d
-   * @returns
+   * Performs matrix addition.
+   * @param {number[]} d - The input matrices as a 2D array.
+   * @returns {number[]} - The result of matrix addition.
    */
-  matrixAdd: (d) => {
+  matrixAdd_js: (d) => {
     if (d.length === 1) {
       console.error("Please input array sizes nxm");
       return;
@@ -55,11 +56,13 @@ export const matrixUtils = {
   },
 
   /**
-   * @description Function utility to create a convolution of a 2d matrix
-   * @param {*} data -
-   * @returns
+   * Creates a convolution of a 2D matrix.
+   * @param {object} data - The input data object.
+   * @param {number[][]} data.input - The input matrix.
+   * @param {number[][]} data.kernel - The kernel matrix.
+   * @returns {number[][]} - The convolution result.
    */
-  conv2d: (data) => {
+  conv2d_js: (data) => {
     let { input, kernel } = data;
     let output = [];
 
@@ -104,8 +107,12 @@ export const matrixUtils = {
 
     return output;
   },
-
-  //Main function to run any of the functions described in the object.
+  /**
+   * Runs the specified function in the `matrixUtils` object with the given data.
+   * @param {string} name - The name of the function to run.
+   * @param {*} data - The input data for the function.
+   * @returns {*} - The result of the function, or `undefined` if the function is not found.
+   */
   main: (name, data) => {
     if (typeof matrixUtils[name] === "undefined") {
       return console.error("Function is not found in the given script.");

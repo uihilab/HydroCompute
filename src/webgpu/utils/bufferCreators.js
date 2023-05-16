@@ -1,9 +1,8 @@
 /**
- * @method matrixSize
- * @description returns the sizes of two square matrices
- * @param {Array} matrix - matrix as a 1d array
- * @param {Object} args - additional partitions required
- * @returns 
+ * Returns the sizes of two square matrices.
+ * @param {Array} matrix - Matrix as a 1D array.
+ * @param {Object} args - Additional partitions required.
+ * @returns {Array} - Array containing the sizes of the matrices.
  */
 export const matrixSize = (matrix, args = undefined) => {
   const isSquare = matrix.length % Math.sqrt(matrix.length) === 0;
@@ -11,14 +10,13 @@ export const matrixSize = (matrix, args = undefined) => {
   return sizes;
 };
 
-
 /**
- *
- * @param {*} mapped
- * @param {*} device
- * @param {*} matrix
- * @returns
- */ 
+ * Creates a buffer for the matrix data.
+ * @param {boolean} mapped - Indicates whether the buffer is mapped at creation.
+ * @param {GPUDevice} device - The GPU device.
+ * @param {Float32Array} matrix - The matrix data.
+ * @returns {GPUBuffer} - The created matrix buffer.
+ */
 export const bufferCreator = (mapped, device, matrix) => {
   const matrixBuffer = device.createBuffer({
     mappedAtCreation: mapped,
@@ -32,10 +30,10 @@ export const bufferCreator = (mapped, device, matrix) => {
 };
 
 /**
- *
- * @param {*} mat
- * @param {*} size
- * @returns
+ * Changes the matrix layout by removing the sizes.
+ * @param {Float32Array} mat - The matrix data.
+ * @param {Array} sizes - The sizes of the matrix.
+ * @returns {Float32Array} - The modified matrix data.
  */
 export const matrixChanger = (mat, sizes) => {
   const matrix = [...sizes, ...mat];
@@ -44,10 +42,12 @@ export const matrixChanger = (mat, sizes) => {
 };
 
 /**
- *
- * @param {*} device
- * @param {*} matrices
- * @returns
+ * Creates a buffer to hold the result matrix.
+ * @param {GPUDevice} device - The GPU device.
+ * @param {Array} matrices - The matrices data.
+ * @param {number} reads - The number of read partitions.
+ * @param {number} writes - The number of write partitions.
+ * @returns {Array} - Array containing the size and buffer of the result matrix.
  */
 export const resultHolder = (device, matrices, reads, writes) => {
   const sizeMappings = {
@@ -62,7 +62,6 @@ export const resultHolder = (device, matrices, reads, writes) => {
   const key = `${reads}-${writes}`;
   const resultMatSize = sizeMappings[key];
 
-  //console.log(resultMatSize)  
   const resultBuffer = device.createBuffer({
     size: resultMatSize instanceof Array ? resultMatSize.reduce((a,b) => a +b) : resultMatSize,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
@@ -71,79 +70,11 @@ export const resultHolder = (device, matrices, reads, writes) => {
 };
 
 /**
- *
- * @param {*} buffers
+ * Destroys the buffers.
+ * @param {Array} buffers - Array of GPU buffers.
  */
 export const bufferDestroyer = (buffers) => {
   for (const buffer of buffers) {
     buffer.destroy();
   }
 };
-
-export class deviceConnect{
-  constructor(){
-    this.adapter = null;
-    this.device = null;
-    this.lostListener = null;
-  }
-
-  async initialize() {
-
-    await this.deviceCall();
-
-    if (!this.adapter) return false;
-
-    while (!this.device) {
-      this.adapter = null;
-      await this.deviceCall();
-      if (!this.adapter) return false
-    }
-
-    this.addLostListener();
-
-    return this.device
-  }
-
-  async deviceCall(){
-    if (!this.adapter) {
-      this.adapter = await navigator.gpu.requestAdapter();
-
-      if (!this.adapter) {
-        console.error(
-          'WebGPU is not available in your browser. Return to other engines, if possible.'
-        );
-        return
-      }
-    }
-
-    this.device = await this.adapter.requestDevice();
-  }
-
-  addLostListener(){
-    if (this.lostListener) return;
-
-    this.lostListener = this.device.lost.then(async (info) => {
-      console.error('Device was lost. Reconnecting... Info: ', info);
-
-      try {
-        await this.recoverDevice();
-      } catch (error) {
-        console.error('Device could not be recovered', error);
-      }
-    })
-  }
-
-  removeLostListener(){
-    if (this.lostListener) {
-      this.lostListener = null;
-    }
-  }
-
-  async recoverDevice(){
-    this.removeLostListener();
-    await this.deviceCall();
-    this.addLostListener();
-  }
-}
-
-

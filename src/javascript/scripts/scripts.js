@@ -3,16 +3,8 @@
  * should be updated accordingly.
  * @module scripts
  */
-import { matrixUtils } from "./matrixUtils.js";
-import { timeSeries } from "./timeSeries.js";
+import { matrixUtils } from "./matrixUtils_js.js";
+import { timeSeries } from "./timeSeries_js.js";
 
 export { matrixUtils, timeSeries, 
 }
-
-// const modules = import.meta.glob('./**/*.js');
-
-// for (const path in modules) {
-// console.log(path)
-//   //const module = await modules[path]();
-//   // Do something with the module...
-// }

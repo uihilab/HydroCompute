@@ -150,7 +150,7 @@
 
     const initHydrocompute = async () => {
       await setCounties()
-      window.compute = new hydrocompute();
+      window.compute = new hydroCompute();
       let locations = document.getElementById('area-select')
       let e = document.getElementById('sourceSelect')
       for (let source of sources) {
@@ -474,9 +474,9 @@
       populateResults()
 
       compute.availableData = []
-      let jsFuns = ['expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'expoMovingAverage', 'simpleMovingAverage', 'expoMovingAverage', 'simpleMovingAverage'],
+      let jsFuns = ['expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js', 'expoMovingAverage_js', 'simpleMovingAverage_js'],
 
-        jsFuns2 = ['simpleMovingAverage', 'expoMovingAverage'],
+        jsFuns2 = ['simpleMovingAverage_js', 'expoMovingAverage_js'],
         cFuns = ['_acf', '_boxcox_transform', '_linear_detrend', '_arima_setParams'],
         cFuns2 = ['_linear_detrend', '_arima_autoParams'];
       cFuns3 = ['exponentialMovingAverage', '_arima_autoParams'];
