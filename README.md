@@ -15,7 +15,7 @@
 * [References](#references)
 
 ## Introduction
-This work introduces hydrocompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
+This work introduces hydroCompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
 
 ## How to Use
 Please download the library and run `index.html`. If a new html file should be created, the library must be onloaded onto the file as a script
