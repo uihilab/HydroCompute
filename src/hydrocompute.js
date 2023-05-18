@@ -150,7 +150,7 @@ class hydroCompute {
           ? "jsExample.js"
           : this.currentEngineName == "webgpu"
           ? "webgpuExample.js"
-          : "wasmExample",
+          : "wasmExample.js",
       ],
     }
   ) {

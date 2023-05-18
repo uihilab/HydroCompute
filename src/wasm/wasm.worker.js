@@ -10,69 +10,79 @@ import { splits } from "../core/utils/splits.js";
  */
 self.onmessage = async (e) => {
   performance.mark("start-script");
-  let { funcName, funcArgs = [], id, step, length } = e.data;
+  let { funcName, funcArgs = [], id, step, length, scriptName } = e.data;
   let data = new Float32Array(e.data.data);
-  data = splits.split1DArray({data: data, n: length})
-  let wasmSc = await getAllModules();
+  data = splits.split1DArray({ data: data, n: length });
+  let scripts;
   let result = null;
+  if (scriptName) {
+    let { default: Module } = await import(`../../${scriptName}`);
+    scripts = await Module();
+  } else {
+    scripts = await getAllModules();
+  }
   try {
-    for (let scr in wasmSc) {
-      for (let module in wasmSc[scr]) {
-        if (funcName in wasmSc[scr][module]) {
-          //points to the current module
-          let mod = wasmSc[scr][module];
+    if (scriptName !== undefined) {
+      performance.mark("start-function");
+      result = handleC(null, null, data, scripts);
+      performance.mark("end-script");
+    } else {
+      for (let scr in scripts) {
+        for (let module in scripts[scr]) {
+          if (funcName in scripts[scr][module]) {
+            //points to the current module
+            let mod = scripts[scr][module];
 
-          if (scr === "AS"){
-            let ref = mod[funcName];
-            result = handleAS(module, ref, data, mod, funcArgs);
+            if (scr === "AS") {
+              let ref = mod[funcName];
+              result = handleAS(module, ref, data, mod, funcArgs);
+            } else if (scr === "C") {
+              result = handleC(module, funcName, data, mod);
+            }
+            //Any other webassembly module handles would go here
+            performance.mark("end-script");
           }
-          else if (scr === "C") {
-            result = handleC(module, funcName, data, mod);
-          }
-          //Any other webassembly module handles would go here
-          performance.mark("end-script");
-
-          let getPerformance = getPerformanceMeasures()
-          self.postMessage(
-            {
-              id,
-              results: result,
-              step,
-              funcName,
-              ...getPerformance
-            },
-            [result]
-          );
         }
       }
     }
+    let getPerformance = getPerformanceMeasures();
+    self.postMessage(
+      {
+        id,
+        results: result,
+        step,
+        funcName,
+        ...getPerformance,
+      },
+      [result]
+    );
   } catch (error) {
     if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
       console.error(
         `There was an error executing:\nfunction: ${funcName}\nid: ${id} at the worker.`
       );
-      throw error
+      throw error;
     } else {
       console.error(
         "There was an error running the WebAssembly worker script. More info: "
       );
-      throw error
+      throw error;
     }
   }
 };
 
 /**
- * 
- * @param {String} moduleName 
+ *
+ * @param {String} moduleName
  * @param {Object} ref - Object used for running setting arguments in a funciton
- * @param {Array} data - data object to be used for the run 
- * @param {Object} mod - module object used with function 
+ * @param {Array} data - data object to be used for the run
+ * @param {Object} mod - module object used with function
  * @param {Array} funcArgs - array containing the additional arguments to be used in the function
  * @returns {ArrayBuffer} result object to be sent back from the worker
  */
 const handleAS = (moduleName, ref, data, mod, funcArgs) => {
   let views = new AScriptUtils(),
-  stgResult = [];
+    stgResult = [];
   funcArgs === null ? (funcArgs = []) : funcArgs;
   if (moduleName === "matrixUtils") {
     //THIS NEEDS TO CHANGE!
@@ -121,7 +131,7 @@ const handleAS = (moduleName, ref, data, mod, funcArgs) => {
  * @param {Object} module - module run containing the memory alloc functions
  * @returns {ArrayBuffer} - result buffer to be sent back from the worker
  */
-const handleC = (moduleName, functionName, data, module) => {
+const handleC = (moduleName = null, functionName = null, data, module) => {
   let stgRes = null;
   let ptrs = [];
   let r_ptr = 0;
@@ -141,8 +151,6 @@ const handleC = (moduleName, functionName, data, module) => {
       ptrs.push(module._createMem(len * bytes));
     }
 
-    //console.log(inputData.length, ptrs.length, len, r_ptr);
-
     // Copy input data to memory
     for (let j = 0; j < ptrs.length; j++) {
       module.HEAPF32.set(inputData[j], ptrs[j] / bytes);
@@ -152,6 +160,8 @@ const handleC = (moduleName, functionName, data, module) => {
     performance.mark("start-function");
     if (moduleName === "matrixUtils_c") {
       module[functionName](...ptrs, r_ptr, Math.sqrt(len));
+    } else if (moduleName === null) {
+      module["_mainFunc"](...ptrs, r_ptr, len);
     } else {
       module[functionName](...ptrs, r_ptr, len);
     }

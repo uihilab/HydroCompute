@@ -1,3 +1,4 @@
+const hydro = new Hydrolang();
 window.clean_stations = [];
 
 function showOverlay() {
@@ -57,16 +58,16 @@ async function renderLocations() {
     });
     const popUpContent = document.createElement("div");
     popUpContent.innerHTML = `<h4>Station Information</h4>
-    <ul>
-      <li><strong>Name:</strong>${station.name}</li>
-      <li><strong>Latitude:</strong>${station.location.latitude}</li>
-      <li><strong>Longitude:</strong>${station.location.latitude}</li>
-      <li><strong>Variable:</strong>${
-        station.variable && station.variable.variableName
-          ? station.variable.variableName
-          : "NV"
-      }</li>
-    </ul>`;
+<ul>
+<li><strong>Name:</strong>${station.name}</li>
+<li><strong>Latitude:</strong>${station.location.latitude}</li>
+<li><strong>Longitude:</strong>${station.location.latitude}</li>
+<li><strong>Variable:</strong>${
+      station.variable && station.variable.variableName
+        ? station.variable.variableName
+        : "NV"
+    }</li>
+</ul>`;
     popUpContent.appendChild(button);
     hydro.map.Layers({
       args: {
@@ -83,10 +84,12 @@ async function renderLocations() {
 }
 
 async function retrieveValues(site) {
+  compute.availableData = [];
   const overlay = document.getElementById("overlay");
   let chartHolder = document.getElementById("retrieved-data");
   chartHolder.innerHTML = "";
-  let button = document.getElementById("download-btn");
+  let button1 = document.getElementById("download-raw-btn");
+  let button2 = document.getElementById("download-simulationRes-btn");
 
   let usgs_query = {
     source: "usgs",
@@ -104,10 +107,23 @@ async function retrieveValues(site) {
     params: usgs_query,
     args: args_query,
   });
+
+  let [results, fun_names] = await computeRun(site, await usgs_data);
+
   hydro.visualize.draw({
     params: { type: "chart", id: "retrieved-data" },
+    args: { names: ["Daily Values"] },
     data: usgs_data,
   });
+
+  results.unshift(usgs_data[0]);
+
+  hydro.visualize.draw({
+    params: { type: "chart", id: "result-graph" },
+    args: { names: fun_names },
+    data: results,
+  });
+
   hydro.visualize.draw({
     params: { type: "table", id: "stats-table" },
     data: hydro.analyze.stats.basicstats({ data: usgs_data }),
@@ -115,11 +131,73 @@ async function retrieveValues(site) {
 
   overlay.style.display = "block";
 
-  button.removeAttribute("hidden");
-  button.addEventListener("click", () => {
+  button1.removeAttribute("hidden");
+  button1.addEventListener("click", () => {
     hydro.data.download({ args: { type: "CSV" }, data: usgs_data });
   });
+
+  button2.removeAttribute("hidden");
+  button2.addEventListener("click", () => {
+    hydro.data.download({ args: { type: "CSV" }, data: results });
+  });
   showOverlay();
+}
+
+async function computeRun(site, data) {
+  //Removing the date values and leaving only the results
+  data = data[1].slice(1);
+
+  //resetting the result spaces in the engine
+  compute.availableData = [];
+  compute.engineResults = {};
+  compute.instanceRun = 0;
+
+  //saving the results inside the compute library
+  compute.data({ id: site, data });
+  let jsFuns = ["expoMovingAverage_js", "simpleMovingAverage_js"];
+  let cFuns1 = ["_monteCarlo_c", "_arima_autoParams"];
+  let cFuns2 = ["_linear_detrend", "_arima_autoParams", "_monteCarlo_c"];
+
+  compute.setEngine("wasm");
+
+  await compute.run({
+    functions: cFuns1,
+  });
+
+  await compute.run({
+    functions: cFuns2,
+    dependencies: true,
+  });
+
+  compute.setEngine("javascript");
+
+  await compute.run({
+    functions: jsFuns,
+  });
+
+  let return_Values = [];
+  let return_Names = [];
+  let results1 = compute.results("Simulation_1")[0];
+  let results2 = compute.results("Simulation_2")[0];
+  let results3 = compute.results("Simulation_3")[0];
+
+  //cleaning up some Infinity, NaN, and null values
+  for (let i = 0; i < results1.functions.length; i++) {
+    return_Values.push(compute.utils.cleanArray(results1.results[i]));
+    return_Names.push(results1.functions[i]);
+  }
+
+  for (let i = 0; i < results2.functions.length; i++) {
+    return_Values.push(compute.utils.cleanArray(results2.results[i]));
+    return_Names.push(results2.functions[i]);
+  }
+
+  for (let i = 0; i < results3.functions.length; i++) {
+    return_Values.push(compute.utils.cleanArray(results3.results[i]));
+    return_Names.push(results3.functions[i]);
+  }
+
+  return [return_Values, return_Names];
 }
 
 async function main() {
@@ -127,4 +205,4 @@ async function main() {
   renderLocations();
 }
 
-//main();
+main();

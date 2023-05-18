@@ -12,7 +12,7 @@ The constructor method initializes the WebRTC engine and sets up the RTCPeerConn
 ### Usage
 The `run()` method is the entry point for using the WebRTC engine. It takes an optional parameter that can be used to pass the answer description from the receiver to the host. If no answer is provided, an error message will be logged.
 
-The `submitArray()` method is used to send data between peers. It takes an array of typed arrays (Uint8 or Float32s) and breaks them into smaller chunks to be sent through the data channel. It then triggers the aggregation of the chunks on the receiving end.
+The `sendData()` method is used to send data between peers. It takes an array of typed arrays (Uint8 or Float32s) and breaks them into smaller chunks to be sent through the data channel. It then triggers the aggregation of the chunks on the receiving end.
 
 The `sendData()` method can also be used to send data directly through the data channel.
 

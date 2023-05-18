@@ -31,7 +31,7 @@ initialize() {
 
   /**
  * Runs the WebRTC engine.
- * @param {*} res - The response.
+ * @param {Object} res - The response.
  */
 run(res) {
   if (this.type === "host") {
@@ -69,7 +69,7 @@ setConnection() {
 }
 
    /**
- * Sets the connection for WebRTC.
+ * Sets the a data channel connection for data transfer and receiving.
  */
 setDataChannel() {
   this.dataChannel = this.connection.createDataChannel("dataChannel");
@@ -136,7 +136,7 @@ async createAnswer() {
 
   /**
  * Sends data through WebRTC.
- * @param {*} data - The data to send.
+ * @param {Object} data - The data to send.
  */
 sendData(data) {
   if (this.type === "host") {
@@ -148,7 +148,7 @@ sendData(data) {
 
   /**
  * Submits an array of data through WebRTC.
- * @param {*} data - The array of data to submit.
+ * @param {Object} data - The array of data to submit.
  */
 submitArray(data) {
   const arrayBuffer = data.buffer;
@@ -161,8 +161,8 @@ submitArray(data) {
 }
 
 /**
- * Opens the connection for WebRTC.
- * @param {*} answer - The answer.
+ * Opens the connection between two peers.
+ * @param {String} answer - The answer.
  */
 openConnection(answer) {
   this.connection.setRemoteDescription(answer).

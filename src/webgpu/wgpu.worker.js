@@ -45,6 +45,8 @@ self.onmessage = async (e) => {
     { funcName, funcArgs, id, step, data, scriptName, length } = e.data;
   data = new Float32Array(data);
 
+  let gslCode;
+
   let scripts;
   if (scriptName) {
     scripts = await import(`../../${scriptName}`);
@@ -56,6 +58,7 @@ self.onmessage = async (e) => {
 
   try {
     if (scriptName !== undefined) {
+      glslCode = scripts['main']();
     } else {
       for (const scr in scripts) {
         if (funcName in scripts[scr]) {
