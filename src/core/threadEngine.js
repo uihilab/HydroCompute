@@ -13,7 +13,6 @@ export default class threadManager {
    * A class that manages worker threads for parallel execution.
    * @param {string} name - The name of the thread manager.
    * @param {string} location - The location of the worker script file.
-   * @example
 */
   constructor(name, location) {
     window.Worker
