@@ -5,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> kernels</title>
+  <title> hydroCompute</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -73,8 +73,8 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Module</p>
-                    <h1>kernels</h1>
+                    <p>Class</p>
+                    <h1>hydroCompute</h1>
                 </header>
                 
 
@@ -85,8 +85,8 @@
 
 <header>
     
-        
-            
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="hydroCompute.html">hydroCompute</a>.</span>hydroCompute<span class="signature">(&hellip;args)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -95,20 +95,104 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>main kernel workers used for computation. Any additional backends will be added here.</p></div>
-        
+            <div class='vertical-section'>
+                <div class="members">
+                    <div class="member">
+                        <div class=name>
+                            <span class="tag">Constructor</span>
+                        </div>
+                        
 
+
+    
+    <h4 class="name" id="hydroCompute">
+        <a class="href-link" href="#hydroCompute">#</a>
         
+        <span class="code-name">
+            
+                new hydroCompute<span class="signature">(&hellip;args)</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        <p>Constructs a new hydroCompute instance.</p>
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
             
 
+            <th>Type</th>
+
+            
+            <th>Attributes</th>
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>args</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">string</code>
 
 
+  
+  </td>
+
+  
+      <td class="attributes">
+      
+
+      
+
+      
+          &lt;repeatable><br>
+      
+      </td>
+  
+
+  
+
+  <td class="description last"><p>Optional argument to set the initial engine.</p></td>
+</tr>
 
 
-
-
-
-
+        
+        </tbody>
+    </table>
+</div>
 
 
 
@@ -147,9 +231,9 @@
 
     
         <p class="tag-source">
-            <a href="core_kernels.js.html" class="button">View Source</a>
+            <a href="hydrocompute.js.html" class="button">View Source</a>
             <span>
-                <a href="core_kernels.js.html">core/kernels.js</a>, <a href="core_kernels.js.html#line1">line 1</a>
+                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line21">line 21</a>
             </span>
         </p>
     
@@ -175,7 +259,18 @@
 
 
 
+    <h5>Example</h5>
+    
+    
+        <pre class="prettyprint"><code>const compute = new hydroCompute() // empty constructor - javascript engine
+const compute = new hydroCompute('wasm') // arguments - engine in arguments set.</code></pre>
+    
 
+
+
+                    </div>
+                </div>
+            </div>
         
     
     </div>
