@@ -1,4 +1,3 @@
-// import * as engines from "./core/core.js";
 import { kernels } from "./core/kernels.js";
 import { splits } from "./core/utils/splits.js";
 import { dataCloner, importJSONdata } from "./core/utils/globalUtils.js";
@@ -6,14 +5,18 @@ import engine from "./core/mainEngine.js";
 import webrtc from "./webrtc/webrtc.js";
 
 /**
- * Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel code instances.
+ * @description Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel runs.
  * @class hydroCompute
  */
 
 class hydroCompute {
   /**
-   * Constructs a new hydroCompute instance.
+   * @description Constructs a new hydroCompute instance.
+   * @memberof hydroCompute
    * @param {...string} args - Optional argument to set the initial engine.
+   * @example
+   * const compute = new hydroCompute() // empty constructor - javascript engine
+   * const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
    */
   constructor(...args) {
     this.calledEngines = {};
@@ -23,14 +26,20 @@ class hydroCompute {
 
     this.availableData = [];
     this.engineResults = {};
+    /**
+     * @typedef {object} hydroCompute.utils
+     * @memberof hydroCompute
+     */
     this.utils = {
       /**
-       * Generates random data.
+       * @description Generates random data.
+       * @memberof hydroCompute.utils
        * @param {number} size - Size of each array element.
        * @param {number} maxValue - Maximum value for random number generation.
        * @param {number} length - Length of the generated array.
        * @param {boolean} [save=false] - Whether to save the data or not.
        * @returns {Array|void} - Generated random data array or void if saved.
+       * 
        */
       genRandomData: (size, maxValue, length, save = false) => {
         let name = `${this.makeId(5)}`;
@@ -47,7 +56,8 @@ class hydroCompute {
         } else return data;
       },
       /**
-       * Cleans the array by removing Infinity, null, undefined, and NaN values.
+       * @description Cleans the array by removing Infinity, null, undefined, and NaN values.
+       * @memberof hydroCompute.utils
        * @param {Array} array - The array to be cleaned.
        * @returns {Array} - The cleaned array.
        */
@@ -74,9 +84,8 @@ class hydroCompute {
   }
 
   /**
-   * @method isEngineSet
    * @description Verifies that an engine is set
-   * @memberof hydrocompute
+   * @memberof hydroCompute
    */
   isEngineSet() {
     typeof this.currentEngine === "undefined"
@@ -89,7 +98,8 @@ class hydroCompute {
   }
 
   /**
-   * Sets the current engine based on the specified kernel.
+   * @description Sets the current engine based on the specified kernel.
+   * @memberof hydroCompute
    * @param {string} kernel - The name of the kernel.
    * @returns {Promise<void>} - A Promise that resolves once the engine is set.
    */
@@ -130,7 +140,8 @@ class hydroCompute {
   }
 
   /**
-   * Runs the specified functions with the given arguments using the current engine.
+   * @description Runs the specified functions with the given arguments using the current engine. The engine must be set previous to the run function to be called.
+   * @memberof hydroCompute
    * @param {Object|string} args - The configuration object or the relative path of the script to run.
    * @param {Array} args.dataIds - An array of data IDs.
    * @param {Array} args.functions - An array of function names.
@@ -139,6 +150,13 @@ class hydroCompute {
    * @param {Array} [args.scriptName=[]] - An array of script names.
    * @param {Array} [args.dataSplits=[]] - An array specifying if data should be split for each function.
    * @returns {Promise<void>} - A Promise that resolves once the functions are executed.
+   * @example
+   * //Case 1: Running a script in home folder with 'main' function steering the script and a single data instance saved on 'availableData'
+   * await compute.run('scriptName');
+   * //Case 2: Running a function from the ones available on each engine using a multiple data ids
+   * await compute.run({functions: ['f1', 'f2', 'f3'], dataIds: ['id1', 'id2', 'id3']})
+   * //Case 3: Linking steps and linking functions within steps
+   * await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], []] dataIds: ['id1', 'id2', 'id3']})
    */
   async run(
     //CASE 1: functions running on "main" or "_mainFunction" saved on local dev and passing a string
@@ -277,6 +295,7 @@ class hydroCompute {
 
   /**
    * Sets the results of the current engine and stores them in the `engineResults` object.
+   * @memberof hydroCompute
    * @param {Array} names - An array of names corresponding to the data IDs.
    * @returns {void}
    */
@@ -298,6 +317,7 @@ class hydroCompute {
 
   /**
    * Calculates and sets the total function time and total script time for each result in the `engineResults` object.
+   * @memberof hydroCompute
    * @returns {void}
    */
   setTotalTime() {
@@ -318,6 +338,7 @@ class hydroCompute {
 
   /**
    * Returns the name of the current engine.
+   * @memberof hydroCompute
    * @returns {string} The name of the current engine.
    */
   currentEngine() {
@@ -326,6 +347,7 @@ class hydroCompute {
 
   /**
    * Saves the provided data into the available data storage.
+   * @memberof hydroCompute
    * @param {Object|string} args - The data to be saved. It can be passed as an object or a string.
    * @param {string} args.id - (Optional) The ID of the data container. If not provided, a random ID will be generated.
    * @param {Array|number|string} args.data - The data to be saved. It can be an array, a number, or a string.
@@ -368,6 +390,7 @@ class hydroCompute {
 
   /**
    * Retrieves the results for a specific simulation by name.
+   * @memberof hydroCompute
    * @param {string} name - The name of the simulation.
    * @returns {Array} - An array of objects containing the results and associated functions.
    */
@@ -407,6 +430,7 @@ class hydroCompute {
 
   /**
    * Retrieves the available engines.
+   * @memberof hydroCompute
    * @returns {Array} - An array containing the names of the available engines.
    */
   availableEngines() {
@@ -415,6 +439,7 @@ class hydroCompute {
 
   /**
    * Retrieves the available engine scripts.
+   * @memberof hydroCompute
    * @returns {Promise<Map>} - A Promise that resolves to a Map object containing the available engine scripts.
    */
   async engineScripts() {
@@ -438,6 +463,7 @@ class hydroCompute {
 
   /**
    * Searches the function splits available for data manipulation
+   * @memberof hydroCompute
    * @returns {Object} map containing the available split functions in the engines
    */
   availableSplits() {
@@ -448,6 +474,7 @@ class hydroCompute {
 
   /**
    * Generates a random ID string.
+   * @memberof hydroCompute
    * @param {number} length - The length of the ID string.
    * @returns {string} - The generated ID string.
    */
@@ -464,6 +491,7 @@ class hydroCompute {
 
   /**
    * Retrieves the total function time and total script time for a specific result.
+   * @memberof hydroCompute
    * @param {string} res - The name of the result.
    * @returns {number[]} - An array containing the total function time and total script time.
    */
@@ -476,6 +504,7 @@ class hydroCompute {
 
   /**
    * Calculates the total function time and total script time for all available results.
+   * @memberof hydroCompute
    * @returns {number[]} - An array containing the total function time and total script time.
    */
   getTotalTime() {
@@ -490,6 +519,7 @@ class hydroCompute {
 
   /**
    * Retrieves the available results stored in the `engineResults` object.
+   * @memberof hydroCompute
    * @returns {string[]} - An array containing the names of the available results.
    */
   availableResults() {

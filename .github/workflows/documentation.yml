@@ -18,7 +18,7 @@ jobs:
           source_dir: ./src/
           output_dir: ./docs/
           config_file: ./.github/workflows/config_doc.json
-          template: clean-jsdoc-theme
+          template: better-docs
           front_page: README.md
 
       - name: Deploy

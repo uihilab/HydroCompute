@@ -8,6 +8,13 @@
  * @class threadManager
  */
 export default class threadManager {
+  /**
+   * Constructs a new threadManager instance.
+   * A class that manages worker threads for parallel execution.
+   * @param {string} name - The name of the thread manager.
+   * @param {string} location - The location of the worker script file.
+   * @example
+*/
   constructor(name, location) {
     window.Worker
       ? console.log(`Web workers engine set for engine: ${name}`)
@@ -23,7 +30,6 @@ export default class threadManager {
   }
 
   /**
-   * @method createWorkerThread
    * @memberof threadManager
    * @description Holder for the workers created by the class. It creates an object that contains the workers defined
    * by the execution context holding the execution time of each thread and the worker itself.
@@ -38,7 +44,6 @@ export default class threadManager {
   }
 
   /**
-   * @method initializeWorkerThread
    * @memberof threadManager
    * @description Method initializer of the threads found in the workerThread object. It attaches each of the properties into the object.
    * @param {Number} index - number of the thread.
@@ -114,7 +119,6 @@ export default class threadManager {
   }
 
   /**
-   * @method resetWorkers
    * @memberof threadManager
    * @description Resets all the workers set to work in the compute engine.
    */
@@ -126,7 +130,6 @@ export default class threadManager {
   }
 
   /**
-   * @method execTime
    * @memberof threadManager
    * @description Retrives all the execution times of a worker thread. It is triggered within the engine class.
    */
