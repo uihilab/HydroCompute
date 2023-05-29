@@ -68,7 +68,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="module-scripts.html">scripts</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="gpuUtils.matrixUtils.html">matrixUtils</a></li><li><a href="matrixUtils.html">matrixUtils</a></li><li><a href="splits.html">splits</a></li><li><a href="timeSeries.html">timeSeries</a></li></ul><h3>Classes</h3><ul><li><a href="AScriptUtils.html">AScriptUtils</a></li><li><a href="engine.html">engine</a></li><li><a href="ErrorTypes.NotFound.html">NotFound</a></li><li><a href="ErrorTypes.NotImplemented.html">NotImplemented</a></li><li><a href="ErrorTypes.ValueErr.html">ValueErr</a></li><li><a href="gpuUtils.deviceConnect.html">deviceConnect</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="hydroCompute.hydroCompute.html">hydroCompute</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="threadManager.html">threadManager</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_location">_location</a></li><li><a href="global.html#ASModule">ASModule</a></li><li><a href="global.html#ASUtils">ASUtils</a></li><li><a href="global.html#availableScripts">availableScripts</a></li><li><a href="global.html#avScripts">avScripts</a></li><li><a href="global.html#bindGroup">bindGroup</a></li><li><a href="global.html#bindLayout">bindLayout</a></li><li><a href="global.html#bufferCreator">bufferCreator</a></li><li><a href="global.html#bufferDestroyer">bufferDestroyer</a></li><li><a href="global.html#CModule">CModule</a></li><li><a href="global.html#concatArrays">concatArrays</a></li><li><a href="global.html#createAnswer">createAnswer</a></li><li><a href="global.html#createOfferDescription">createOfferDescription</a></li><li><a href="global.html#CUtils">CUtils</a></li><li><a href="global.html#filterFunctionKeys">filterFunctionKeys</a></li><li><a href="global.html#getAllModules">getAllModules</a></li><li><a href="global.html#gpuScripts">gpuScripts</a></li><li><a href="global.html#groupEntry">groupEntry</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#jsScripts">jsScripts</a></li><li><a href="global.html#layoutEntry">layoutEntry</a></li><li><a href="global.html#loadModule">loadModule</a></li><li><a href="global.html#LUDecomposition">LUDecomposition</a></li><li><a href="global.html#matrixChanger">matrixChanger</a></li><li><a href="global.html#matrixExpo">matrixExpo</a></li><li><a href="global.html#matrixSize">matrixSize</a></li><li><a href="global.html#onAvailableChannel">onAvailableChannel</a></li><li><a href="global.html#oncloseHost">oncloseHost</a></li><li><a href="global.html#oncloseReceiver">oncloseReceiver</a></li><li><a href="global.html#openConnection">openConnection</a></li><li><a href="global.html#restartDataChannel">restartDataChannel</a></li><li><a href="global.html#resultHolder">resultHolder</a></li><li><a href="global.html#run">run</a></li><li><a href="global.html#sendData">sendData</a></li><li><a href="global.html#setConnection">setConnection</a></li><li><a href="global.html#setDataChannel">setDataChannel</a></li><li><a href="global.html#setOfferDescription">setOfferDescription</a></li><li><a href="global.html#submitArray">submitArray</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="ErrorTypes.html">ErrorTypes</a></li><li><a href="globalUtils.html">globalUtils</a></li><li><a href="gpuScripts.html">gpuScripts</a></li><li><a href="gpuUtils.html">gpuUtils</a></li><li><a href="jsScripts.html">jsScripts</a></li><li><a href="splits.html">splits</a></li><li><a href="WASMUtils.html">WASMUtils</a></li></ul><h3>Classes</h3><ul><li><a href="engine.html">engine</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="threadManager.html">threadManager</a></li><li><a href="WebRTC.html">WebRTC</a></li></ul></div>
                 
             </nav>
         </div>
@@ -89,8 +89,13 @@
 import { ASUtils } from "./assemblyScript/mods.js";
 
 /**
- * Anything else that has to be imported into the library's
- * usage has to be added here
+ * @namespace WASMUtils
+ */
+
+
+/**
+ * @memberof WASMUtils
+ * @description object container of relative paths for the Web Assembly modules
  */
 const availableScripts = {
   C: "../../wasm/modules/C",
@@ -99,7 +104,8 @@ const availableScripts = {
 };
 
 /**
- * Returns the location of a specified utility in a given script or module.
+ * @description Returns the location of a specified utility in a given script or module.
+ * @memberof WASMUtils
  * @param {string} scName - The name of the script or module.
  * @param {string} utilName - The name of the utility.
  * @returns {string} - The location of the specified utility in the given script or module.
@@ -133,7 +139,8 @@ const _location = (scriptName, utilName) => {
 };
 
 /**
- * Load and instantiate a WebAssembly module from the ASUtils script directory.
+ * @description Load and instantiate a WebAssembly module from the ASUtils script directory.
+ * @memberof WASMUtils
  * @async
  * @param {string} name - The name of the module to load.
  * @returns {Promise} - An object representing the exports of the instantiated module.
@@ -164,7 +171,8 @@ const ASModule = async (name) => {
 };
 
 /**
- * Asynchronously loads and creates a module from a C script.
+ * @description Asynchronously loads and creates a module from a C script.
+ * @memberof WASMUtils
  * @param {string} moduleName - The name of the module to load.
  * @returns {Promise} A promise that resolves to the module.
  * @throws Will throw an error if there was an error loading the module.
@@ -182,7 +190,10 @@ const CModule = async (modName) => {
 };
 
 /**
- * Utility class for AScript.
+ * @description Utility class for dealing with AS compiled WASM.
+ * @member AScriptUtils
+ * @memberof WASMUtils
+ * @property lifTypedArray
  */
 class AScriptUtils {
   constructor() {
@@ -296,7 +307,8 @@ class AScriptUtils {
 }
 
 /**
- * Loads a module based on the script name and module name.
+ * @description Loads a module based on the script name and module name.
+ * @memberof WASMUtils
  * @param {string} scriptName - The script name.
  * @param {string} moduleName - The module name.
  * @returns {Promise&lt;object>} - A promise that resolves to the loaded module.
@@ -320,7 +332,8 @@ const loadModule = async (scriptName, moduleName) => {
 };
 
 /**
- * Retrieves all available modules.
+ * @description Retrieves all available modules.
+ * @memberof WASMUtils
  * @returns {Promise&lt;object>} - A promise that resolves to an object containing all the available modules.
  */
 const getAllModules = async () => {
@@ -346,7 +359,8 @@ const getAllModules = async () => {
 };
 
 /**
- * Retrieves all available scripts and their modules.
+ * @description Retrieves all available scripts and their modules.
+ * @memberof WASMUtils
  * @returns {Promise&lt;object>} - A promise that resolves to an object containing all the available scripts and their modules.
  */
 const avScripts = async () => {
@@ -366,7 +380,8 @@ const avScripts = async () => {
 };
 
 /**
- * Filters the function keys of an object, excluding specific keys.
+ * @description Filters the function keys of an object, excluding specific keys.
+ * @memberof WASMUtils
  * @param {object} obj - The object to filter.
  * @returns {string[]} - An array of filtered function keys.
  */

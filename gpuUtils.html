@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> gpuUtils</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="ErrorTypes.html">ErrorTypes</a></li><li><a href="globalUtils.html">globalUtils</a></li><li><a href="gpuScripts.html">gpuScripts</a></li><li><a href="gpuUtils.html">gpuUtils</a></li><li><a href="jsScripts.html">jsScripts</a></li><li><a href="splits.html">splits</a></li><li><a href="WASMUtils.html">WASMUtils</a></li></ul><h3>Classes</h3><ul><li><a href="engine.html">engine</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="threadManager.html">threadManager</a></li><li><a href="WebRTC.html">WebRTC</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Namespace</p>
+                    <h1>gpuUtils</h1>
+                </header>
+                
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>gpuUtils</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_device.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_device.js.html">webgpu/device.js</a>, <a href="webgpu_device.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Members</h1>
+            <div class="members">
+            
+                <div class="member">
+
+<h4 class="name" id=".bindGroup">
+    <a class="href-link" href="#.bindGroup">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        bindGroup
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a bind group.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bindgroups.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bindgroups.js.html">webgpu/utils/bindgroups.js</a>, <a href="webgpu_utils_bindgroups.js.html#line50">line 50</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".bindLayout">
+    <a class="href-link" href="#.bindLayout">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        bindLayout
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a bind group layout.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bindgroups.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bindgroups.js.html">webgpu/utils/bindgroups.js</a>, <a href="webgpu_utils_bindgroups.js.html#line36">line 36</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".bufferCreator">
+    <a class="href-link" href="#.bufferCreator">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        bufferCreator
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a buffer for the matrix data.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bufferCreators.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bufferCreators.js.html">webgpu/utils/bufferCreators.js</a>, <a href="webgpu_utils_bufferCreators.js.html#line15">line 15</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".bufferDestroyer">
+    <a class="href-link" href="#.bufferDestroyer">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        bufferDestroyer
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Destroys the buffers.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bufferCreators.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bufferCreators.js.html">webgpu/utils/bufferCreators.js</a>, <a href="webgpu_utils_bufferCreators.js.html#line80">line 80</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".computingPipelines">
+    <a class="href-link" href="#.computingPipelines">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        computingPipelines
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Runs the computing pipelines to map into the GPU shaders</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_shaderModules.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_shaderModules.js.html">webgpu/utils/shaderModules.js</a>, <a href="webgpu_utils_shaderModules.js.html#line15">line 15</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".deviceConnect">
+    <a class="href-link" href="#.deviceConnect">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        deviceConnect
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Class representing device connection and management for WebGPU.</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+<div class="table-container">
+    <table class="props table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>adapter</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">GPUAdapter</code>
+|
+
+<code class="param-type">null</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last"><p>The GPU adapter object. Set to null if no adapter is connected.</p></td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>device</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">GPUDevice</code>
+|
+
+<code class="param-type">null</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last"><p>The GPU device object. Set to null if no device is connected.</p></td>
+</tr>
+
+        
+            
+<tr class="deep-level-0">
+    
+        <td class="name"><code>lostListener</code></td>
+    
+
+    <td class="type">
+    
+        
+<code class="param-type">EventListener</code>
+|
+
+<code class="param-type">null</code>
+
+
+    
+    </td>
+
+    
+
+    
+
+    <td class="description last"><p>The event listener for device loss. Set to null if no listener is attached.</p></td>
+</tr>
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_device.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_device.js.html">webgpu/device.js</a>, <a href="webgpu_device.js.html#line5">line 5</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".dispatchers">
+    <a class="href-link" href="#.dispatchers">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        dispatchers
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Dispatches a compute shader operation on the GPU.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_shaderModules.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_shaderModules.js.html">webgpu/utils/shaderModules.js</a>, <a href="webgpu_utils_shaderModules.js.html#line35">line 35</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".exports.matrixChanger">
+    <a class="href-link" href="#.exports.matrixChanger">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+            <span class='tag'>constant</span>
+        
+    
+    <span class="code-name">
+        exports.matrixChanger
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Changes the matrix layout by removing the sizes.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bufferCreators.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bufferCreators.js.html">webgpu/utils/bufferCreators.js</a>, <a href="webgpu_utils_bufferCreators.js.html#line44">line 44</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".groupEntry">
+    <a class="href-link" href="#.groupEntry">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        groupEntry
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a group entry to be bound into the layout group.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bindgroups.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bindgroups.js.html">webgpu/utils/bindgroups.js</a>, <a href="webgpu_utils_bindgroups.js.html#line19">line 19</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".layoutEntry">
+    <a class="href-link" href="#.layoutEntry">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        layoutEntry
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a layout entry to be bound into the layout group.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bindgroups.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bindgroups.js.html">webgpu/utils/bindgroups.js</a>, <a href="webgpu_utils_bindgroups.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".matrixSize">
+    <a class="href-link" href="#.matrixSize">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        matrixSize
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Returns the sizes of two square matrices.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bufferCreators.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bufferCreators.js.html">webgpu/utils/bufferCreators.js</a>, <a href="webgpu_utils_bufferCreators.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".resultHolder">
+    <a class="href-link" href="#.resultHolder">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        resultHolder
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Creates a buffer to hold the result matrix.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_bufferCreators.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_bufferCreators.js.html">webgpu/utils/bufferCreators.js</a>, <a href="webgpu_utils_bufferCreators.js.html#line50">line 50</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".shaderModule">
+    <a class="href-link" href="#.shaderModule">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        shaderModule
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Function returns a shader module back for usage in the compute section</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="webgpu_utils_shaderModules.js.html" class="button">View Source</a>
+            <span>
+                <a href="webgpu_utils_shaderModules.js.html">webgpu/utils/shaderModules.js</a>, <a href="webgpu_utils_shaderModules.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

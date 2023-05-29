@@ -68,7 +68,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="module-scripts.html">scripts</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="gpuUtils.matrixUtils.html">matrixUtils</a></li><li><a href="matrixUtils.html">matrixUtils</a></li><li><a href="splits.html">splits</a></li><li><a href="timeSeries.html">timeSeries</a></li></ul><h3>Classes</h3><ul><li><a href="AScriptUtils.html">AScriptUtils</a></li><li><a href="engine.html">engine</a></li><li><a href="ErrorTypes.NotFound.html">NotFound</a></li><li><a href="ErrorTypes.NotImplemented.html">NotImplemented</a></li><li><a href="ErrorTypes.ValueErr.html">ValueErr</a></li><li><a href="gpuUtils.deviceConnect.html">deviceConnect</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="hydroCompute.hydroCompute.html">hydroCompute</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="threadManager.html">threadManager</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_location">_location</a></li><li><a href="global.html#ASModule">ASModule</a></li><li><a href="global.html#ASUtils">ASUtils</a></li><li><a href="global.html#availableScripts">availableScripts</a></li><li><a href="global.html#avScripts">avScripts</a></li><li><a href="global.html#bindGroup">bindGroup</a></li><li><a href="global.html#bindLayout">bindLayout</a></li><li><a href="global.html#bufferCreator">bufferCreator</a></li><li><a href="global.html#bufferDestroyer">bufferDestroyer</a></li><li><a href="global.html#CModule">CModule</a></li><li><a href="global.html#concatArrays">concatArrays</a></li><li><a href="global.html#createAnswer">createAnswer</a></li><li><a href="global.html#createOfferDescription">createOfferDescription</a></li><li><a href="global.html#CUtils">CUtils</a></li><li><a href="global.html#filterFunctionKeys">filterFunctionKeys</a></li><li><a href="global.html#getAllModules">getAllModules</a></li><li><a href="global.html#gpuScripts">gpuScripts</a></li><li><a href="global.html#groupEntry">groupEntry</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#jsScripts">jsScripts</a></li><li><a href="global.html#layoutEntry">layoutEntry</a></li><li><a href="global.html#loadModule">loadModule</a></li><li><a href="global.html#LUDecomposition">LUDecomposition</a></li><li><a href="global.html#matrixChanger">matrixChanger</a></li><li><a href="global.html#matrixExpo">matrixExpo</a></li><li><a href="global.html#matrixSize">matrixSize</a></li><li><a href="global.html#onAvailableChannel">onAvailableChannel</a></li><li><a href="global.html#oncloseHost">oncloseHost</a></li><li><a href="global.html#oncloseReceiver">oncloseReceiver</a></li><li><a href="global.html#openConnection">openConnection</a></li><li><a href="global.html#restartDataChannel">restartDataChannel</a></li><li><a href="global.html#resultHolder">resultHolder</a></li><li><a href="global.html#run">run</a></li><li><a href="global.html#sendData">sendData</a></li><li><a href="global.html#setConnection">setConnection</a></li><li><a href="global.html#setDataChannel">setDataChannel</a></li><li><a href="global.html#setOfferDescription">setOfferDescription</a></li><li><a href="global.html#submitArray">submitArray</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="ErrorTypes.html">ErrorTypes</a></li><li><a href="globalUtils.html">globalUtils</a></li><li><a href="gpuScripts.html">gpuScripts</a></li><li><a href="gpuUtils.html">gpuUtils</a></li><li><a href="jsScripts.html">jsScripts</a></li><li><a href="splits.html">splits</a></li><li><a href="WASMUtils.html">WASMUtils</a></li></ul><h3>Classes</h3><ul><li><a href="engine.html">engine</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="threadManager.html">threadManager</a></li><li><a href="WebRTC.html">WebRTC</a></li></ul></div>
                 
             </nav>
         </div>
@@ -86,6 +86,10 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
+ * @namespace globalUtils
+ */
+
+/**
  * @method DAG
  * @memberof globalUtils
  * @description Directed Acyclic Graph implementation for solving promised-based functions
@@ -200,7 +204,10 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
  * @memberof globalUtils
  * @description Deep clones either objects or arrays
  * @param {Object} data - array or object
- * @returns {Object} deep clone of the object to copy
+ * @returns {Object} deep cloned object or array to be used
+ * @example
+ * const arr = [1, 2, 3, [4, 5]];
+ * const clonedArr = dataCloner(arr);
  */
 
 export const dataCloner = (data) => {
@@ -270,6 +277,8 @@ export const arrayChanger = (arr, width) =>
 
 /**
  * Helper function for concatenating arrays.
+ * @method concatArrays
+ * @memberof globalUtils
  * @param {Array} arrays - collection of arrays to concatenate
  * @returns {Array} array - concatenated array
  */
@@ -293,6 +302,7 @@ export const concatArrays = (arrays) => {
 
 /**
  * Helper function for flatennizing a 2D array
+ * @method flattenFloat32Array
  * @memberof globalUtils
  * @param {Array} arr  - N-D array to be flattened
  * @returns {Array} flattenized ND array
@@ -308,6 +318,7 @@ export const flattenFloat32Array = (arr) => {
 
 /**
  * Retrieves the performance measures for function execution and worker execution.
+ * @method getPerformanceMeasures
  * @memberof globalUtils
  * @returns {object} - The performance measures.
  * @property {number} funcExec - The duration of function execution.
@@ -331,6 +342,7 @@ export const getPerformanceMeasures = () => {
 
 /**
  * Imports JSON data from a file.
+ * @method importJSONdata
  * @memberof globalUtils
  * @param {string} jsonFile - The path or URL to the JSON file.
  * @param {string} [dataFieldName="data"] - The name of the field containing the data in the JSON file.

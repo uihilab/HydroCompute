@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> webgpu/gpuScripts.js</title>
+  <title> jsScripts</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -75,46 +73,328 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Source</p>
-                    <h1>webgpu/gpuScripts.js</h1>
+                    <p>Namespace</p>
+                    <h1>jsScripts</h1>
                 </header>
                 
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import * as scripts from "./utils/gslCode/gslScripts.js"
+        <h2>jsScripts</h2>
+        
+    
+</header>
 
-/**
- * @namespace gpuScripts
- */
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Any script that is added into the worker is added here and the import/export list
+should be updated accordingly.</p></div>
+        
 
-/**
- * Retrieves the available GPU scripts and their corresponding functions.
- * @member gpuScripts
- * @memberof gpuScripts
- * @returns {Map} - A map of GPU scripts and their functions.
- */
-export const gpuScripts = () =>{
-    let r = Object.keys(scripts).map((script) => {
-      return script;
-    });
-    let fun = new Map();
-    for (let func of r) {
-      let fn = []
-      for (var i = 0; i &lt; Object.keys(func).length; i++){
-        fn.push(Object.keys(scripts[func])[i])
-      }
+        
 
-      fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
-      fun.set(func, fn)
-    }
-    return fun;
-  }</code></pre>
-        </article>
-    </section>
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="javascript_scripts_scripts.js.html" class="button">View Source</a>
+            <span>
+                <a href="javascript_scripts_scripts.js.html">javascript/scripts/scripts.js</a>, <a href="javascript_scripts_scripts.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Members</h1>
+            <div class="members">
+            
+                <div class="member">
+
+<h4 class="name" id=".jsScripts">
+    <a class="href-link" href="#.jsScripts">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        jsScripts
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Retrieves the JavaScript scripts and their associated functions.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="javascript_jsScripts.js.html" class="button">View Source</a>
+            <span>
+                <a href="javascript_jsScripts.js.html">javascript/jsScripts.js</a>, <a href="javascript_jsScripts.js.html#line3">line 3</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".matrixUtils_js">
+    <a class="href-link" href="#.matrixUtils_js">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        matrixUtils_js
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Utility functions for matrix operations.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="javascript_scripts_matrixUtils_js.js.html" class="button">View Source</a>
+            <span>
+                <a href="javascript_scripts_matrixUtils_js.js.html">javascript/scripts/matrixUtils_js.js</a>, <a href="javascript_scripts_matrixUtils_js.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+<h4 class="name" id=".timeSeries_js">
+    <a class="href-link" href="#.timeSeries_js">#</a>
+    
+        
+            <span class='tag'>static</span>
+        
+    
+    <span class="code-name">
+        timeSeries_js
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    <p>Collection of time series analysis functions for the JavaScript engine</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="javascript_scripts_timeSeries_js.js.html" class="button">View Source</a>
+            <span>
+                <a href="javascript_scripts_timeSeries_js.js.html">javascript/scripts/timeSeries_js.js</a>, <a href="javascript_scripts_timeSeries_js.js.html#line1">line 1</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

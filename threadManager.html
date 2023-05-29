@@ -66,7 +66,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="module-scripts.html">scripts</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="gpuUtils.matrixUtils.html">matrixUtils</a></li><li><a href="matrixUtils.html">matrixUtils</a></li><li><a href="splits.html">splits</a></li><li><a href="timeSeries.html">timeSeries</a></li></ul><h3>Classes</h3><ul><li><a href="AScriptUtils.html">AScriptUtils</a></li><li><a href="engine.html">engine</a></li><li><a href="ErrorTypes.NotFound.html">NotFound</a></li><li><a href="ErrorTypes.NotImplemented.html">NotImplemented</a></li><li><a href="ErrorTypes.ValueErr.html">ValueErr</a></li><li><a href="gpuUtils.deviceConnect.html">deviceConnect</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="hydroCompute.hydroCompute.html">hydroCompute</a></li><li><a href="module.exports.html">exports</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="threadManager.html">threadManager</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_location">_location</a></li><li><a href="global.html#ASModule">ASModule</a></li><li><a href="global.html#ASUtils">ASUtils</a></li><li><a href="global.html#availableScripts">availableScripts</a></li><li><a href="global.html#avScripts">avScripts</a></li><li><a href="global.html#bindGroup">bindGroup</a></li><li><a href="global.html#bindLayout">bindLayout</a></li><li><a href="global.html#bufferCreator">bufferCreator</a></li><li><a href="global.html#bufferDestroyer">bufferDestroyer</a></li><li><a href="global.html#CModule">CModule</a></li><li><a href="global.html#concatArrays">concatArrays</a></li><li><a href="global.html#createAnswer">createAnswer</a></li><li><a href="global.html#createOfferDescription">createOfferDescription</a></li><li><a href="global.html#CUtils">CUtils</a></li><li><a href="global.html#filterFunctionKeys">filterFunctionKeys</a></li><li><a href="global.html#getAllModules">getAllModules</a></li><li><a href="global.html#gpuScripts">gpuScripts</a></li><li><a href="global.html#groupEntry">groupEntry</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#jsScripts">jsScripts</a></li><li><a href="global.html#layoutEntry">layoutEntry</a></li><li><a href="global.html#loadModule">loadModule</a></li><li><a href="global.html#LUDecomposition">LUDecomposition</a></li><li><a href="global.html#matrixChanger">matrixChanger</a></li><li><a href="global.html#matrixExpo">matrixExpo</a></li><li><a href="global.html#matrixSize">matrixSize</a></li><li><a href="global.html#onAvailableChannel">onAvailableChannel</a></li><li><a href="global.html#oncloseHost">oncloseHost</a></li><li><a href="global.html#oncloseReceiver">oncloseReceiver</a></li><li><a href="global.html#openConnection">openConnection</a></li><li><a href="global.html#restartDataChannel">restartDataChannel</a></li><li><a href="global.html#resultHolder">resultHolder</a></li><li><a href="global.html#run">run</a></li><li><a href="global.html#sendData">sendData</a></li><li><a href="global.html#setConnection">setConnection</a></li><li><a href="global.html#setDataChannel">setDataChannel</a></li><li><a href="global.html#setOfferDescription">setOfferDescription</a></li><li><a href="global.html#submitArray">submitArray</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="ErrorTypes.html">ErrorTypes</a></li><li><a href="globalUtils.html">globalUtils</a></li><li><a href="gpuScripts.html">gpuScripts</a></li><li><a href="gpuUtils.html">gpuUtils</a></li><li><a href="jsScripts.html">jsScripts</a></li><li><a href="splits.html">splits</a></li><li><a href="WASMUtils.html">WASMUtils</a></li></ul><h3>Classes</h3><ul><li><a href="engine.html">engine</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="threadManager.html">threadManager</a></li><li><a href="WebRTC.html">WebRTC</a></li></ul></div>
                 
             </nav>
         </div>
@@ -85,7 +85,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>threadManager<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>threadManager<span class="signature">(name, location)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -109,7 +109,7 @@
         
         <span class="code-name">
             
-                new threadManager<span class="signature">()</span><span class="type-signature"></span>
+                new threadManager<span class="signature">(name, location)</span><span class="type-signature"></span>
             
         </span>
     </h4>
@@ -129,6 +129,82 @@
 
 
 
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>name</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">string</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"><p>The name of the thread manager.</p></td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>location</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">string</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"><p>The location of the worker script file.</p></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
 
 
 
@@ -400,7 +476,7 @@
         <p class="tag-source">
             <a href="core_threadEngine.js.html" class="button">View Source</a>
             <span>
-                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line135">line 135</a>
+                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line131">line 131</a>
             </span>
         </p>
     
@@ -546,7 +622,7 @@ by the execution context holding the execution time of each thread and the worke
         <p class="tag-source">
             <a href="core_threadEngine.js.html" class="button">View Source</a>
             <span>
-                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line37">line 37</a>
+                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line33">line 33</a>
             </span>
         </p>
     
@@ -698,7 +774,7 @@ by the execution context holding the execution time of each thread and the worke
         <p class="tag-source">
             <a href="core_threadEngine.js.html" class="button">View Source</a>
             <span>
-                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line50">line 50</a>
+                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line46">line 46</a>
             </span>
         </p>
     
@@ -799,7 +875,7 @@ by the execution context holding the execution time of each thread and the worke
         <p class="tag-source">
             <a href="core_threadEngine.js.html" class="button">View Source</a>
             <span>
-                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line124">line 124</a>
+                <a href="core_threadEngine.js.html">core/threadEngine.js</a>, <a href="core_threadEngine.js.html#line120">line 120</a>
             </span>
         </p>
     
