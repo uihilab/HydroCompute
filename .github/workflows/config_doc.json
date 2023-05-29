@@ -22,7 +22,7 @@
         "encoding": "utf8",
         "private": true,
         "recurse": true,
-        "template": "./node_modules/braintree-jsdoc-template",
+        "template": "./node_modules/clean-jsdoc-theme",
         "theme_opts": {
             "default_theme": "light"
         }

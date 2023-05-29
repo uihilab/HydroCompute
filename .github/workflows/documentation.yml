@@ -18,7 +18,7 @@ jobs:
           source_dir: ./src/
           output_dir: ./docs/
           config_file: ./.github/workflows/config_doc.json
-          template: braintree-jsdoc-template
+          template: clean-jsdoc-theme
           front_page: README.md
 
       - name: Deploy
