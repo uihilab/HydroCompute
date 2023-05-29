@@ -1,197 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> hydroCompute</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="./build/entry.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
-  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
-  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
-  <link type="text/css" rel="stylesheet" href="">
-  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <title>
+      hydroCompute - Documentation
+  </title>
+
+  <link href="https://www.braintreepayments.com/images/favicon-ccda0b14.png" rel="icon" type="image/png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+  <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+  <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+  
 
   
+
+  <!-- start Mixpanel -->
+  <script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
+  0)))}}var d=a;"undefined"!==typeof f?d=a[f]=[]:f="mixpanel";d.people=d.people||[];d.toString=function(b){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);b||(a+=" (stub)");return a};d.people.toString=function(){return d.toString(1)+".people (stub)"};k="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+  for(h=0;h<k.length;h++)e(d,k[h]);a._i.push([b,c,f])};a.__SV=1.2;b=e.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";c=e.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}})(document,window.mixpanel||[]);
+  mixpanel.init("1919205b2da72e4da3b9b6639b444d59");</script>
+  <!-- end Mixpanel -->
 </head>
 
+<body>
+  <svg style="display: none;">
+    <defs>
+      <symbol id="linkIcon" fill="#706d77" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+      </symbol>
+    </defs>
+  </svg>
 
+  <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+  <label for="nav-trigger" class="navicon-button x">
+    <div class="navicon"></div>
+  </label>
 
-<body class="layout small-header">
-    <div id="stickyNavbarOverlay"></div>
+  <label for="nav-trigger" class="overlay"></label>
+
+  <div class="top-nav-wrapper">
+    <ul>
+      <li >
+        <a href="index.html">
+          
+            <svg fill="#6D6D6D" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+              <path d="M0 0h24v24H0z" fill="none"/>
+            </svg>
+          
+          
+        </a>
+      </li>
+
+      
+
+    </ul>
+  </div>
+
+  <nav>
+    <h3 class="reference-title">
+      Braintree SDK Client Reference
+    </h3>
+
     
 
-<div class="top-nav">
-    <div class="inner">
-        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-        </a>
-        <div class="logo">
-            
-            
-        </div>
-        <div class="menu">
-            
-            <div class="navigation">
-                <a
-                    href="index.html"
-                    class="link"
-                >
-                    Documentation
-                </a>
-                
-                
-                
-            </div>
-        </div>
-    </div>
-</div>
-    <div id="main">
-        <div
-            class="sidebar "
-            id="sidebarNav"
-        >
-            
-            <nav>
-                
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-kernels.html">kernels</a></li><li><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li><a href="Workers.module_JSWorker.html">JSWorker</a></li><li><a href="Workers.module_WASMWorker.html">WASMWorker</a></li></ul><h3>Namespaces</h3><ul><li><a href="ErrorTypes.html">ErrorTypes</a></li><li><a href="globalUtils.html">globalUtils</a></li><li><a href="gpuScripts.html">gpuScripts</a></li><li><a href="gpuUtils.html">gpuUtils</a></li><li><a href="jsScripts.html">jsScripts</a></li><li><a href="splits.html">splits</a></li><li><a href="WASMUtils.html">WASMUtils</a></li></ul><h3>Classes</h3><ul><li><a href="engine.html">engine</a></li><li><a href="hydroCompute.html">hydroCompute</a></li><li><a href="threadManager.html">threadManager</a></li><li><a href="WebRTC.html">WebRTC</a></li></ul></div>
-                
-            </nav>
-        </div>
-        <div class="core" id="main-content-wrapper">
-            <div class="content">
-                <header class="page-title">
-                    <p>Class</p>
-                    <h1>hydroCompute</h1>
-                </header>
-                
+    <h3>Classes</h3><ul><li id="engine-nav"><a href="engine.html">engine</a><ul class='methods'><li data-type="method" id="engine-availableScripts-nav"><a href="engine.html#.availableScripts">availableScripts</a></li><li data-type="method" id="engine-concurrentRun-nav"><a href="engine.html#.concurrentRun">concurrentRun</a></li><li data-type="method" id="engine-initialize-nav"><a href="engine.html#.initialize">initialize</a></li><li data-type="method" id="engine-parallelRun-nav"><a href="engine.html#.parallelRun">parallelRun</a></li><li data-type="method" id="engine-run-nav"><a href="engine.html#.run">run</a></li><li data-type="method" id="engine-setEngine-nav"><a href="engine.html#.setEngine">setEngine</a></li><li data-type="method" id="engine-stepRun-nav"><a href="engine.html#.stepRun">stepRun</a></li><li data-type="method" id="engine-taskRunner-nav"><a href="engine.html#.taskRunner">taskRunner</a></li></ul></li><li id="hydroCompute-nav"><a href="hydroCompute.html">hydroCompute</a><ul class='methods'><li data-type="method" id="hydroCompute-availableEngines-nav"><a href="hydroCompute.html#availableEngines">availableEngines</a></li><li data-type="method" id="hydroCompute-availableResults-nav"><a href="hydroCompute.html#availableResults">availableResults</a></li><li data-type="method" id="hydroCompute-availableSplits-nav"><a href="hydroCompute.html#availableSplits">availableSplits</a></li><li data-type="method" id="hydroCompute-currentEngine-nav"><a href="hydroCompute.html#currentEngine">currentEngine</a></li><li data-type="method" id="hydroCompute-data-nav"><a href="hydroCompute.html#data">data</a></li><li data-type="method" id="hydroCompute-engineScripts-nav"><a href="hydroCompute.html#engineScripts">engineScripts</a></li><li data-type="method" id="hydroCompute-getResTimes-nav"><a href="hydroCompute.html#getResTimes">getResTimes</a></li><li data-type="method" id="hydroCompute-getTotalTime-nav"><a href="hydroCompute.html#getTotalTime">getTotalTime</a></li><li data-type="method" id="hydroCompute-isEngineSet-nav"><a href="hydroCompute.html#isEngineSet">isEngineSet</a></li><li data-type="method" id="hydroCompute-makeId-nav"><a href="hydroCompute.html#makeId">makeId</a></li><li data-type="method" id="hydroCompute-results-nav"><a href="hydroCompute.html#results">results</a></li><li data-type="method" id="hydroCompute-run-nav"><a href="hydroCompute.html#run">run</a></li><li data-type="method" id="hydroCompute-setEngine-nav"><a href="hydroCompute.html#setEngine">setEngine</a></li><li data-type="method" id="hydroCompute-setResults-nav"><a href="hydroCompute.html#setResults">setResults</a></li><li data-type="method" id="hydroCompute-setTotalTime-nav"><a href="hydroCompute.html#setTotalTime">setTotalTime</a></li></ul></li><li id="threadManager-nav"><a href="threadManager.html">threadManager</a><ul class='methods'><li data-type="method" id="threadManager-createWorkerThread-nav"><a href="threadManager.html#.createWorkerThread">createWorkerThread</a></li><li data-type="method" id="threadManager-initializeWorkerThread-nav"><a href="threadManager.html#.initializeWorkerThread">initializeWorkerThread</a></li><li data-type="method" id="threadManager-resetWorkers-nav"><a href="threadManager.html#.resetWorkers">resetWorkers</a></li></ul></li><li id="WebRTC-nav"><a href="WebRTC.html">WebRTC</a><ul class='methods'><li data-type="method" id="WebRTC-createAnswer-nav"><a href="WebRTC.html#.createAnswer">createAnswer</a></li><li data-type="method" id="WebRTC-createOfferDescription-nav"><a href="WebRTC.html#.createOfferDescription">createOfferDescription</a></li><li data-type="method" id="WebRTC-initialize-nav"><a href="WebRTC.html#.initialize">initialize</a></li><li data-type="method" id="WebRTC-onAvailableChannel-nav"><a href="WebRTC.html#.onAvailableChannel">onAvailableChannel</a></li><li data-type="method" id="WebRTC-oncloseHost-nav"><a href="WebRTC.html#.oncloseHost">oncloseHost</a></li><li data-type="method" id="WebRTC-oncloseReceiver-nav"><a href="WebRTC.html#.oncloseReceiver">oncloseReceiver</a></li><li data-type="method" id="WebRTC-openConnection-nav"><a href="WebRTC.html#.openConnection">openConnection</a></li><li data-type="method" id="WebRTC-restartDataChannel-nav"><a href="WebRTC.html#.restartDataChannel">restartDataChannel</a></li><li data-type="method" id="WebRTC-run-nav"><a href="WebRTC.html#.run">run</a></li><li data-type="method" id="WebRTC-sendData-nav"><a href="WebRTC.html#.sendData">sendData</a></li><li data-type="method" id="WebRTC-setConnection-nav"><a href="WebRTC.html#.setConnection">setConnection</a></li><li data-type="method" id="WebRTC-setDataChannel-nav"><a href="WebRTC.html#.setDataChannel">setDataChannel</a></li><li data-type="method" id="WebRTC-setOfferDescription-nav"><a href="WebRTC.html#.setOfferDescription">setOfferDescription</a></li><li data-type="method" id="WebRTC-submitArray-nav"><a href="WebRTC.html#.submitArray">submitArray</a></li></ul></li></ul><h3>Modules</h3><ul><li id="kernels-nav"><a href="module-kernels.html">kernels</a></li><li id="GPUWorker-nav"><a href="Worker.module_GPUWorker.html">GPUWorker</a></li><li id="JSWorker-nav"><a href="Workers.module_JSWorker.html">JSWorker</a></li><li id="WASMWorker-nav"><a href="Workers.module_WASMWorker.html">WASMWorker</a><ul class='methods'><li data-type="method" id="WASMWorker-handleAS-nav"><a href="Workers.module_WASMWorker.html#~handleAS">handleAS</a></li><li data-type="method" id="WASMWorker-handleC-nav"><a href="Workers.module_WASMWorker.html#~handleC">handleC</a></li></ul></li></ul>
+  </nav>
 
+  <div id="main">
+    
+      <h1 class="page-title">
+        hydroCompute
+      </h1>
+    
 
-
+    
 
 <section>
-
-<header>
+  <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>hydroCompute<span class="signature">(&hellip;args)</span><span class="type-signature"></span></h2>
+      <h2>
         
-    
-</header>
+        hydroCompute
+        
+      </h2>
 
-<article>
+      
+    
+  </header>
+
+  <article>
     <div class="container-overview">
-    
+      
         
-            <div class='vertical-section'>
-                <div class="members">
-                    <div class="member">
-                        <div class=name>
-                            <span class="tag">Constructor</span>
-                        </div>
-                        
 
 
-    
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#hydroCompute">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="hydroCompute">
-        <a class="href-link" href="#hydroCompute">#</a>
-        
-        <span class="code-name">
-            
-                new hydroCompute<span class="signature">(&hellip;args)</span><span class="type-signature"></span>
-            
-        </span>
+      <span class="type-signature"></span>new hydroCompute<span class="signature">(&hellip;args)</span><span class="type-signature"></span>
     </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel runs.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<table class="params">
+  <thead>
+    <tr>
+      
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+        <th>Attributes</th>
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
     
-
-    
-    
-    <div class="description">
-        <p>Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel runs.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-            <th>Attributes</th>
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
+      <tr>
+        
+          <td class="name"><code>args</code></td>
         
 
+        <td class="type">
+          
             
-<tr class="deep-level-0">
-  
-      <td class="name"><code>args</code></td>
-  
+    <span class="param-type">
+      string
+    </span>
 
-  <td class="type">
-  
-      
-<code class="param-type">string</code>
+    
 
 
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-          &lt;repeatable><br>
-      
-      </td>
-  
-
-  
-
-  <td class="description last"><p>Optional argument to set the initial engine.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+          <td class="attributes">
+            
+
+            
+
+            
+              &lt;repeatable><br>
+            
+          </td>
+        
+
+        
+
+        <td class="description last">
+          <p>Optional argument to set the initial engine.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -199,43 +203,46 @@
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line7">line 7</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line7">line 7</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -250,31 +257,24 @@
 
 
 
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
+  <div class="example-container">
+    <a class="link-icon" href="#hydroCompute-examples">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h5 id="hydroCompute-examples">Example</h5>
     
-    
-        <pre class="prettyprint"><code>const compute = new hydroCompute() // empty constructor - javascript engine
+
+  <pre class="prettyprint"><code>const compute = new hydroCompute() // empty constructor - javascript engine
 const compute = new hydroCompute('wasm') // arguments - engine in arguments set.</code></pre>
-    
 
 
+  </div>
 
-                    </div>
-                </div>
-            </div>
-        
-    
+
+      
     </div>
-    
-    
 
     
 
@@ -282,41 +282,39 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
     
 
-    
+     
 
     
 
     
 
     
-        <div class='vertical-section'>
-            <h1>Methods</h1>
-            <div class="members">
-            
-                <div class="member">
+      <h3 class="subsection-title">Methods</h3>
+
+      
+        
 
 
-    
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#availableEngines">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="availableEngines">
-        <a class="href-link" href="#availableEngines">#</a>
-        
-        <span class="code-name">
-            
-                availableEngines<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span>
-            
-        </span>
+      <span class="type-signature"></span>availableEngines<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Retrieves the available engines.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Retrieves the available engines.</p>
+  </div>
 
 
 
@@ -329,43 +327,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line432">line 432</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line432">line 432</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -381,66 +382,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>An array containing the names of the available engines.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Array</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#availableResults">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="availableResults">
-        <a class="href-link" href="#availableResults">#</a>
-        
-        <span class="code-name">
-            
-                availableResults<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span>
-            
-        </span>
+      <span class="type-signature"></span>availableResults<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;string>}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Retrieves the available results stored in the <code>engineResults</code> object.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Retrieves the available results stored in the <code>engineResults</code> object.</p>
+  </div>
 
 
 
@@ -453,43 +418,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line521">line 521</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line521">line 521</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -505,66 +473,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>An array containing the names of the available results.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Array.&lt;string></code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#availableSplits">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="availableSplits">
-        <a class="href-link" href="#availableSplits">#</a>
-        
-        <span class="code-name">
-            
-                availableSplits<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span>
-            
-        </span>
+      <span class="type-signature"></span>availableSplits<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Searches the function splits available for data manipulation</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Searches the function splits available for data manipulation</p>
+  </div>
 
 
 
@@ -577,43 +509,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line465">line 465</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line465">line 465</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -629,64 +564,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><p>map containing the available split functions in the engines</p></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Object</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#currentEngine">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="currentEngine">
-        <a class="href-link" href="#currentEngine">#</a>
-        
-        <span class="code-name">
-            
-                currentEngine<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span>
-            
-        </span>
+      <span class="type-signature"></span>currentEngine<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Returns the name of the current engine.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Returns the name of the current engine.</p>
+  </div>
 
 
 
@@ -699,43 +600,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line340">line 340</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line340">line 340</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -751,205 +655,221 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><p>The name of the current engine.</p></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">string</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#data">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="data">
-        <a class="href-link" href="#data">#</a>
-        
-            
-                <span class='tag'>async</span>
-            
-        
-        <span class="code-name">
-            
-                data<span class="signature">(args)</span><span class="type-signature"></span>
-            
-        </span>
+      <span class="type-signature">(async) </span>data<span class="signature">(args)</span><span class="type-signature"></span>
     </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Saves the provided data into the available data storage.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<table class="params">
+  <thead>
+    <tr>
+      
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
     
-
-    
-    
-    <div class="description">
-        <p>Saves the provided data into the available data storage.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
+      <tr>
+        
+          <td class="name"><code>args</code></td>
         
 
+        <td class="type">
+          
             
-<tr class="deep-level-0">
-  
-      <td class="name"><code>args</code></td>
-  
+    <span class="param-type">
+      Object
+    </span>
 
-  <td class="type">
-  
-      
-<code class="param-type">Object</code>
-|
+    |
 
-<code class="param-type">string</code>
+    <span class="param-type">
+      string
+    </span>
 
-
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The data to be saved. It can be passed as an object or a string.</p></td>
-</tr>
-
-  
-  
     
-<tr class="deep-level-1">
-  
-      <td class="name"><code>id</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">string</code>
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>(Optional) The ID of the data container. If not provided, a random ID will be generated.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>data</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-|
-
-<code class="param-type">number</code>
-|
-
-<code class="param-type">string</code>
-
-
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The data to be saved. It can be an array, a number, or a string.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>splits</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Object</code>
-
-
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>(Optional) The splitting configuration for the data.</p></td>
-</tr>
-
-  
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The data to be saved. It can be passed as an object or a string.</p>
+          
+            <h6>Properties</h6>
+            
+
+<table class="params">
+  <thead>
+    <tr>
+      
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>id</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      string
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+
+        
+
+        <td class="description last">
+          <p>(Optional) The ID of the data container. If not provided, a random ID will be generated.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>data</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    |
+
+    <span class="param-type">
+      number
+    </span>
+
+    |
+
+    <span class="param-type">
+      string
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+
+        
+
+        <td class="description last">
+          <p>The data to be saved. It can be an array, a number, or a string.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>splits</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Object
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+
+        
+
+        <td class="description last">
+          <p>(Optional) The splitting configuration for the data.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
+
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -957,43 +877,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line352">line 352</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line352">line 352</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1009,43 +932,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
+      
+        
 
 
+  
 
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#engineScripts">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="engineScripts">
-        <a class="href-link" href="#engineScripts">#</a>
-        
-            
-                <span class='tag'>async</span>
-            
-        
-        <span class="code-name">
-            
-                engineScripts<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Map>}</span>
-            
-        </span>
+      <span class="type-signature">(async) </span>engineScripts<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Map>}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Retrieves the available engine scripts.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Retrieves the available engine scripts.</p>
+  </div>
 
 
 
@@ -1058,43 +968,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line441">line 441</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line441">line 441</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1110,122 +1023,90 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>A Promise that resolves to a Map object containing the available engine scripts.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Promise.&lt;Map></code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#getResTimes">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="getResTimes">
-        <a class="href-link" href="#getResTimes">#</a>
-        
-        <span class="code-name">
-            
-                getResTimes<span class="signature">(res)</span><span class="type-signature"> &rarr; {Array.&lt;number>}</span>
-            
-        </span>
+      <span class="type-signature"></span>getResTimes<span class="signature">(res)</span><span class="type-signature"> &rarr; {Array.&lt;number>}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Retrieves the total function time and total script time for a specific result.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        
-
-            
-<tr class="deep-level-0">
-  
-      <td class="name"><code>res</code></td>
   
 
-  <td class="type">
+
+
+  <div class="description">
+    <p>Retrieves the total function time and total script time for a specific result.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
   
+
+<table class="params">
+  <thead>
+    <tr>
       
-<code class="param-type">string</code>
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>res</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      string
+    </span>
+
+    
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The name of the result.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The name of the result.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -1233,43 +1114,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line494">line 494</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line494">line 494</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1285,66 +1169,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>An array containing the total function time and total script time.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Array.&lt;number></code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#getTotalTime">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="getTotalTime">
-        <a class="href-link" href="#getTotalTime">#</a>
-        
-        <span class="code-name">
-            
-                getTotalTime<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;number>}</span>
-            
-        </span>
+      <span class="type-signature"></span>getTotalTime<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;number>}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Calculates the total function time and total script time for all available results.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Calculates the total function time and total script time for all available results.</p>
+  </div>
 
 
 
@@ -1357,43 +1205,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line506">line 506</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line506">line 506</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1409,66 +1260,30 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>An array containing the total function time and total script time.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Array.&lt;number></code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#isEngineSet">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="isEngineSet">
-        <a class="href-link" href="#isEngineSet">#</a>
-        
-        <span class="code-name">
-            
-                isEngineSet<span class="signature">()</span><span class="type-signature"></span>
-            
-        </span>
+      <span class="type-signature"></span>isEngineSet<span class="signature">()</span><span class="type-signature"></span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Verifies that an engine is set</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Verifies that an engine is set</p>
+  </div>
 
 
 
@@ -1481,43 +1296,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line86">line 86</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line86">line 86</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1533,95 +1351,90 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
+      
+        
 
 
+  
 
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#makeId">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="makeId">
-        <a class="href-link" href="#makeId">#</a>
-        
-        <span class="code-name">
-            
-                makeId<span class="signature">(length)</span><span class="type-signature"> &rarr; {string}</span>
-            
-        </span>
+      <span class="type-signature"></span>makeId<span class="signature">(length)</span><span class="type-signature"> &rarr; {string}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Generates a random ID string.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        
-
-            
-<tr class="deep-level-0">
-  
-      <td class="name"><code>length</code></td>
   
 
-  <td class="type">
+
+
+  <div class="description">
+    <p>Generates a random ID string.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
   
+
+<table class="params">
+  <thead>
+    <tr>
       
-<code class="param-type">number</code>
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>length</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      number
+    </span>
+
+    
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The length of the ID string.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The length of the ID string.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -1629,43 +1442,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line477">line 477</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line477">line 477</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1681,122 +1497,90 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>The generated ID string.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">string</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#results">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="results">
-        <a class="href-link" href="#results">#</a>
-        
-        <span class="code-name">
-            
-                results<span class="signature">(name)</span><span class="type-signature"> &rarr; {Array}</span>
-            
-        </span>
+      <span class="type-signature"></span>results<span class="signature">(name)</span><span class="type-signature"> &rarr; {Array}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Retrieves the results for a specific simulation by name.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        
-
-            
-<tr class="deep-level-0">
-  
-      <td class="name"><code>name</code></td>
   
 
-  <td class="type">
+
+
+  <div class="description">
+    <p>Retrieves the results for a specific simulation by name.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
   
+
+<table class="params">
+  <thead>
+    <tr>
       
-<code class="param-type">string</code>
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>name</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      string
+    </span>
+
+    
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The name of the simulation.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The name of the simulation.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -1804,43 +1588,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line393">line 393</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line393">line 393</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -1856,374 +1643,388 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>An array of objects containing the results and associated functions.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Array</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#run">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="run">
-        <a class="href-link" href="#run">#</a>
-        
-            
-                <span class='tag'>async</span>
-            
-        
-        <span class="code-name">
-            
-                run<span class="signature">(args)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
-            
-        </span>
+      <span class="type-signature">(async) </span>run<span class="signature">(args)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
     </h4>
+  </span>
+
+  
+
+
+
+  <div class="description">
+    <p>Runs the specified functions with the given arguments using the current engine. The engine must be set previous to the run function to be called.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
+  
+
+<table class="params">
+  <thead>
+    <tr>
+      
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
     
-
-    
-    
-    <div class="description">
-        <p>Runs the specified functions with the given arguments using the current engine. The engine must be set previous to the run function to be called.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-            <th>Attributes</th>
-            
-
-            
-            <th>Default</th>
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
+      <tr>
+        
+          <td class="name"><code>args</code></td>
         
 
+        <td class="type">
+          
             
-<tr class="deep-level-0">
-  
-      <td class="name"><code>args</code></td>
-  
+    <span class="param-type">
+      Object
+    </span>
 
-  <td class="type">
-  
-      
-<code class="param-type">Object</code>
-|
+    |
 
-<code class="param-type">string</code>
+    <span class="param-type">
+      string
+    </span>
 
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last"><p>The configuration object or the relative path of the script to run.</p></td>
-</tr>
-
-  
-  
     
-<tr class="deep-level-1">
-  
-      <td class="name"><code>dataIds</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
 
 
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last"><p>An array of data IDs.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>functions</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-      </td>
-  
-
-  <td class="description last"><p>An array of function names.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>funcArgs</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          []
-      
-      </td>
-  
-
-  <td class="description last"><p>An array of function arguments.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>dependencies</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          []
-      
-      </td>
-  
-
-  <td class="description last"><p>An array specifying the dependencies between functions.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>scriptName</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          []
-      
-      </td>
-  
-
-  <td class="description last"><p>An array of script names.</p></td>
-</tr>
-
-  
-    
-<tr class="deep-level-1">
-  
-      <td class="name"><code>dataSplits</code></td>
-  
-
-  <td class="type">
-  
-      
-<code class="param-type">Array</code>
-
-
-  
-  </td>
-
-  
-      <td class="attributes">
-      
-          &lt;optional><br>
-      
-
-      
-
-      
-      </td>
-  
-
-  
-      <td class="default">
-      
-          []
-      
-      </td>
-  
-
-  <td class="description last"><p>An array specifying if data should be split for each function.</p></td>
-</tr>
-
-  
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The configuration object or the relative path of the script to run.</p>
+          
+            <h6>Properties</h6>
+            
+
+<table class="params">
+  <thead>
+    <tr>
+      
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+        <th>Attributes</th>
+      
+
+      
+        <th>Default</th>
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>dataIds</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array of data IDs.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>functions</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array of function names.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>funcArgs</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+              []
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array of function arguments.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>dependencies</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+              []
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array specifying the dependencies between functions.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>scriptName</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+              []
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array of script names.</p>
+          
+        </td>
+      </tr>
+
+    
+      <tr>
+        
+          <td class="name"><code>dataSplits</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
+
+
+          
+        </td>
+
+        
+          <td class="attributes">
+            
+              &lt;optional><br>
+            
+
+            
+
+            
+          </td>
+        
+
+        
+          <td class="default">
+            
+              []
+            
+          </td>
+        
+
+        <td class="description last">
+          <p>An array specifying if data should be split for each function.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
+
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -2231,43 +2032,46 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line157">line 157</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line157">line 157</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -2282,139 +2086,110 @@ const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
 
 
 
-
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
+  <div class="example-container">
+    <a class="link-icon" href="#run-examples">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h5 id="run-examples">Example</h5>
     
-    <div class='param-desc column is-7'><ul>
-<li>A Promise that resolves once the functions are executed.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
-        
-<code class="param-type">Promise.&lt;void></code>
 
-
-    </div>
-    
-</div>
-
-                
-        </div>
-    </div>
-
-
-
-
-    <h5>Example</h5>
-    
-    
-        <pre class="prettyprint"><code>//Case 1: Running a script in home folder with 'main' function steering the script and a single data instance saved on 'availableData'
+  <pre class="prettyprint"><code>//Case 1: Running a script in home folder with 'main' function steering the script and a single data instance saved on 'availableData'
 await compute.run('scriptName');
 //Case 2: Running a function from the ones available on each engine using a multiple data ids
 await compute.run({functions: ['f1', 'f2', 'f3'], dataIds: ['id1', 'id2', 'id3']})
 //Case 3: Linking steps and linking functions within steps
 await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], []] dataIds: ['id1', 'id2', 'id3']})</code></pre>
-    
 
 
-</div>
-            
-                <div class="member">
+  </div>
 
 
-    
+      
+        
+
+
+  
+
+  <span class='name-container'>
+    <a class="link-icon" href="#setEngine">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="setEngine">
-        <a class="href-link" href="#setEngine">#</a>
-        
-            
-                <span class='tag'>async</span>
-            
-        
-        <span class="code-name">
-            
-                setEngine<span class="signature">(kernel)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
-            
-        </span>
+      <span class="type-signature">(async) </span>setEngine<span class="signature">(kernel)</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Sets the current engine based on the specified kernel.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        
-
-            
-<tr class="deep-level-0">
-  
-      <td class="name"><code>kernel</code></td>
   
 
-  <td class="type">
+
+
+  <div class="description">
+    <p>Sets the current engine based on the specified kernel.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
   
+
+<table class="params">
+  <thead>
+    <tr>
       
-<code class="param-type">string</code>
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>kernel</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      string
+    </span>
+
+    
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>The name of the kernel.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>The name of the kernel.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -2422,43 +2197,46 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line102">line 102</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line102">line 102</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -2474,122 +2252,90 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    <div class='param-desc column is-7'><ul>
-<li>A Promise that resolves once the engine is set.</li>
-</ul></div>
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">Promise.&lt;void></code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#setResults">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="setResults">
-        <a class="href-link" href="#setResults">#</a>
-        
-        <span class="code-name">
-            
-                setResults<span class="signature">(names)</span><span class="type-signature"> &rarr; {void}</span>
-            
-        </span>
+      <span class="type-signature"></span>setResults<span class="signature">(names)</span><span class="type-signature"> &rarr; {void}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Sets the results of the current engine and stores them in the <code>engineResults</code> object.</p>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-<div class="table-container">
-    <table class="params table">
-        <thead>
-        <tr>
-            
-            <th>Name</th>
-            
-
-            <th>Type</th>
-
-            
-
-            
-
-            <th class="last">Description</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        
-
-            
-<tr class="deep-level-0">
-  
-      <td class="name"><code>names</code></td>
   
 
-  <td class="type">
+
+
+  <div class="description">
+    <p>Sets the results of the current engine and stores them in the <code>engineResults</code> object.</p>
+  </div>
+
+
+
+
+
+
+
+  <h5>Parameters:</h5>
   
+
+<table class="params">
+  <thead>
+    <tr>
       
-<code class="param-type">Array</code>
+        <th>Name</th>
+      
+
+      <th>Type</th>
+
+      
+
+      
+
+      <th class="last">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    
+      <tr>
+        
+          <td class="name"><code>names</code></td>
+        
+
+        <td class="type">
+          
+            
+    <span class="param-type">
+      Array
+    </span>
+
+    
 
 
-  
-  </td>
-
-  
-
-  
-
-  <td class="description last"><p>An array of names corresponding to the data IDs.</p></td>
-</tr>
-
+          
+        </td>
 
         
-        </tbody>
-    </table>
-</div>
+
+        
+
+        <td class="description last">
+          <p>An array of names corresponding to the data IDs.</p>
+          
+        </td>
+      </tr>
+
+    
+  </tbody>
+</table>
 
 
 
@@ -2597,43 +2343,46 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line298">line 298</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line298">line 298</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -2649,62 +2398,30 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
+      
         
-<code class="param-type">void</code>
 
 
-    </div>
-    
-</div>
+  
 
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-                <div class="member">
-
-
-    
+  <span class='name-container'>
+    <a class="link-icon" href="#setTotalTime">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
     <h4 class="name" id="setTotalTime">
-        <a class="href-link" href="#setTotalTime">#</a>
-        
-        <span class="code-name">
-            
-                setTotalTime<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span>
-            
-        </span>
+      <span class="type-signature"></span>setTotalTime<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span>
     </h4>
-    
+  </span>
 
-    
-    
-    <div class="description">
-        <p>Calculates and sets the total function time and total script time for each result in the <code>engineResults</code> object.</p>
-    </div>
-    
+  
 
 
 
+  <div class="description">
+    <p>Calculates and sets the total function time and total script time for each result in the <code>engineResults</code> object.</p>
+  </div>
 
 
 
@@ -2717,43 +2434,46 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line319">line 319</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line319">line 319</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
@@ -2769,65 +2489,34 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 
 
-
-
-
-
-    <div class='columns method-parameter'>
-        <div class="column is-2"><label>Returns:</label></div>
-        <div class="column is-10">
-            
-                    
-
-<div class="columns">
-    
-    
-    <div class='column is-5 has-text-left'>
-        <label>Type: </label>
-        
-<code class="param-type">void</code>
-
-
-    </div>
-    
-</div>
-
-                
-        </div>
-    </div>
-
-
-
-
-</div>
-            
-            </div>
-        </div>
+      
     
 
     
-        <div class='vertical-section'>
-            <h1>Type Definitions</h1>
-            <div class="members">
-            
-                <div class="member">
+      <h3 class="subsection-title">Type Definitions</h3>
 
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">object</code>
+      
+          
 
 
-    </span>
+  
 
-<h4 class="name" id=".utils">
-    <a class="href-link" href="#.utils">#</a>
-    
-    <span class="code-name">
-        utils
-    </span>
-    
-</h4>
+  <span class='name-container'>
+    <a class="link-icon" href="#.utils">
+      <svg height="20" width="20" style="fill: black;">
+        <use xlink:href="#linkIcon"></use>
+      </svg>
+    </a>
+    <h4 class="name" id=".utils">
+      <span class="type-signature"></span>utils<span class="type-signature"> :object</span>
+    </h4>
+  </span>
+
+  
+
+
+
+
 
 
 
@@ -2838,83 +2527,82 @@ await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], 
 
 <dl class="details">
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
+  
 
-    
-    
+  
 
-    
+  
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source">
+      <ul class="dummy">
+        <li>
+          <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line25">line 25</a>
+        </li>
+      </ul>
+    </dd>
+  
 
-    
+  
 
-    
-        <p class="tag-source">
-            <a href="hydrocompute.js.html" class="button">View Source</a>
-            <span>
-                <a href="hydrocompute.js.html">hydrocompute.js</a>, <a href="hydrocompute.js.html#line25">line 25</a>
-            </span>
-        </p>
-    
+  
+
+  
 </dl>
 
 
 
 
 
-</div>
-            
-            </div>
-        </div>
-    
+
+
+
+
+
+
+
+
+
+        
 
     
-</article>
-
+  </article>
 </section>
 
 
 
 
-            </div>
-            
-            <footer class="footer">
-                <div class="content has-text-centered">
-                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a></p>
-                    <p class="sidebar-created-by">
-                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
-                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
-                    </p>
-                </div>
-            </footer>
-            
-        </div>
-        <div id="side-nav" class="side-nav">
-        </div>
-    </div>
-<script src="scripts/app.min.js"></script>
-<script>PR.prettyPrint();</script>
-<script src="scripts/linenumber.js"> </script>
+  </div>
 
+  <br class="clear">
+
+  <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+  </footer>
+
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/pagelocation.js"></script>
+
+  
 
 </body>
 </html>
