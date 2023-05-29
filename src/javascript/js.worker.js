@@ -1,7 +1,7 @@
 import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
 
 /**
- * Event listener for the 'message' event.
+ * @description JavaScript worker for executing JS scripts and functions. The worker does not utilize any subset functions to call any computation and runs directly based on the implementation of the underlying scripts.
  * @memberof Workers
  * @module WebWorker
  * @name JSWorker

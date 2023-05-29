@@ -3,7 +3,7 @@ import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
 import { splits } from "../core/utils/splits.js";
 
 /**
- * Web worker script for executing WASM computations.
+ * @description Web worker script for executing WASM computations. The worker script switches between the AS utils or C utils using the handleAS and handleC methods. 
  * @module WebWorker
  * @memberof Workers
  * @name WASMWorker
