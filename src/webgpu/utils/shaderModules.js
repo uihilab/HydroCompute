@@ -1,5 +1,6 @@
 /**
  * Function returns a shader module back for usage in the compute section
+ * @member shaderModule
  * @param {GPUDevice} device - instance of the GPU device stored within the GPU class
  * @param {String} code - string of code that is in webgl  format
  * @memberof gpuUtils 
@@ -12,7 +13,8 @@ export const shaderModule = (device, code) => {
 };
 
 /**
- *
+ * Runs the computing pipelines to map into the GPU shaders
+ * @member computingPipelines
  * @param {GPUDevice} device - instance of the GPU device stored within the GPU class
  * @param {Object[]} bindGroups - containing all possible bindgroups required for a computation
  * @memberof gpuUtils
@@ -31,7 +33,8 @@ export const computingPipelines = (device, shaderModule, bindGroups) => {
 };
 
 /**
-*Dispatches a compute shader operation on the GPU.
+* Dispatches a compute shader operation on the GPU.
+* @member dispatchers
 * @memberof gpuUtils
 *@param {GPUDevice} device - The GPU device.
 *@param {GPUPipeline} pipeline - The compute pipeline to use.

@@ -7,17 +7,13 @@ import webrtc from "./webrtc/webrtc.js";
 /**
  * @description Main class for the compute modules. It creates instances of the different engines available to run concurrent or parallel runs.
  * @class hydroCompute
+ * @param {...string} args - Optional argument to set the initial engine.
+ * @example
+ * const compute = new hydroCompute() // empty constructor - javascript engine
+ * const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
  */
 
 class hydroCompute {
-  /**
-   * @description Constructs a new hydroCompute instance.
-   * @memberof hydroCompute
-   * @param {...string} args - Optional argument to set the initial engine.
-   * @example
-   * const compute = new hydroCompute() // empty constructor - javascript engine
-   * const compute = new hydroCompute('wasm') // arguments - engine in arguments set.
-   */
   constructor(...args) {
     this.calledEngines = {};
     this.currentEngine;

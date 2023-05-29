@@ -13,13 +13,10 @@ import { gpuScripts } from "../webgpu/gpuScripts.js";
  * @property execTime - execution time of the running tasks
  * @property engineName - name of the engine running (javascript, wasm, webgpu)
  * @property workerLocation - location of worker script per engine
+ * @param {String} engine - name of engine running the workers
+ * @param {String} workerLocation - location of the worker script running the data
  */
 export default class engine {
-  /**
-   *@description constructor to set the property variables ready for execution
-   * @param {String} engine - name of engine running the workers
-   * @param {String} workerLocation - location of the worker script running the data
-   */
   constructor(engine, workerLocation) {
     this.setEngine();
     this.workerLocation = workerLocation;

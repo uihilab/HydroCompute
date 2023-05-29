@@ -1,6 +1,10 @@
 /**
  * CUtils object containing the names of C module files to be interfaced.
- * @type {object}
+ * @member CUtils
+ * @property matrixUtils_c
+ * @property arima_c
+ * @property monteCarlo_c
+ * @memberof WASMUtils
  */
 export const CUtils = {
     matrixUtils_c: 'matrixUtils_c.js',

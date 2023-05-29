@@ -6,14 +6,10 @@
  * @property maxWorkerCount - maximum workers on the browser Leave it at least 1 less than all the available.
  * @property results - holder of the results once finished
  * @class threadManager
+ * @param {string} name - The name of the thread manager.
+ * @param {string} location - The location of the worker script file.
  */
 export default class threadManager {
-  /**
-   * Constructs a new threadManager instance.
-   * A class that manages worker threads for parallel execution.
-   * @param {string} name - The name of the thread manager.
-   * @param {string} location - The location of the worker script file.
-*/
   constructor(name, location) {
     window.Worker
       ? console.log(`Web workers engine set for engine: ${name}`)

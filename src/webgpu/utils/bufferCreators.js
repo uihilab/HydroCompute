@@ -1,5 +1,7 @@
 /**
  * Returns the sizes of two square matrices.
+ * @member matrixSize
+ * @memberof gpuUtils
  * @param {Array} matrix - Matrix as a 1D array.
  * @param {Object} args - Additional partitions required.
  * @returns {Array} - Array containing the sizes of the matrices.
@@ -12,6 +14,8 @@ export const matrixSize = (matrix, args = undefined) => {
 
 /**
  * Creates a buffer for the matrix data.
+ * @member bufferCreator
+ * @memberof gpuUtils
  * @param {boolean} mapped - Indicates whether the buffer is mapped at creation.
  * @param {GPUDevice} device - The GPU device.
  * @param {Float32Array} matrix - The matrix data.
@@ -31,6 +35,8 @@ export const bufferCreator = (mapped, device, matrix) => {
 
 /**
  * Changes the matrix layout by removing the sizes.
+ * @memberof matrixChanger
+ * @memberof gpuUtils
  * @param {Float32Array} mat - The matrix data.
  * @param {Array} sizes - The sizes of the matrix.
  * @returns {Float32Array} - The modified matrix data.
@@ -43,6 +49,8 @@ export const matrixChanger = (mat, sizes) => {
 
 /**
  * Creates a buffer to hold the result matrix.
+ * @member resultHolder
+ * @memberof gpuUtils
  * @param {GPUDevice} device - The GPU device.
  * @param {Array} matrices - The matrices data.
  * @param {number} reads - The number of read partitions.
@@ -71,6 +79,8 @@ export const resultHolder = (device, matrices, reads, writes) => {
 
 /**
  * Destroys the buffers.
+ * @member bufferDestroyer
+ * @memberof gpuUtils
  * @param {Array} buffers - Array of GPU buffers.
  */
 export const bufferDestroyer = (buffers) => {

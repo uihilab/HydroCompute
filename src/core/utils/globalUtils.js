@@ -1,4 +1,8 @@
 /**
+ * @namespace globalUtils
+ */
+
+/**
  * @method DAG
  * @memberof globalUtils
  * @description Directed Acyclic Graph implementation for solving promised-based functions
@@ -113,7 +117,10 @@ export const DAG = ({ functions, dag, args, type } = {}) => {
  * @memberof globalUtils
  * @description Deep clones either objects or arrays
  * @param {Object} data - array or object
- * @returns {Object} deep clone of the object to copy
+ * @returns {Object} deep cloned object or array to be used
+ * @example
+ * const arr = [1, 2, 3, [4, 5]];
+ * const clonedArr = dataCloner(arr);
  */
 
 export const dataCloner = (data) => {
@@ -183,6 +190,8 @@ export const arrayChanger = (arr, width) =>
 
 /**
  * Helper function for concatenating arrays.
+ * @method concatArrays
+ * @memberof globalUtils
  * @param {Array} arrays - collection of arrays to concatenate
  * @returns {Array} array - concatenated array
  */
@@ -206,6 +215,7 @@ export const concatArrays = (arrays) => {
 
 /**
  * Helper function for flatennizing a 2D array
+ * @method flattenFloat32Array
  * @memberof globalUtils
  * @param {Array} arr  - N-D array to be flattened
  * @returns {Array} flattenized ND array
@@ -221,6 +231,7 @@ export const flattenFloat32Array = (arr) => {
 
 /**
  * Retrieves the performance measures for function execution and worker execution.
+ * @method getPerformanceMeasures
  * @memberof globalUtils
  * @returns {object} - The performance measures.
  * @property {number} funcExec - The duration of function execution.
@@ -244,6 +255,7 @@ export const getPerformanceMeasures = () => {
 
 /**
  * Imports JSON data from a file.
+ * @method importJSONdata
  * @memberof globalUtils
  * @param {string} jsonFile - The path or URL to the JSON file.
  * @param {string} [dataFieldName="data"] - The name of the field containing the data in the JSON file.

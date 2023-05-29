@@ -2,6 +2,8 @@ import * as scripts from './scripts/scripts.js'
 
 /**
  * Retrieves the JavaScript scripts and their associated functions.
+ * @memberof jsScripts
+ * @member jsScripts
  * @returns {Map<string, string[]>} - A map of scripts and their functions.
  */
 export const jsScripts = () => { 
