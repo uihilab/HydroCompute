@@ -61,7 +61,7 @@ async function renderLocations() {
 <ul>
 <li><strong>Name:</strong>${station.name}</li>
 <li><strong>Latitude:</strong>${station.location.latitude}</li>
-<li><strong>Longitude:</strong>${station.location.latitude}</li>
+<li><strong>Longitude:</strong>${station.location.longitude}</li>
 <li><strong>Variable:</strong>${
       station.variable && station.variable.variableName
         ? station.variable.variableName
