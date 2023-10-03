@@ -155,7 +155,7 @@ async function computeRun(site, data) {
   //saving the results inside the compute library
   compute.data({ id: site, data });
   let jsFuns = ["expoMovingAverage_js", "simpleMovingAverage_js"];
-  let cFuns1 = ["_monteCarlo_c", "_arima_autoParams"];
+  let cFuns1 = ["_monteCarlo_c", "_arima_autoParams", "_acf"];
   let cFuns2 = ["_linear_detrend", "_arima_autoParams", "_monteCarlo_c"];
 
   compute.setEngine("wasm");
