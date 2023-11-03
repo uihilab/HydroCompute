@@ -20,7 +20,7 @@ export const matrixUtils = {
         @group(0) @binding(1) var<storage, read> mat2: Matrix;
         @group(0) @binding(2) var<storage, read_write> resultMatrix: Matrix;
         
-        @compute @workgroup_size(8,8)
+        @compute @workgroup_size(8)
         fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
           //Guarding against out of bounds group sizes
           if (global_id.x >= u32(mat1.size.x) || global_id.y >= u32(mat2.size.y)){

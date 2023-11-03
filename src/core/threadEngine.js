@@ -82,8 +82,9 @@ export default class threadManager {
         w.onmessage = ({ data }) => {
           console.log(`working...`);
           let { results, funcExec, workerExec, funcName } = data;
-          resolve(results);
-          this.results.push(results);
+          //Workaround to obtain result buffer and save it.
+          resolve(results.slice(0));
+          this.results.push(results.slice(0));
           (this.workerThreads[index].functionTime += funcExec),
             (this.workerThreads[index].workerTime += workerExec);
           this.functionOrder.push(funcName);

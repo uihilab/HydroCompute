@@ -46,6 +46,7 @@ self.onmessage = async (e) => {
       }
     }
     let getPerformance = getPerformanceMeasures();
+
     self.postMessage(
       {
         id,

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/hydrolang@1.1.7/hydrolang.js">
+    </script>
+    <script type="module" src="../../src/hydrocompute.js" onload="loadCompute()">
+    </script>
+    <link rel="stylesheet" href="styles.css">
+    <title>Case Study 3: Dashboard for Satation Statistical Analysis</title>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="overlay">
+        <div id="content">
+            <div id="retrieved-data"></div>
+            <div id="result-graph"></div>
+            <div id="stats-table"></div>
+            <button id="download-raw-btn">Download Data</button>
+            <br>
+            <button id="download-simulationRes-btn">Download Simulation Results</button>
+        </div>
+    </div>
+    <script>
+    function loadCompute() {
+        window.compute = new hydroCompute()
+    }
+    </script>
+    <script src="main.js">
+    </script>
+</body>
+
+</html>
