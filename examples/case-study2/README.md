@@ -13,7 +13,7 @@ To run this web application locally:
 Open the index.html file in a web browser.
 
 Note: open the Developer Tools to see outputs from the HydroCompute.
-Live preview [here](hydroinformatics.uiowa.edu/lab/hydrosuite/hydrocompute/cs2).
+Live preview [here](https://hydroinformatics.uiowa.edu/lab/hydrosuite/hydrocompute/cs2).
 
 ## Usage
 * Select Data Source: Choose from available data sources such as 'MOPEX', 'NOAA GHCN', 'Global Rivers', and 'USGS Daily Values'. Note: USGS fully functional.
