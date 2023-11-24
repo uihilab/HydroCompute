@@ -66,17 +66,30 @@ const ASModule = async (name) => {
     //shared: true,
   });
   try {
-    const module = await WebAssembly.instantiateStreaming(
-      fetch(_location("AS", name)),
-      {
-        js: { mem: memory },
-        env: {
-          abort: (_msg, _file, line, column) =>
-            console.error(`Abort at ${line}: ${column}`),
-          memory: memory,
-        },
-      }
-    );
+    // const module = await WebAssembly.instantiateStreaming(
+    //   fetch(_location("AS", name)),
+    //   {
+    //     js: { mem: memory },
+    //     env: {
+    //       abort: (_msg, _file, line, column) =>
+    //         console.error(`Abort at ${line}: ${column}`),
+    //       memory: memory,
+    //     },
+    //   }
+    // );
+
+    const response = await fetch(_location("AS", name));
+    const buffer = await response.arrayBuffer();
+    const module = await WebAssembly.instantiate(buffer,     
+        {
+          js: { mem: memory },
+          env: {
+            abort: (_msg, _file, line, column) =>
+              console.error(`Abort at ${line}: ${column}`),
+            memory: memory,
+          },
+        })
+
     return module.instance.exports;
   } catch (error) {
     throw new Error(`Failed to load AS module '${name}'.`, error);
