@@ -101,5 +101,4 @@ This work was funded by the University of Iowa's HydroInformatics Lab.
 
 ## References
 
-* Erazo Ramirez, C., Sermet, Y., Demir, I. HydroCompute: An Open Source Web-based Client-side Computational Library 
-for Hydrology And Environmental Sciences. In revision.
+* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2023a). Hydrocompute: An Open-Source Web-Based Computational Library for Hydrology and Environmental Sciences. EarthArxiv. https://doi.org/10.31223/X5FM2D 
