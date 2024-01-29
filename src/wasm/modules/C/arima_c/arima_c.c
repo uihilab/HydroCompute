@@ -1,19 +1,46 @@
+/**
+ * @brief Implementation of statistical operations for web assembly.
+ *
+ * This program provides functions for statistical operations such as linear detrending,
+ * auto-updating parameter ARMA model, setting parameters for ARMA model, autocorrelation function (ACF),
+ * partial autocorrelation function (PACF), and Box-Cox transformation. It also includes memory
+ * management functions for creating and destroying memory.
+ *
+ */
 #include <emscripten.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 
+/**
+ * @brief Allocates memory of a specified size.
+ *
+ * @param size The size of the memory to allocate.
+ * @return A pointer to the allocated memory.
+ */
 EMSCRIPTEN_KEEPALIVE
 uint8_t* createMem(int size) {
 	return malloc(size);
 }
 
+/**
+ * @brief Deallocates the memory pointed to by the given pointer.
+ *
+ * @param p A pointer to the memory to be deallocated.
+ */
 EMSCRIPTEN_KEEPALIVE
 void destroy(uint8_t* p){
 	free(p);
 }
 
+/**
+ * @brief Performs linear detrending on the input data.
+ *
+ * @param data The input data.
+ * @param result The detrended data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 void linear_detrend(float *data, float *result, int n) {
     float x_mean = 0.0;
@@ -46,6 +73,13 @@ void linear_detrend(float *data, float *result, int n) {
     }
 }
 
+/**
+ * @brief Auto-updates parameters for the ARMA model.
+ *
+ * @param data The input data.
+ * @param prediction The predicted data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // autoupdate parameter ARMA model
 void arima_autoParams(float *data, float *prediction, int n) {
@@ -145,6 +179,13 @@ void arima_autoParams(float *data, float *prediction, int n) {
     }
 }
 
+/**
+ * @brief Sets parameters for the ARMA model.
+ *
+ * @param data The input data.
+ * @param prediction The predicted data.
+ * @param m The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // autoupdate parameter ARMA model
 void arima_setParams(float *data, float *prediction, int m) {
@@ -169,7 +210,13 @@ void arima_setParams(float *data, float *prediction, int m) {
     }
 }
 
-
+/**
+ * @brief Computes the autocorrelation function (ACF) for the input data.
+ *
+ * @param data The input data.
+ * @param result The computed ACF.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // total autocorrelation function
 void acf(float *data, float *result, int n) {
@@ -199,6 +246,13 @@ void acf(float *data, float *result, int n) {
     result[0] /= 2;
 }
 
+/**
+ * @brief Computes the partial autocorrelation function (PACF) for the input data.
+ *
+ * @param x The input data.
+ * @param pacf_result The computed PACF.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // partial autocorrelation function with max lag of 75
 void pacf(float *x, float *pacf_result, int n) {
@@ -290,6 +344,13 @@ void pacf(float *x, float *pacf_result, int n) {
     }
 }
 
+/**
+ * @brief Applies the Box-Cox transformation on the input data.
+ *
+ * @param data The input data.
+ * @param result The transformed data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 void boxcox_transform(float* data, float* result, int n) {
 	float lambda = 0.5;

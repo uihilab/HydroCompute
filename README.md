@@ -1,4 +1,4 @@
-# HydroCompute - a computational library for hydrology
+# HydroCompute - a web-based client-side computational library for hydrology
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@
 * [References](#references)
 
 ## Introduction
-This work introduces hydroCompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
+This work introduces HydroCompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
 
 ## How to Use
 Please download the library and run `index.html`. If a new html file should be created, the library must be onloaded onto the file as a script
@@ -33,7 +33,11 @@ The library is loaded into an HTML web app by declaring either it as a window ob
 const compute = new hydrocompute('engineName');
 ```
 
-When instantiated if no specific engines are passed into the constructor, the library will default to run using the functions within the JavaScript engine. You can see all the available functions in for each of the functions in the following pages:
+When instantiated if no specific engines are passed into the constructor, the library will default to run using the functions within the JavaScript engine. The available engines along with existing code and how to develop more functions for usage in the library can be found in the following links:
+
+* [WebAssembly](https://github.com/uihilab/HydroCompute/tree/master/src/wasm): Available C and AssemblyScript bindings.
+* [JavaScript](https://github.com/uihilab/HydroCompute/tree/master/src/javascript): Available as native JavaScript object.
+* [WebGPU](https://github.com/uihilab/HydroCompute/tree/master/src/webgpu): GLSL code onloaded as strings in a JavaScript object.
 
 ### Running a simulation
 
@@ -75,6 +79,8 @@ compute.availableResults()
 ```
 The results per simulation will be saved with nametag `Simulation_N`.
 
+A list of case studies and examples can be found [here](https://github.com/uihilab/HydroCompute/tree/master/examples).
+
 ## Expansions and Test Cases
 ### Expansions
 Currently the library works fully with Chromium based browsers. Mozilla implementations will be added in future releases.
@@ -90,15 +96,19 @@ It is possible for the library to expand by becoming a community-based framework
 Please feel free to send feedback to us on any issues found by filing an issue.
 
 ## Scalability and To-Do's
-New engines and functions for the existing engines will be added into the library for easier implementation and usage.
+The HydroCompute library is a work in progress that aims in providing a scalable set of tools so that the hydrologic community can benefit from. To this extent, we have the following open developments that will be included in future deployments:
+
+* New engines and functions for the existing engines will be added into the library for easier implementation and usage.
+* A webpack implementation of the library that provides an easier interaction directly from a CDN.
+* Create a better integration with technologies such as Docker containers to streamline the deployment of new functions using WebAssembly into the library.
 
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/uihilab/HydroCompute/blob/master/LICENSE) file for details.
 
 ## Acknowledgements
-This work was funded by the University of Iowa's HydroInformatics Lab.
+This project was funded by the National Oceanic & Atmospheric Administration (NOAA) via a cooperative agreement with The University of Alabama (NA22NWS4320003) awarded to the Cooperative Institute for Research to Operations in Hydrology (CIROH).
 
 ## References
 
-* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2023a). Hydrocompute: An Open-Source Web-Based Computational Library for Hydrology and Environmental Sciences. EarthArxiv. https://doi.org/10.31223/X5FM2D 
+* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2023). Hydrocompute: An Open-Source Web-Based Computational Library for Hydrology and Environmental Sciences. EarthArxiv. https://doi.org/10.31223/X5FM2D 
