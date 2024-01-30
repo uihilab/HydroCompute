@@ -1,4 +1,4 @@
-# HydroCompute - a web-based client-side computational library for hydrology
+# HydroCompute
 
 ## Table of Contents
 

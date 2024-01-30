@@ -19,7 +19,7 @@ jobs:
           output_dir: ./docs/
           config_file: ./.github/workflows/config_doc.json
           template: toast-jsdoc
-          front_page: README.md
+          front_page: ./src/static/adds/README.md
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
