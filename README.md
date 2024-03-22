@@ -113,4 +113,4 @@ This project was funded by the National Oceanic & Atmospheric Administration (NO
 
 ## References
 
-* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2023). Hydrocompute: An Open-Source Web-Based Computational Library for Hydrology and Environmental Sciences. EarthArxiv. https://doi.org/10.31223/X5FM2D 
+* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2024). HydroCompute: An open-source web-based computational library for hydrology and environmental sciences. Environmental Modelling & Software, 175, 106005. https://doi.org/10.1016/j.envsoft.2024.106005
