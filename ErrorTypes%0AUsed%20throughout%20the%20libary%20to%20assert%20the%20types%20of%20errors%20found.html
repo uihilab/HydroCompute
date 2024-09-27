@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>webgpu/gpuScripts.js - Documentation</title>
+    <title>ErrorTypes
+Used throughout the libary to assert the types of errors found - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,45 +30,99 @@ Used throughout the libary to assert the types of errors found</a></li><li><a hr
 
 <div id="main">
     
-    <h1 class="page-title">webgpu/gpuScripts.js</h1>
+    <h1 class="page-title">ErrorTypes
+Used throughout the libary to assert the types of errors found</h1>
     
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import * as scripts from "./utils/gslCode/gslScripts.js"
+        <h2>
+        ErrorTypes
+Used throughout the libary to assert the types of errors found
+        </h2>
+        
+    
+</header>
 
-/**
- * @namespace gpuScripts
- */
+<article>
+    <div class="container-overview">
+    
+        
 
-/**
- * Retrieves the available GPU scripts and their corresponding functions.
- * @member gpuScripts
- * @memberof gpuScripts
- * @returns {Map} - A map of GPU scripts and their functions.
- */
-export const gpuScripts = () =>{
-    let r = Object.keys(scripts).map((script) => {
-      return script;
-    });
-    let fun = new Map();
-    for (let func of r) {
-      let fn = []
-      for (var i = 0; i &lt; Object.keys(func).length; i++){
-        fn.push(Object.keys(scripts[func])[i])
-      }
+        
 
-      fn = fn.filter((ele) => ele === undefined || ele === "main" ? null : ele)
-      fun.set(func, fn)
-    }
-    return fun;
-  }</code></pre>
-        </article>
-    </section>
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_utils_errors.js.html">core/utils/errors.js</a>, <a href="core_utils_errors.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
