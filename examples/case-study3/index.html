@@ -4,7 +4,7 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/hydrolang@1.1.8/hydrolang.js">
     </script>
-    <script type="module" src="../../src/hydrocompute.js" onload="loadCompute()">
+<script type="module" onload="initHydrocompute() " src="../../src/hydrocompute.js"></script>
     </script>
     <link rel="stylesheet" href="styles.css">
     <title>Case Study 3: Dashboard for Satation Statistical Analysis</title>
@@ -14,17 +14,19 @@
     <div id="map"></div>
     <div id="overlay">
         <div id="content">
+            <button id="close-btn">&times;</button>
             <div id="retrieved-data"></div>
             <div id="result-graph"></div>
             <div id="stats-table"></div>
+            <br>
             <button id="download-raw-btn">Download Data</button>
             <br>
             <button id="download-simulationRes-btn">Download Simulation Results</button>
         </div>
     </div>
     <script>
-    function loadCompute() {
-        window.compute = new hydroCompute()
+    const initHydrocompute = async () => {
+      window.compute = new hydroCompute();
     }
     </script>
     <script src="main.js">

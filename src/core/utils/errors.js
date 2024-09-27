@@ -1,5 +1,6 @@
 /**
  * @namespace ErrorTypes
+ * Used throughout the libary to assert the types of errors found
  */
 
 /**
@@ -29,15 +30,15 @@ export class NotImplemented extends Error {
 }
 
 /**
- * @member NotFound
+ * @member FileNotFound
  * @memberof ErrorTypes
  * @extends Error
  * @description Used whenever there is an error raised because of not found file(s)
  */
-export class NotFound extends Error {
+export class FileNotFound extends Error {
     constructor(message){
         super(message)
-        Object.setPrototypeOf(this, NotFound)
+        Object.setPrototypeOf(this, FileNotFound)
     }
 }
 

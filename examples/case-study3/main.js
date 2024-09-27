@@ -1,4 +1,7 @@
+//Declaration of the global variables
+
 const hydro = new Hydrolang();
+
 window.clean_stations = [];
 
 function showOverlay() {
