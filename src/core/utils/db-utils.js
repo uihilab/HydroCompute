@@ -181,7 +181,7 @@ async function reassembleChunksFromStore(result, store) {
  */
 // Load pako for gzip decompression (lazy load)
 /**
- * @private
+ * @ignore
  */
 let pakoLib = null;
 async function loadPako() {
@@ -690,7 +690,7 @@ export async function storeResultInIndexedDB(databaseName, storeName, data) {
  */
 /**
  * Check if ArrayBuffer/TypedArray is gzipped (starts with 0x1f 0x8b)
- * @private
+ * @ignore
  */
 function isGzipped(buffer) {
   if (buffer instanceof ArrayBuffer) {
@@ -705,7 +705,7 @@ function isGzipped(buffer) {
 
 /**
  * Convert gzipped ArrayBuffer to Base64 string for storage
- * @private
+ * @ignore
  */
 function gzipToBase64(gzipBuffer) {
   const uint8 = gzipBuffer instanceof ArrayBuffer

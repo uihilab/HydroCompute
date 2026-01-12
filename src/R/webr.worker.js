@@ -17,7 +17,7 @@ console.log('[R Worker] Worker loaded successfully.');
 
 /**
  * Initialize WebR instance
- * @private
+ * @ignore
  * @returns {Promise} WebR instance
  */
 async function getWebR() {
@@ -44,7 +44,7 @@ async function getWebR() {
 
 /**
  * Install and load R packages
- * @private
+ * @ignore
  * @param {Array<string>} packages - List of package names
  * @param {Object} webR - WebR instance
  */
@@ -70,7 +70,7 @@ async function loadRPackages(packages, webR) {
 
 /**
  * Convert JavaScript data to R objects and bind them to the global environment
- * @private
+ * @ignore
  * @param {any} jsData - JavaScript data
  * @param {string} bindName - Name of the variable in R
  * @param {Object} webR - WebR instance
@@ -134,7 +134,7 @@ async function bindJsToR(jsData, bindName, webR) {
 
 /**
  * Helper to convert Array of Objects (Row-oriented) to Object of Arrays (Columnar)
- * @private
+ * @ignore
  * @param {Array} data - Input array of objects
  * @returns {Object} Columnar data
  */
@@ -164,7 +164,7 @@ function toColumnar(data) {
 
 /**
  * Handle dependency retrieval with Reference Item support (mirroring Python worker)
- * @private
+ * @ignore
  * @param {string} depId - Dependency ID
  * @param {Object} dbConfig - Database configuration
  * @returns {Promise<any>} The actual data

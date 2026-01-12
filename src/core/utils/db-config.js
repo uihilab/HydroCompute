@@ -8,7 +8,7 @@
  */
 
 /**
- * @private
+ * @ignore
  */
 const DB_CONFIG = {
   NAME: 'hydrocomputeDB',
