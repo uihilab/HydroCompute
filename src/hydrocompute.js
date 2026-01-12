@@ -176,6 +176,23 @@ class hydroCompute {
   /**
    * @description Stop all worker execution and kill all active workers
    * @memberof hydroCompute
+   * @description Runs the specified functions with the given arguments using the current engine. The engine must be set previous to the run function to be called.
+   * @memberof hydroCompute
+   * @param {Object|string} args - The configuration object or the relative path of the script to run.
+   * @param {Array} args.dataIds - An array of data IDs.
+   * @param {Array} args.functions - An array of function names.
+   * @param {Array} [args.funcArgs=[]] - An array of function arguments.
+   * @param {Array} [args.dependencies=[]] - An array specifying the dependencies between functions.
+   * @param {Array} [args.scriptName=[]] - An array of script names.
+   * @param {Array} [args.dataSplits=[]] - An array specifying if data should be split for each function.
+   * @returns {Promise<void>} - A Promise that resolves once the functions are executed.
+   * @example
+   * //Case 1: Running a script in home folder with 'main' function steering the script and a single data instance saved on 'availableData'
+   * await compute.run('scriptName');
+   * //Case 2: Running a function from the ones available on each engine using a multiple data ids
+   * await compute.run({functions: ['f1', 'f2', 'f3'], dataIds: ['id1', 'id2', 'id3']})
+   * //Case 3: Linking steps and linking functions within steps
+   * await compute.run({functions: [['f1', 'f2'], ['f3']],, dependencies:[[[], [0]], []] dataIds: ['id1', 'id2', 'id3']})
    */
   stop() {
     console.log('Stopping all engines and killing workers...');

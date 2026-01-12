@@ -3,3 +3,4 @@
 docs
 .wasm
 randomData
+config_jsdoc.json

@@ -1,4 +1,4 @@
-# HydroCompute - a computational library for hydrology
+# HydroCompute - a web-based client-side computational library for hydrology
 
 ## Table of Contents
 
@@ -184,6 +184,10 @@ compute.availableResults()
 ```
 The results per simulation will be saved with nametag `Simulation_N`.
 
+A list of case studies and examples can be found [here](https://github.com/uihilab/HydroCompute/tree/master/examples).
+
+A self-guided tutorial can be found in the following [link](https://hydroinformatics.uiowa.edu/tutorials/hydrocompute/).
+
 ## Expansions and Test Cases
 ### Expansions
 Currently the library works fully with Chromium based browsers. Mozilla implementations will be added in future releases.
@@ -199,16 +203,19 @@ It is possible for the library to expand by becoming a community-based framework
 Please feel free to send feedback to us on any issues found by filing an issue.
 
 ## Scalability and To-Do's
-New engines and functions for the existing engines will be added into the library for easier implementation and usage.
+The HydroCompute library is a work in progress that aims in providing a scalable set of tools so that the hydrologic community can benefit from. To this extent, we have the following open developments that will be included in future deployments:
+
+* New engines and functions for the existing engines will be added into the library for easier implementation and usage.
+* A webpack implementation of the library that provides an easier interaction directly from a CDN.
+* Create a better integration with technologies such as Docker containers to streamline the deployment of new functions using WebAssembly into the library.
 
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/uihilab/HydroCompute/blob/master/LICENSE) file for details.
 
 ## Acknowledgements
-This work was funded by the University of Iowa's HydroInformatics Lab.
+This project was funded by the National Oceanic & Atmospheric Administration (NOAA) via a cooperative agreement with The University of Alabama (NA22NWS4320003) awarded to the Cooperative Institute for Research to Operations in Hydrology (CIROH).
 
 ## References
 
-* Erazo Ramirez, C., Sermet, Y., Demir, I. HydroCompute: An Open Source Web-based Client-side Computational Library 
-for Hydrology And Environmental Sciences. In revision.
+* Erazo Ramirez, C., Sermet, Y., & Demir, I. (2024). HydroCompute: An open-source web-based computational library for hydrology and environmental sciences. Environmental Modelling & Software, 175, 106005. https://doi.org/10.1016/j.envsoft.2024.106005

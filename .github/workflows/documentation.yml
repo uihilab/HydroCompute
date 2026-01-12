@@ -18,8 +18,8 @@ jobs:
           source_dir: ./src/
           output_dir: ./docs/
           config_file: ./.github/workflows/config_doc.json
-          template: clean-jsdoc-theme
-          front_page: README.md
+          template: toast-jsdoc
+          front_page: ./static/adds/README.md
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
