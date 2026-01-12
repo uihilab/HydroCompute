@@ -7,6 +7,9 @@
  * this module to ensure consistency.
  */
 
+/**
+ * @private
+ */
 const DB_CONFIG = {
   NAME: 'hydrocomputeDB',
   VERSION: 2,
@@ -39,6 +42,7 @@ const DB_CONFIG = {
 
 /**
  * Get database configuration
+ * @private
  * @returns {Object} The database configuration object
  */
 export function getDatabaseConfig() {
@@ -47,6 +51,7 @@ export function getDatabaseConfig() {
 
 /**
  * Get database name
+ * @private
  * @returns {string} The database name
  */
 export function getDatabaseName() {
@@ -55,6 +60,7 @@ export function getDatabaseName() {
 
 /**
  * Get database version
+ * @private
  * @returns {number} The database version
  */
 export function getDatabaseVersion() {
@@ -63,6 +69,7 @@ export function getDatabaseVersion() {
 
 /**
  * Get store configuration
+ * @private
  * @param {string} storeName - Name of the store to get configuration for
  * @returns {Object|null} The store configuration or null if not found
  */
@@ -72,6 +79,7 @@ export function getStoreConfig(storeName) {
 
 /**
  * Check if store exists in schema
+ * @private
  * @param {string} storeName - Name of store to check
  * @returns {boolean} True if store exists in schema
  */
@@ -81,6 +89,7 @@ export function storeExistsInSchema(storeName) {
 
 /**
  * Creates a new database connection
+ * @private
  * @param {string} [dbName=DB_CONFIG.NAME] - Database name
  * @param {number} [version=DB_CONFIG.VERSION] - Database version
  * @returns {Promise<IDBDatabase>} Promise resolving to database connection

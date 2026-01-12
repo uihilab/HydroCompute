@@ -15,6 +15,7 @@ let pyodideInstance = null;
 
 /**
  * Initialize Pyodide instance
+ * @private
  * @returns {Promise} Pyodide instance
  */
 async function getPyodide() {
@@ -61,6 +62,7 @@ async function getPyodide() {
  * - Primitives: Pass through with type preservation
  * 
  * The Python code is responsible for processing/parsing the data format
+ * @private
  * @param {any} jsData - JavaScript data (array, ArrayBuffer, TypedArray, object, primitive)
  * @param {Object} pyodide - Pyodide instance
  * @returns {any} Python object (list, bytes, dict, etc.)
@@ -143,6 +145,7 @@ function jsToPython(jsData, pyodide) {
 
 /**
  * Convert Python result to JavaScript format
+ * @private
  * @param {any} pythonResult - Python result
  * @param {Object} pyodide - Pyodide instance
  * @returns {any} JavaScript object

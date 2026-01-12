@@ -10,6 +10,7 @@ export { openDatabase };
 
 /**
  * Verify database accessibility
+ * @private
  * @param {string} databaseName - Name of the database
  * @param {string} storeName - Name of the object store
  * @returns {Promise<boolean>} Promise resolving to true if accessible
@@ -48,6 +49,7 @@ export async function verifyDatabaseAccess(databaseName, storeName) {
 
 /**
  * Reassemble chunks for partitioned files
+ * @private
  * @param {Object} result - The main record with isPartitioned: true
  * @param {IDBObjectStore} store - The IndexedDB object store
  * @returns {Promise<any>} Promise resolving to the reassembled data
@@ -178,6 +180,9 @@ async function reassembleChunksFromStore(result, store) {
  * @returns {Promise<any>} Decompressed ArrayBuffer when gzip is detected; otherwise original data
  */
 // Load pako for gzip decompression (lazy load)
+/**
+ * @private
+ */
 let pakoLib = null;
 async function loadPako() {
   if (pakoLib) return pakoLib;
@@ -306,6 +311,7 @@ async function maybeDecompressGzip(data) {
 
 /**
  * Get data from IndexedDB
+ * @private
  * @param {string} datab - Database name
  * @param {string} storeName - Object store name
  * @param {string} id - Record ID
@@ -407,6 +413,7 @@ export async function getDataFromIndexedDB(datab, storeName, id) {
 
 /**
  * Parse XML string to JSON object
+ * @private
  * @param {string} xmlString - XML string to parse
  * @returns {Object|null} Parsed JSON object or null if parsing fails
  */
@@ -517,6 +524,7 @@ function parseXMLToJSON(xmlString) {
 /**
  * Simple XML parser fallback for web worker contexts where DOMParser is not available
  * This is a limited parser that extracts basic structure
+ * @private
  * @param {string} xmlString - XML string to parse
  * @returns {Object|null} Parsed object or null
  */
@@ -551,6 +559,7 @@ function parseXMLSimple(xmlString) {
 
 /**
  * Recursively process data to parse XML strings
+ * @private
  * @param {any} data - Data to process
  * @returns {any} Processed data with XML strings converted to JSON
  */
@@ -606,6 +615,7 @@ function processDataForXML(data) {
 
 /**
  * Store result in IndexedDB
+ * @private
  * @param {string} databaseName - Database name
  * @param {string} storeName - Object store name
  * @param {Object} data - Data object to store (must have 'id' field)
@@ -680,6 +690,7 @@ export async function storeResultInIndexedDB(databaseName, storeName, data) {
  */
 /**
  * Check if ArrayBuffer/TypedArray is gzipped (starts with 0x1f 0x8b)
+ * @private
  */
 function isGzipped(buffer) {
   if (buffer instanceof ArrayBuffer) {
@@ -694,6 +705,7 @@ function isGzipped(buffer) {
 
 /**
  * Convert gzipped ArrayBuffer to Base64 string for storage
+ * @private
  */
 function gzipToBase64(gzipBuffer) {
   const uint8 = gzipBuffer instanceof ArrayBuffer
