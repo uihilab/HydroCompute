@@ -1,10 +1,12 @@
 /**
  * Utility functions for matrix operations.
- * @namespace
+ * @member matrixUtils_js
+ * @memberof jsScripts
  */
 export const matrixUtils = {
   /**
    * Performs matrix multiplication using the naive dot product.
+   * @memberof matrixUtils_js
    * @param {number[]} d - The input matrices as a 2D array.
    * @param {number[]} sizes - The sizes of the matrices [m, n, p].
    * @returns {number[]} - The result of matrix multiplication.
@@ -39,6 +41,7 @@ export const matrixUtils = {
 
   /**
    * Performs matrix addition.
+   * @memberof matrixUtils_js
    * @param {number[]} d - The input matrices as a 2D array.
    * @returns {number[]} - The result of matrix addition.
    */
@@ -58,6 +61,7 @@ export const matrixUtils = {
 
   /**
    * Creates a convolution of a 2D matrix.
+   * @memberof matrixUtils_js
    * @param {object} data - The input data object.
    * @param {number[][]} data.input - The input matrix.
    * @param {number[][]} data.kernel - The kernel matrix.
@@ -110,6 +114,7 @@ export const matrixUtils = {
   },
   /**
    * Runs the specified function in the `matrixUtils` object with the given data.
+   * @memberof matrixUtils_js
    * @param {string} name - The name of the function to run.
    * @param {*} data - The input data for the function.
    * @returns {*} - The result of the function, or `undefined` if the function is not found.

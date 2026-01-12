@@ -1,19 +1,46 @@
+/**
+ * @brief Implementation of statistical operations for web assembly.
+ *
+ * This program provides functions for statistical operations such as linear detrending,
+ * auto-updating parameter ARMA model, setting parameters for ARMA model, autocorrelation function (ACF),
+ * partial autocorrelation function (PACF), and Box-Cox transformation. It also includes memory
+ * management functions for creating and destroying memory.
+ *
+ */
 #include <emscripten.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 
+/**
+ * @brief Allocates memory of a specified size.
+ *
+ * @param size The size of the memory to allocate.
+ * @return A pointer to the allocated memory.
+ */
 EMSCRIPTEN_KEEPALIVE
 uint8_t* createMem(int size) {
 	return malloc(size);
 }
 
+/**
+ * @brief Deallocates the memory pointed to by the given pointer.
+ *
+ * @param p A pointer to the memory to be deallocated.
+ */
 EMSCRIPTEN_KEEPALIVE
 void destroy(uint8_t* p){
 	free(p);
 }
 
+/**
+ * @brief Performs linear detrending on the input data.
+ *
+ * @param data The input data.
+ * @param result The detrended data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 void linear_detrend(float *data, float *result, int n) {
     float x_mean = 0.0;
@@ -46,105 +73,71 @@ void linear_detrend(float *data, float *result, int n) {
     }
 }
 
+/**
+ * @brief Auto-updates parameters for the ARMA model.
+ *
+ * @param data The input data.
+ * @param prediction The predicted data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // autoupdate parameter ARMA model
 void arima_autoParams(float *data, float *prediction, int n) {
-    //int n = m / sizeof(data[0]);
     int MAX_ITERATIONS = 1000;
     float TOLERANCE = 1e-6;
     float phi = 0.3; // AR coefficient
     float theta = -0.2; // MA coefficient
     float mu = 0.0; // Mean
-	float last_phi;
-	float last_theta;
-	float last_mu;
-	int num_consecutive_fails = 0;
-	
-	for (int i = 0; i < n; i++) {
+
+    // Calculate the mean of the data
+    for (int i = 0; i < n; i++) {
         mu += data[i];
     }
     mu /= n;
-	
-	
+
     for (int iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
         float prev_phi = phi;
         float prev_theta = theta;
         float prev_mu = mu;
-        float sum_error = 0.0;
-        float sum_error_sq = 0.0;
-        float sum_error_cub = 0.0;
-        float sum_error_quad = 0.0;
-        float sum_x = 0.0;
         float sum_xy = 0.0;
         float sum_x_sq = 0.0;
-        float sum_y = 0.0;
-        float sum_y_sq = 0.0;
+        float sum_error_sq = 0.0;
 
         for (int i = 1; i < n; i++) {
             float error = data[i] - mu - phi * data[i-1] - theta * (data[i-1] - mu);
-            sum_error += error;
-            sum_error_sq += error * error;
-            sum_error_cub += error * error * error;
-            sum_error_quad += error * error * error * error;
-            sum_x += data[i-1];
             sum_xy += data[i-1] * error;
             sum_x_sq += data[i-1] * data[i-1];
-            sum_y += error;
-            sum_y_sq += error * error;
+            sum_error_sq += error * error;
         }
 
-        mu = sum_error / (n - 1);
-        phi = sum_xy / (sum_x_sq + sum_error_sq);
-        theta = (sum_error - phi * sum_xy) / (n - 1 - sum_y_sq / sum_error_sq);
-		
-		last_phi = phi;
-		last_theta = theta;
-		last_mu = mu;
+        // Update phi and theta based on the relationships
+        phi = sum_xy / sum_x_sq;
+        theta = (sum_error_sq - phi * sum_xy) / (n - 1);
 
+        // Check for convergence
         float diff_phi = phi - prev_phi;
         float diff_theta = theta - prev_theta;
-        float diff_mu = mu - prev_mu;
-        float diff_norm = sqrt(diff_phi * diff_phi + diff_theta * diff_theta + diff_mu * diff_mu);
+        float diff_norm = sqrt(diff_phi * diff_phi + diff_theta * diff_theta);
         if (diff_norm < TOLERANCE) {
             printf("Converged after %d iterations\n", iteration + 1);
             break;
         }
-        else {
-            printf("Iteration %d, diff_norm = %f\n", iteration + 1, diff_norm);
-			if (iteration == 1 && num_consecutive_fails == 0) {
-                // Use initial values on second iteration
-                phi = 0.5;
-                theta = -0.2;
-                mu = 0.0;
-                num_consecutive_fails++;
-                printf("Using initial values on second iteration\n");
-            }
-			else {
-                num_consecutive_fails++;
-				phi = last_phi;
-				theta = last_theta;
-				mu = last_mu;
-            }
-        }
-		if (num_consecutive_fails > 10) {
-			phi = 0.3;
-            theta = -0.2;
-            mu = 0.0;
-			for (int i = 0; i < n; i++) {
-				mu += data[i];
-			}
-			mu /= n;
-			printf("Using initial values for calculation. phi %f, theta %f, mu%f\n", phi, theta, mu);
-			break;
-		}
     }
 
+    // Generate predictions
     for (int i = 1; i < n; i++) {
         float error = data[i] - mu - phi * data[i-1] - theta * (data[i-1] - mu);
         prediction[i] = mu + phi * data[i-1] + theta * error;
     }
 }
 
+/**
+ * @brief Sets parameters for the ARMA model.
+ *
+ * @param data The input data.
+ * @param prediction The predicted data.
+ * @param m The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // autoupdate parameter ARMA model
 void arima_setParams(float *data, float *prediction, int m) {
@@ -169,7 +162,13 @@ void arima_setParams(float *data, float *prediction, int m) {
     }
 }
 
-
+/**
+ * @brief Computes the autocorrelation function (ACF) for the input data.
+ *
+ * @param data The input data.
+ * @param result The computed ACF.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // total autocorrelation function
 void acf(float *data, float *result, int n) {
@@ -199,6 +198,13 @@ void acf(float *data, float *result, int n) {
     result[0] /= 2;
 }
 
+/**
+ * @brief Computes the partial autocorrelation function (PACF) for the input data.
+ *
+ * @param x The input data.
+ * @param pacf_result The computed PACF.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 // partial autocorrelation function with max lag of 75
 void pacf(float *x, float *pacf_result, int n) {
@@ -290,6 +296,13 @@ void pacf(float *x, float *pacf_result, int n) {
     }
 }
 
+/**
+ * @brief Applies the Box-Cox transformation on the input data.
+ *
+ * @param data The input data.
+ * @param result The transformed data.
+ * @param n The size of the data.
+ */
 EMSCRIPTEN_KEEPALIVE
 void boxcox_transform(float* data, float* result, int n) {
 	float lambda = 0.5;

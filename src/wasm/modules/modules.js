@@ -2,8 +2,13 @@ import { CUtils } from "./C/mods.js";
 import { ASUtils } from "./assemblyScript/mods.js";
 
 /**
- * Anything else that has to be imported into the library's
- * usage has to be added here
+ * @namespace WASMUtils
+ */
+
+
+/**
+ * @memberof WASMUtils
+ * @description object container of relative paths for the Web Assembly modules
  */
 const availableScripts = {
   C: "../../wasm/modules/C",
@@ -12,7 +17,8 @@ const availableScripts = {
 };
 
 /**
- * Returns the location of a specified utility in a given script or module.
+ * @description Returns the location of a specified utility in a given script or module.
+ * @memberof WASMUtils
  * @param {string} scName - The name of the script or module.
  * @param {string} utilName - The name of the utility.
  * @returns {string} - The location of the specified utility in the given script or module.
@@ -46,7 +52,8 @@ const _location = (scriptName, utilName) => {
 };
 
 /**
- * Load and instantiate a WebAssembly module from the ASUtils script directory.
+ * @description Load and instantiate a WebAssembly module from the ASUtils script directory.
+ * @memberof WASMUtils
  * @async
  * @param {string} name - The name of the module to load.
  * @returns {Promise} - An object representing the exports of the instantiated module.
@@ -59,17 +66,30 @@ const ASModule = async (name) => {
     //shared: true,
   });
   try {
-    const module = await WebAssembly.instantiateStreaming(
-      fetch(_location("AS", name)),
-      {
-        js: { mem: memory },
-        env: {
-          abort: (_msg, _file, line, column) =>
-            console.error(`Abort at ${line}: ${column}`),
-          memory: memory,
-        },
-      }
-    );
+    // const module = await WebAssembly.instantiateStreaming(
+    //   fetch(_location("AS", name)),
+    //   {
+    //     js: { mem: memory },
+    //     env: {
+    //       abort: (_msg, _file, line, column) =>
+    //         console.error(`Abort at ${line}: ${column}`),
+    //       memory: memory,
+    //     },
+    //   }
+    // );
+
+    const response = await fetch(_location("AS", name));
+    const buffer = await response.arrayBuffer();
+    const module = await WebAssembly.instantiate(buffer,     
+        {
+          js: { mem: memory },
+          env: {
+            abort: (_msg, _file, line, column) =>
+              console.error(`Abort at ${line}: ${column}`),
+            memory: memory,
+          },
+        })
+
     return module.instance.exports;
   } catch (error) {
     throw new Error(`Failed to load AS module '${name}'.`, error);
@@ -77,7 +97,8 @@ const ASModule = async (name) => {
 };
 
 /**
- * Asynchronously loads and creates a module from a C script.
+ * @description Asynchronously loads and creates a module from a C script.
+ * @memberof WASMUtils
  * @param {string} moduleName - The name of the module to load.
  * @returns {Promise} A promise that resolves to the module.
  * @throws Will throw an error if there was an error loading the module.
@@ -95,7 +116,10 @@ const CModule = async (modName) => {
 };
 
 /**
- * Utility class for AScript.
+ * @description Utility class for dealing with AS compiled WASM.
+ * @member AScriptUtils
+ * @memberof WASMUtils
+ * @property lifTypedArray
  */
 class AScriptUtils {
   constructor() {
@@ -209,7 +233,8 @@ class AScriptUtils {
 }
 
 /**
- * Loads a module based on the script name and module name.
+ * @description Loads a module based on the script name and module name.
+ * @memberof WASMUtils
  * @param {string} scriptName - The script name.
  * @param {string} moduleName - The module name.
  * @returns {Promise<object>} - A promise that resolves to the loaded module.
@@ -233,7 +258,8 @@ const loadModule = async (scriptName, moduleName) => {
 };
 
 /**
- * Retrieves all available modules.
+ * @description Retrieves all available modules.
+ * @memberof WASMUtils
  * @returns {Promise<object>} - A promise that resolves to an object containing all the available modules.
  */
 const getAllModules = async () => {
@@ -259,7 +285,8 @@ const getAllModules = async () => {
 };
 
 /**
- * Retrieves all available scripts and their modules.
+ * @description Retrieves all available scripts and their modules.
+ * @memberof WASMUtils
  * @returns {Promise<object>} - A promise that resolves to an object containing all the available scripts and their modules.
  */
 const avScripts = async () => {
@@ -279,7 +306,8 @@ const avScripts = async () => {
 };
 
 /**
- * Filters the function keys of an object, excluding specific keys.
+ * @description Filters the function keys of an object, excluding specific keys.
+ * @memberof WASMUtils
  * @param {object} obj - The object to filter.
  * @returns {string[]} - An array of filtered function keys.
  */

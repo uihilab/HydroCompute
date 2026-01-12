@@ -1,26 +1,19 @@
 /**
+ * @namespace gpuUtils
+ */
+
+/**
  * Class representing device connection and management for WebGPU.
- * @class deviceConnect
+ * @member deviceConnect
  * @memberof gpuUtils
+ * @property {GPUAdapter | null} adapter - The GPU adapter object. Set to null if no adapter is connected.
+ * @property {GPUDevice | null} device - The GPU device object. Set to null if no device is connected. 
+ * @property {EventListener | null} lostListener - The event listener for device loss. Set to null if no listener is attached.
  */
 export class deviceConnect {
   constructor() {
-    /**
-     * The WebGPU adapter.
-     * @type {GPUAdapter}
-     */
     this.adapter = null;
-
-    /**
-     * The WebGPU device.
-     * @type {GPUDevice}
-     */
     this.device = null;
-
-    /**
-     * The listener for device loss event.
-     * @type {Promise}
-     */
     this.lostListener = null;
   }
 

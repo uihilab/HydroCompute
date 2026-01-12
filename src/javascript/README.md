@@ -32,6 +32,16 @@ dataIds: [nametag of data saved in the library in array format]
 ```
 Please see examples and homepage for more arguments that can be passed to the run function. After the simulation has run, the result will be saved in the ```compute.availableResults``` object.
 
+### HydroLang Integration
+The JavaScript engine is uniquely capable of instantiating and running `HydroLang` functions directly within the worker thread. This allows for off-loading computationally intensive HydroLang operations (like statistical analysis or geoprocessing) from the main thread.
+
+When the worker receives a task with `type: 'hydrolang'`, it:
+1. Instantiates a dedicated `HydroLang` instance with visuals disabled (`includeVisuals: false`).
+2. Dynamically accesses the requested module and function (e.g., `hydro.analyze.stats.basic`).
+3. Executes the function with the provided data and arguments.
+
+This seamless integration ensures that all synchronous HydroLang methods can be executed asynchronously via the worker pattern.
+
 ### Best Practices
 To get the best out of the engine, please consider the following:
 

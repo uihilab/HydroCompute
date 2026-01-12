@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydrograph Smoothing - Python Engine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #e67e22;
+            border-bottom: 2px solid #d35400;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 1.5rem;
+        }
+
+        #output {
+            background: #fdf2e9;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #fae5d3;
+            font-family: Consolas, monospace;
+            min-height: 150px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .nav {
+            margin-bottom: 1rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #e67e22;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav"><a href="../index.html">← Back to Dashboard</a></div>
+    <div class="container">
+        <h1>Hydrograph Smoothing</h1>
+        <p>This example uses the <strong>Python Engine</strong> (Pyodide) to process a simulated noisy streamflow
+            hydrograph.</p>
+
+        <h3>Processing Operations:</h3>
+        <ul>
+            <li><strong>Input:</strong> Noisy streamflow time series (cfs).</li>
+            <li><strong>Engine:</strong> Python Worker (Pyodide).</li>
+            <li><strong>Algorithm:</strong> 5-step Moving Average Smoothing.</li>
+        </ul>
+
+        <h3>Execution Log:</h3>
+        <div id="output">Initializing Pyodide...</div>
+    </div>
+
+    <script type="module" src="./hydrograph_smoothing.js"></script>
+</body>
+
+</html>

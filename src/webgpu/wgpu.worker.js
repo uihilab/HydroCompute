@@ -1,5 +1,5 @@
 /**
- * Web worker script for executing GPU computations.
+ * @description Web worker script for executing GPU computations. Creates computing pipelines and transformations to be mapped into the GPU.
  * @module WebWorker
  * @memberof Worker
  * @name GPUWorker

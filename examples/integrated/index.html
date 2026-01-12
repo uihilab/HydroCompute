@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Catchment Analysis - HydroCompute</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background: #f5f7fa;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .nav {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .nav a {
+            color: #bdc3c7;
+            text-decoration: none;
+        }
+
+        .nav a:hover {
+            color: white;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 0.5rem;
+            color: #7f8c8d;
+        }
+
+        .card.js {
+            border-top: 4px solid #f1c40f;
+        }
+
+        .card.python {
+            border-top: 4px solid #3498db;
+        }
+
+        .card.r {
+            border-top: 4px solid #9b59b6;
+        }
+
+        .card.wasm {
+            border-top: 4px solid #e67e22;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #bdc3c7;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .status.running {
+            color: #e67e22;
+        }
+
+        .status.done {
+            color: #27ae60;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            min-height: 100px;
+            overflow: hidden;
+        }
+
+        #pipeline-control {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #219150;
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        #workflow-log {
+            grid-column: 1 / -1;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Integrated Catchment Analysis</h1>
+        <div class="nav"><a href="../index.html">← Back to Examples</a></div>
+    </header>
+
+    <div class="dashboard">
+        <div id="pipeline-control">
+            <p>Runs a multi-step hydrological workflow across JavaScript, Python, R, and WASM engines.</p>
+            <button id="runBtn">Run Full Workflow</button>
+        </div>
+
+        <div class="card js">
+            <h2>1. Precipitation Stats (JS)</h2>
+            <div class="status" id="status-js">Waiting...</div>
+            <div class="result-box" id="result-js">-</div>
+        </div>
+
+        <div class="card python">
+            <h2>2. Hydrograph Smoothing (Python)</h2>
+            <div class="status" id="status-py">Waiting...</div>
+            <div class="result-box" id="result-py">-</div>
+        </div>
+
+        <div class="card r">
+            <h2>3. Flood Frequency (R)</h2>
+            <div class="status" id="status-r">Waiting...</div>
+            <div class="result-box" id="result-r">-</div>
+        </div>
+
+        <div class="card wasm">
+            <h2>4. Flow Mapping (WASM)</h2>
+            <div class="status" id="status-wasm">Waiting...</div>
+            <div class="result-box" id="result-wasm">-</div>
+        </div>
+
+        <div id="workflow-log">Ready to start...</div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>

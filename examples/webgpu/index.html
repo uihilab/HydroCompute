@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spatial Precip - WebGPU Engine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #e74c3c;
+            border-bottom: 2px solid #c0392b;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 1.5rem;
+        }
+
+        #canvas-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 1rem;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+        }
+
+        .caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        #output {
+            background: #fdedec;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #fadbd8;
+            font-family: Consolas, monospace;
+            min-height: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .nav {
+            margin-bottom: 1rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav"><a href="../index.html">← Back to Dashboard</a></div>
+    <div class="container">
+        <h1>Spatial Runoff Simulation</h1>
+        <p>This example demonstrates massively parallel grid processing using the **WebGPU Engine**. (Visualized using
+            Canvas).</p>
+
+        <h3>Processing Operations:</h3>
+        <ul>
+            <li><strong>Input:</strong> 256x256 Soil Saturation Grid.</li>
+            <li><strong>Engine:</strong> WebGPU Worker.</li>
+            <li><strong>Algorithm:</strong> Parallel Infiltration/Runoff (Mocked).</li>
+        </ul>
+
+        <h3>Execution Log:</h3>
+        <div id="output">Initializing...</div>
+
+        <div id="canvas-container">
+            <div>
+                <canvas id="soilCanvas" width="256" height="256"></canvas>
+                <div class="caption">Initial Soil Saturation</div>
+            </div>
+            <div>
+                <canvas id="runoffCanvas" width="256" height="256"></canvas>
+                <div class="caption">Generated Runoff</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./spatial_precip.js"></script>
+</body>
+
+</html>

@@ -1,10 +1,18 @@
 /**
- * WebRTC engine class.
+ * WebRTC engine class. Implements a data P2P service that can be used through the HydroCompute library.
+ *
+ * @class WebRTC
+ * @description WebRTC engine class. Implements a data P2P service that can be used through the HydroCompute library.
+ * @property {number} MAX_MESSAGE_SIZE - Maximum size of a WebRTC message.
+ * @property {undefined|number} connectionTime - Time when the connection was established.
+ * @property {undefined|Array} candidates - Array of candidates for establishing the connection.
+ * @property {undefined|RTCPeerConnection} connection - RTCPeerConnection instance.
+ * @property {undefined|RTCDataChannel} dataChannel - RTCDataChannel instance.
+ * @property {string} type - Type of the WebRTC connection.
+ * @property {Array} results - Array to store results.
+ * @property {Array} selfData - Array to store self data.
  */
 export default class WebRTC {
-  /**
- * Constructs a new instance of the WebRTC engine.
- */
 constructor() {
   this.MAX_MESSAGE_SIZE = 65535;
   this.connectionTime = undefined;
@@ -14,13 +22,13 @@ constructor() {
   this.results = [];
   this.selfData = [];
   this.connection = new RTCPeerConnection();
-
   this.initialize();
 }
 
 
 /**
  * Initializes the WebRTC engine.
+ * @memberof WebRTC
  */
 initialize() {
   this.setConnection();
@@ -31,6 +39,7 @@ initialize() {
 
   /**
  * Runs the WebRTC engine.
+ * @memberof WebRTC
  * @param {Object} res - The response.
  */
 run(res) {
@@ -60,6 +69,7 @@ run(res) {
 
  /**
  * Sets the connection for WebRTC.
+ * @memberof WebRTC
  */
 setConnection() {
   this.candidates = this.connection.onicecandidate = (e) => {
@@ -70,6 +80,7 @@ setConnection() {
 
    /**
  * Sets the a data channel connection for data transfer and receiving.
+ * @memberof WebRTC
  */
 setDataChannel() {
   this.dataChannel = this.connection.createDataChannel("dataChannel");
@@ -81,6 +92,7 @@ setDataChannel() {
 
  /**
  * Handles the available channel for WebRTC.
+ * @memberof WebRTC
  */
 onAvailableChannel() {
   this.connection.ondatachannel = (e) => {
@@ -107,6 +119,7 @@ onAvailableChannel() {
   /**
  * Sets the offer description for WebRTC.
  * @param {*} offer - The offer.
+ * @memberof WebRTC
  */
 setOfferDescription(offer) {
   this.connection
@@ -116,6 +129,7 @@ setOfferDescription(offer) {
 
   /**
  * Creates the offer description for WebRTC.
+ * @memberof WebRTC
  */
 createOfferDescription() {
   this.connection
@@ -125,6 +139,7 @@ createOfferDescription() {
 
   /**
  * Creates the answer for WebRTC.
+ * @memberof WebRTC
  */
 async createAnswer() {
   await this.connection.createAnswer().then((answer) =>
@@ -137,6 +152,7 @@ async createAnswer() {
   /**
  * Sends data through WebRTC.
  * @param {Object} data - The data to send.
+ * @memberof WebRTC
  */
 sendData(data) {
   if (this.type === "host") {
@@ -149,6 +165,7 @@ sendData(data) {
   /**
  * Submits an array of data through WebRTC.
  * @param {Object} data - The array of data to submit.
+ * @memberof WebRTC
  */
 submitArray(data) {
   const arrayBuffer = data.buffer;
@@ -163,6 +180,7 @@ submitArray(data) {
 /**
  * Opens the connection between two peers.
  * @param {String} answer - The answer.
+ * @memberof WebRTC
  */
 openConnection(answer) {
   this.connection.setRemoteDescription(answer).
@@ -171,6 +189,7 @@ openConnection(answer) {
 
 /**
  * Restarts the data channel from a host with an already RTC connection.
+ * @memberof WebRTC
  */
 restartDataChannel(){
   this.setDataChannel()
@@ -178,6 +197,7 @@ restartDataChannel(){
 
 /**
  * Handles the event when the data channel is closed on the receiver machine.
+ * @memberof WebRTC
  */
 oncloseReceiver() {
   console.log(`Data channel closed on receiver machine.`);
@@ -187,6 +207,7 @@ oncloseReceiver() {
 
 /**
  * Handles the event when the data channel is closed on the host machine.
+ * @memberof WebRTC
  */
 oncloseHost() {
   console.log(`Data channel closed on host machine.`);
