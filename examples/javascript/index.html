@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainfall Statistics - JS Engine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 1.5rem;
+        }
+
+        #output {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            font-family: Consolas, monospace;
+            min-height: 150px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 2px;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+
+        .info {
+            color: #2980b9;
+        }
+
+        .nav {
+            margin-bottom: 1rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav"><a href="../index.html">← Back to Dashboard</a></div>
+    <div class="container">
+        <h1>Rainfall Statistics Analysis</h1>
+        <p>This example simulates a 10-year daily rainfall time series and uses the <strong>JavaScript Engine</strong>
+            (via HydroLang) to calculate key hydrological statistics (Mean, Max, StdDev).</p>
+
+        <h3>Processing Operations:</h3>
+        <ul>
+            <li><strong>Input:</strong> ~3650 daily rainfall values (mm).</li>
+            <li><strong>Engine:</strong> JavaScript Worker (HydroLang native).</li>
+            <li><strong>Function:</strong> <code>hydro.analyze.stats.basic</code></li>
+        </ul>
+
+        <h3>Execution Log:</h3>
+        <div id="output">Initializing simulation...</div>
+    </div>
+
+    <script type="module" src="./rainfall_stats.js"></script>
+</body>
+
+</html>

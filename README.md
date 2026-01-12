@@ -5,6 +5,7 @@
 [**Link to documentation**](https://uihilab.github.io/HydroCompute/)
 
 * [Introduction](https://github.com/uihilab/HydroCompute#Introduction)
+* [Database Integration](https://github.com/uihilab/HydroCompute#Database-Integration)
 * [How to Use](https://github.com/uihilab/HydroCompute#How-to-Use)
 * [Expansions and Test Cases](https://github.com/uihilab/HydroCompute#Expansions-and-Test-Cases)
 * [Community](https://github.com/uihilab/HydroCompute#Community)
@@ -15,7 +16,14 @@
 * [References](#references)
 
 ## Introduction
-This work introduces HydroCompute, a computational library for hydrology and environmental sciences that runs on the client side. It employes 4 different engines, 3 main computations and 1 for peer-to-peer connection. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
+This work introduces hydroCompute, a computational library for hydrology and environmental sciences that runs on the client side. It employs distributed computing environments including **JavaScript** (Native & HydroLang), **Python** (Pyodide), **R** (WebR), and **WebGPU**, along with **WebRTC** for peer-to-peer connectivity. The library has been developed using ES6 standards and the most recent available APIs for WebAssembly, WebGPU, WebRTC, and the Web Workers specifications.
+
+## Database Integration
+HydroCompute now integrates **HydroComputeDB**, a robust wrapper around IndexedDB, to manage data persistence across sessions and workers. This ensures that large datasets and simulation results are stored efficiently in the browser without blocking the main thread. The database manages several stores:
+*   `settings`: Stores configuration and code snippets for dynamic execution.
+*   `workflowStates`: Manages the state of complex, multi-step workflows.
+*   `results`: Stores the output of computations, linked by execution IDs.
+*   `wasmModules`: Caches compiled WebAssembly modules for faster loading.
 
 ## How to Use
 Please download the library and run `index.html`. If a new html file should be created, the library must be onloaded onto the file as a script
@@ -30,21 +38,18 @@ Please download the library and run `index.html`. If a new html file should be c
 The library is loaded into an HTML web app by declaring either it as a window object when loading, or as a single instance run as follows:
 
 ```javascript
-const compute = new hydrocompute('engineName');
+const compute = new hydroCompute('engineName');
 ```
 
-When instantiated if no specific engines are passed into the constructor, the library will default to run using the functions within the JavaScript engine. The available engines along with existing code and how to develop more functions for usage in the library can be found in the following links:
+When instantiated if no specific engines are passed into the constructor, the library will default to run using the functions within the JavaScript engine.
 
-* [WebAssembly](https://github.com/uihilab/HydroCompute/tree/master/src/wasm): Available C and AssemblyScript bindings.
-* [JavaScript](https://github.com/uihilab/HydroCompute/tree/master/src/javascript): Available as native JavaScript object.
-* [WebGPU](https://github.com/uihilab/HydroCompute/tree/master/src/webgpu): GLSL code onloaded as strings in a JavaScript object.
-
-### Running a simulation
+### Running a Simulation
 
 By default, the hydrocompute library runs need 3 specific instructions settings: data, steps, and functions. The data submitted to the library is saved using the following instruction:
 
 ```javascript
-compute.data({ id: 'itemName', data: some2Dor1Darray })
+// Save data to the internal database
+await compute.data({ id: 'itemName', data: someNDArray })
 ```
 
 If no id is passed, the library will save a random name generated for the data. To revise the available data, then pass the command
@@ -53,25 +58,125 @@ If no id is passed, the library will save a random name generated for the data. 
 compute.availableData()
 ```
 
-Steps are inferred from the configuration for each 
+Steps are inferred from the configuration for each run.
 
-If there is only 1 data souce available inside the available data namespace, then just calling run would suffice.
+<details>
+<summary><b>JavaScript (Native & HydroLang)</b></summary>
+<br>
+
+Run native JavaScript functions or harness **HydroLang** capabilities directly.
 
 ```javascript
-compute.run()
-```
+// Native JS execution
+compute.run({
+  dataIds: [['dataId']],
+  functions: [['Math.max']]
+});
 
-To run a batch work, do:
+// Using HydroLang
+compute.run({
+  engine: 'javascript',
+  functions: [['str']], // Module
+  funcArgs: [[{ func: 'aridity', args: { /* params */ } }]]
+});
+```
+</details>
+<br>
+
+<details>
+<summary><b>Python (Pyodide)</b></summary>
+<br>
+
+Execute Python code directly in the browser using Pyodide.
 
 ```javascript
 compute.run({
-    linked: Boolean stating linkeage between steps
-    functions: [Array of functions per step],
-    dataId: [Array of names of saved data],
-    dependencies: [Array of dependencies as numbers, if applicable],
-    funcArgs: [Array of additional configurations per function, if applicable]
-})
+    type: 'python',
+    engine: 'python',
+    dataIds: [['my_data_id']],
+    functions: [['python_script_id']] // ID of code saved in 'settings' store
+});
 ```
+</details>
+<br>
+
+<details>
+<summary><b>R (WebR)</b></summary>
+<br>
+
+Run R scripts and hydrological packages using WebR.
+
+```javascript
+compute.run({
+    type: 'webr',
+    engine: 'webr',
+    dataIds: [['my_data_id']],
+    functions: [['r_script_id']] // ID of code saved in 'settings' store
+});
+```
+</details>
+<br>
+
+<details>
+<summary><b>WebAssembly (WASM)</b></summary>
+<br>
+
+Execute high-performance compiled modules.
+
+```javascript
+// Set engine to WASM
+await compute.setEngine('wasm');
+
+compute.run({
+    engine: 'wasm',
+    functions: [['accumulate_flow']],
+    dependencies: [[[ 'dem_data_id' ]]],
+    dataIds: [[[ 'dem_data_id' ]]]
+});
+```
+</details>
+<br>
+
+<details>
+<summary><b>WebGPU</b></summary>
+<br>
+
+Leverage GPU acceleration for massive parallel datasets.
+
+```javascript
+// Set engine to WebGPU
+await compute.setEngine('webgpu');
+
+compute.run({
+    engine: 'webgpu',
+    functions: [['matrix_multiply']],
+    dataIds: [['matrixA_id', 'matrixB_id']]
+});
+```
+</details>
+<br>
+
+<details>
+<summary><b>Combined Workflow (Multi-Engine)</b></summary>
+<br>
+
+Chain multiple engines together in a single workflow. For example, process data in Python, analyze in R, and visualize in JavaScript.
+
+```javascript
+compute.run({
+    linked: true, // Pass results from step 0 to step 1
+    functions: [
+        ['python_script_id'],  // Step 0: Python preprocessing
+        ['r_stats_script_id'], // Step 1: R statistical analysis
+        ['vis_func_id']        // Step 2: JS Visualization preparation
+    ],
+    engine: ['python', 'webr', 'javascript'], // Define engine per step if supported (or set individually)
+    // Note: Actual mixed-engine runs rely on the 'type' param per step or switching engines between runs.
+    // A common pattern is to run them sequentially and link via Data IDs.
+});
+```
+</details>
+
 The console of the browser will show the number of executions done by the engine once the results are finished. To retrieve the results, prompt the following command.
 
 ```javascript

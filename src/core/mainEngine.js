@@ -1,9 +1,10 @@
-import { DAG } from "./utils/globalUtils.js";
+import { DAG, IndexedDAG } from "./utils/globalUtils.js";
 import threadManager from "./threadEngine.js";
 import { splits } from "./utils/splits.js";
 import { jsScripts } from "../javascript/jsScripts.js";
 import { avScripts } from "../wasm/modules/modules.js";
 import { gpuScripts } from "../webgpu/gpuScripts.js";
+import { rScripts } from "../R/rScripts.js";
 
 /**
  * @class
@@ -17,9 +18,10 @@ import { gpuScripts } from "../webgpu/gpuScripts.js";
  * @param {String} workerLocation - location of the worker script running the data
  */
 export default class engine {
-  constructor(engine, workerLocation) {
+  constructor(engine, workerLocation, eventBus = null) {
     this.setEngine();
     this.workerLocation = workerLocation;
+    this.eventBus = eventBus;
     this.initialize(engine);
   }
 
@@ -31,7 +33,7 @@ export default class engine {
    */
   initialize(engineName) {
     this.engineName = engineName;
-    this.threads = new threadManager(this.engineName, this.workerLocation);
+    this.threads = new threadManager(this.engineName, this.workerLocation, null, this.eventBus);
   }
 
   /**
@@ -40,109 +42,155 @@ export default class engine {
    * @description interface method from the compute layer. it resets the values for each of the
    * @param {Object} args - containing the values for each step of isSplit, data, length, functions, funcArgs, dependencies, linked. See documentation for the HydroCompute class for more details
    */
+
   async run(args) {
-    //Default behavior for when no data or no functions are passed.
-    if (args.data.length === 0 || args.functions.length === 0) {
-      console.error(
-        "Please pass the data required for analysis and/or the functions to run."
-      );
-      return false
-    }
+    if (args.useDB) {
+      // CRITICAL: Execute independent steps in parallel, not sequentially
+      // The IndexedDAG handles dependencies within each step, and cross-step dependencies
+      // are handled through the database (items wait for their dependencies to complete)
 
-    let {
-      //Array of functions per step: [[fun1, fun2, fun3], [fun1,fun2,fun3]...]
-      functions = [],
-      //Array of arguments per function per step. Can be empty: [[addArg1, addArg2, addArg3], [addArg1, addArg2, addArg3]...]
-      funcArgs = [],
-      //Array of dependencies per step per function run: [[[], [0], [1]], [[], [], [0,1]]...]
-      dependencies = [],
-      //If true, that means that the results from step 0 are trailed down to step 1 and further. If false, then either use the same data or different
-      //data will be used at each step. If that is the case, it must be specified as an additional argument.
-      linked = false,
-      //The data array can be a set of array buffers. In case the steps are linked and the results are trailed down, then only one buffer is required.
-      data = [],
-      //Length of the data submitted for analysis per step.
-      length = [],
-      //Array of data splits to be performed per step: [true, false, false, true...]
-      isSplit = [],
-      //Name of the script used from the passed arguments.
-      scriptName = [],
-    } = args;
-
-    //The total number of steps will be infered from the number of functions per step.
-    let steps = functions.length;
-
-    let stepArgs = [];
-
-    //Separating 
-    for (let i = 0; i < steps; i++) {
-      let thisFunctions = functions[i],
-        thisFunArgs = funcArgs[i],
-        thisDep = dependencies[i],
-        thisData = data[i],
-        thisSplits = isSplit[i],
-        thisThreadCount = thisFunctions.length,
-        thisDataLength = length[i],
-        thisScriptName = scriptName[i];
-
-      //defaults in case there are no inputs from the user
-      thisDep =
-        typeof thisDep === "undefined" || thisDep === null || thisDep[0] === ""
-          ? []
-          : thisDep;
-
-      thisFunArgs =
-        typeof thisFunArgs === "undefined" || thisFunArgs === null
-          ? []
-          : thisFunArgs;
-
-      stepArgs.push({
-        data: thisData,
-        id: i,
-        functions: thisFunctions,
-        funcArgs: thisFunArgs,
-        isSplit: thisSplits,
-        threadCount: thisThreadCount,
-        dependencies: thisDep,
-        length: thisDataLength,
-        scriptName: thisScriptName
-      });
-    }
-
-    try {
-      //Evluate the execution as a set of trailing down promises that resolve on after the other
-      if (linked) {
-        var stepResolve = [];
-
-        for (var i = 0; i < stepArgs.length; i++) {
-          //THIS NEEDS TO CHANGE
-          stepResolve.push((i, data) => {
-            return new Promise(async (resolve) => {
-              let _args = stepArgs[i];
-              //this could be changed
-              if (data !== undefined) {
-                _args.data = data;
-              }
-              let p = await this.stepRun(_args);
-              resolve(p);
-            });
-          });
+      // Initialize all workers needed across all steps first
+      const maxThreadsNeeded = Math.max(...args.functions.map(stepFunctions => stepFunctions.length), 0);
+      for (let i = 0; i < maxThreadsNeeded; i++) {
+        // Only create if it doesn't exist
+        if (!this.threads.workerThreads[i]) {
+          this.threads.createWorkerThread(i);
         }
-
-        //Define a trailing down execution
-        await DAG({ functions: stepResolve, args: stepArgs[0], type: "steps" });
-      } else {
-        //Define a step execution
-        for (let stepArg of stepArgs) {
-          await this.stepRun(stepArg);
+        // Only initialize if not already initialized
+        if (!this.threads.workerThreads[i].worker || typeof this.threads.workerThreads[i].worker !== 'function') {
+          this.threads.initializeWorkerThread(i);
         }
       }
-      return true
-    } catch (error) {
-      console.error(
-        "There was an error with the execution of the steps."
-      );
-      throw error;
+
+      // Execute all steps in parallel - IndexedDAG will handle dependencies through the database
+      const stepPromises = args.functions.map(async (stepFunctions, stepIndex) => {
+        const stepDependencies = args.dependencies[stepIndex];
+
+        try {
+          const dag = await IndexedDAG({
+            functions: stepFunctions,
+            dependencies: stepDependencies,
+            args: args.args ? args.args[stepIndex] : [[]],
+            dataIds: args.dataIds[stepIndex],
+            dbConfig: args.dbConfig,
+            type: args.type,
+            engineType: args.engineType || args.engine
+          });
+
+          // Execute using thread manager - this will handle dependencies through the database
+          await this.threads.executeWithDag(dag);
+        } catch (error) {
+          console.error(`Error executing step ${stepIndex}:`, error);
+          throw error;
+        }
+      });
+
+      // Wait for all steps to complete (they run in parallel, but dependencies are handled by IndexedDAG)
+      await Promise.allSettled(stepPromises);
+      return true;
+    } else {
+      if (args.data.length === 0 || args.functions.length === 0) {
+        console.error(
+          "Please pass the data required for analysis and/or the functions to run."
+        );
+        return false
+      }
+
+      let {
+        //Array of functions per step: [[fun1, fun2, fun3], [fun1,fun2,fun3]...]
+        functions = [],
+        //Array of arguments per function per step. Can be empty: [[addArg1, addArg2, addArg3], [addArg1, addArg2, addArg3]...]
+        funcArgs = [],
+        //Array of dependencies per step per function run: [[[], [0], [1]], [[], [], [0,1]]...]
+        dependencies = [],
+        //If true, that means that the results from step 0 are trailed down to step 1 and further. If false, then either use the same data or different
+        //data will be used at each step. If that is the case, it must be specified as an additional argument.
+        linked = false,
+        //The data array can be a set of array buffers. In case the steps are linked and the results are trailed down, then only one buffer is required.
+        data = [],
+        //Length of the data submitted for analysis per step.
+        length = [],
+        //Array of data splits to be performed per step: [true, false, false, true...]
+        isSplit = [],
+        //Name of the script used from the passed arguments.
+        scriptName = [],
+      } = args;
+
+      //The total number of steps will be infered from the number of functions per step.
+      let steps = functions.length;
+
+      let stepArgs = [];
+
+      //Separating 
+      for (let i = 0; i < steps; i++) {
+        let thisFunctions = functions[i],
+          thisFunArgs = funcArgs[i],
+          thisDep = dependencies[i],
+          thisData = data[i],
+          thisSplits = isSplit[i],
+          thisThreadCount = thisFunctions.length,
+          thisDataLength = length[i],
+          thisScriptName = scriptName[i];
+
+        //defaults in case there are no inputs from the user
+        thisDep =
+          typeof thisDep === "undefined" || thisDep === null || thisDep[0] === ""
+            ? []
+            : thisDep;
+
+        thisFunArgs =
+          typeof thisFunArgs === "undefined" || thisFunArgs === null
+            ? []
+            : thisFunArgs;
+
+        stepArgs.push({
+          data: thisData,
+          id: i,
+          functions: thisFunctions,
+          funcArgs: thisFunArgs,
+          isSplit: thisSplits,
+          threadCount: thisThreadCount,
+          dependencies: thisDep,
+          length: thisDataLength,
+          scriptName: thisScriptName
+        });
+      }
+
+      try {
+        //Evluate the execution as a set of trailing down promises that resolve on after the other
+        if (linked) {
+          var stepResolve = [];
+
+          for (var i = 0; i < stepArgs.length; i++) {
+            //THIS NEEDS TO CHANGE
+            stepResolve.push((i, data) => {
+              return new Promise(async (resolve) => {
+                let _args = stepArgs[i];
+                //this could be changed
+                if (data !== undefined) {
+                  _args.data = data;
+                }
+                let p = await this.stepRun(_args);
+                resolve(p);
+              });
+            });
+          }
+
+          //Define a trailing down execution
+          await DAG({ functions: stepResolve, args: stepArgs[0], type: "steps" });
+        } else {
+          //Define a step execution
+          for (let stepArg of stepArgs) {
+            await this.stepRun(stepArg);
+          }
+        }
+        return true
+      } catch (error) {
+        console.error(
+          "There was an error with the execution of the steps."
+        );
+        throw error;
+      }
     }
   }
 
@@ -223,44 +271,44 @@ export default class engine {
     }
   }
 
-/**
- * Runs multiple tasks concurrently using worker threads and dependency graph.
- * @param {object} args - The arguments for concurrent execution.
- * @memberof engine
- * @param {number} step - The step value.
- * @param {Array} dependencies - The dependency graph.
- * @returns {Promise} - A promise that resolves to the result of concurrent execution.
- */
-    async concurrentRun(args, step, dependencies) {
-      let batchTasks = []
-      for (var i = 0; i < args.threadCount; i++) {
-        let d = args.data.buffer !== undefined
+  /**
+   * Runs multiple tasks concurrently using worker threads and dependency graph.
+   * @param {object} args - The arguments for concurrent execution.
+   * @memberof engine
+   * @param {number} step - The step value.
+   * @param {Array} dependencies - The dependency graph.
+   * @returns {Promise} - A promise that resolves to the result of concurrent execution.
+   */
+  async concurrentRun(args, step, dependencies) {
+    let batchTasks = []
+    for (var i = 0; i < args.threadCount; i++) {
+      let d = args.data.buffer !== undefined
         ? args.data.buffer
         : args.data[i].buffer;
-        var _args = {
-          //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
-          data: d,
-          id: i,
-          funcName: args.functions[i],
-          length: args.length,
-          step: step,
-          funcArgs: args.funcArgs[i],
-          scriptName: args.scriptName[i]
-        };
-        this.threads.initializeWorkerThread(i);
-        batchTasks.push(_args)
-      }
-      try {
-        let res = await DAG({
-          functions: Object.keys(this.threads.workerThreads).map((key) => {
-            return this.threads.workerThreads[key].worker;
-          }),
-          dag: dependencies,
-          args: batchTasks,
-          type: "functions",
-        });
-        return res;
-      } catch (error) {
+      var _args = {
+        //data: Array.isArray(args.data[0]) ? args.data[i] : args.data,
+        data: d,
+        id: i,
+        funcName: args.functions[i],
+        length: args.length,
+        step: step,
+        funcArgs: args.funcArgs[i],
+        scriptName: args.scriptName[i]
+      };
+      this.threads.initializeWorkerThread(i);
+      batchTasks.push(_args)
+    }
+    try {
+      let res = await DAG({
+        functions: Object.keys(this.threads.workerThreads).map((key) => {
+          return this.threads.workerThreads[key].worker;
+        }),
+        dag: dependencies,
+        args: batchTasks,
+        type: "functions",
+      });
+      return res;
+    } catch (error) {
       console.error(
         `There was an error executing the DAG for step: ${step}.`,
       );
@@ -268,16 +316,16 @@ export default class engine {
     }
   }
 
-/**
- * Runs multiple tasks in parallel using worker threads.
- * @param {object} args - The arguments for parallel execution.
- * @memberof engine
- * @param {number} args.threadCount - The total number of threads.
- * @param {function[]} args.functions - The array of functions to execute.
- * @param {Array} args.funcArgs - The array of arguments for each function.
- * @param {number} step - The step value.
- * @returns {Promise<Array>} - A promise that resolves to an array of results.
- */
+  /**
+   * Runs multiple tasks in parallel using worker threads.
+   * @param {object} args - The arguments for parallel execution.
+   * @memberof engine
+   * @param {number} args.threadCount - The total number of threads.
+   * @param {function[]} args.functions - The array of functions to execute.
+   * @param {Array} args.funcArgs - The array of arguments for each function.
+   * @param {number} step - The step value.
+   * @returns {Promise<Array>} - A promise that resolves to an array of results.
+   */
   async parallelRun(args, step) {
     const batches = [];
     let results = [];
@@ -326,14 +374,14 @@ export default class engine {
     return results;
   }
 
-/**
- * Executes tasks based on the provided dependencies and step counter.
- * @param {object} args - The arguments for task execution.
- * @memberof engine
- * @param {number} stepCounter - The step counter.
- * @param {Array} dependencies - The dependency graph.
- * @returns {Promise} - A promise that resolves to the result of task execution.
- */
+  /**
+   * Executes tasks based on the provided dependencies and step counter.
+   * @param {object} args - The arguments for task execution.
+   * @memberof engine
+   * @param {number} stepCounter - The step counter.
+   * @param {Array} dependencies - The dependency graph.
+   * @returns {Promise} - A promise that resolves to the result of task execution.
+   */
   async taskRunner(args, stepCounter, dependencies) {
     try {
       let x;
@@ -346,7 +394,7 @@ export default class engine {
       }
       if (args.threadCount === this.threads.results.length) {
         [this.funcEx, this.scriptEx] = this.threads.execTimes;
-  
+
         this.results.push({
           //step: stepCounter,
           results: this.threads.results,
@@ -354,7 +402,7 @@ export default class engine {
           scriptEx: this.scriptEx,
           funcOrder: this.threads.functionOrder
         });
-  
+
         console.log(
           `Total function execution time: ${this.funcEx} ms\nTotal worker execution time: ${this.scriptEx} ms`
         );
@@ -367,7 +415,19 @@ export default class engine {
       throw error;
     }
   }
-  
+
+
+  /**
+   * @method stop
+   * @memberof engine
+   * @description Stop all worker execution and kill all active workers
+   */
+  stop() {
+    if (this.threads) {
+      this.threads.stop();
+      console.log(`Stopped ${this.engineName} engine and killed all workers`);
+    }
+  }
 
   /**
    *@description resets all properties of the class
@@ -395,5 +455,7 @@ export default class engine {
     if (this.engineName === "javascript") return jsScripts();
     if (this.engineName === "wasm") return avScripts();
     if (this.engineName === "webgpu") return gpuScripts();
+    if (this.engineName === "python") return new Map(); // Python doesn't use script files, returns empty map
+    if (this.engineName === "webr") return rScripts();
   }
 }

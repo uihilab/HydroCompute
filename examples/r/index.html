@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Frequency Analysis - R Engine</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 2rem;
+            max-width: 800px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            border: 1px solid #e0e0e0;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #8e44ad;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #output {
+            background: #fdf2e9;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #fae5d3;
+            font-family: Consolas, monospace;
+            min-height: 150px;
+            overflow-y: auto;
+            max-height: 400px;
+            display: none;
+        }
+
+        #results-area {
+            margin-top: 1rem;
+        }
+
+        .nav {
+            margin-bottom: 1rem;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #8e44ad;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav"><a href="../index.html">← Back to Dashboard</a></div>
+    <div class="container">
+        <h1>Flood Frequency Analysis</h1>
+        <p>This example uses the <strong>R Engine</strong> (WebR) to estimate flood magnitudes for various return
+            periods using annual peak flow data.</p>
+
+        <h3>Processing Operations:</h3>
+        <ul>
+            <li><strong>Input:</strong> 50 years of annual peak flows (Array of Objects).</li>
+            <li><strong>Engine:</strong> R Worker (WebR).</li>
+            <li><strong>Method:</strong> Gumbel Distribution Fitting.</li>
+        </ul>
+
+        <h3>Execution Log:</h3>
+        <div id="output" style="background:#f4f4f4; border:1px solid #ddd; display:block;">Initializing WebR...</div>
+
+        <div id="results-area"></div>
+    </div>
+
+    <script type="module" src="./flood_frequency.js"></script>
+</body>
+
+</html>

@@ -1,127 +1,298 @@
-import { AScriptUtils, getAllModules } from "./modules/modules.js";
+//import { AScriptUtils } from '../utils/ascript-utils.js';
 import { getPerformanceMeasures } from "../core/utils/globalUtils.js";
-import { splits } from "../core/utils/splits.js";
+//import { splits } from '../utils/splits.js';
+import { openDatabase } from '../core/utils/db-config.js';
 
 /**
- * @description Web worker script for executing WASM computations. The worker script switches between the AS utils or C utils using the handleAS and handleC methods. 
+ * @description Web worker script for executing WASM computations
  * @module WebWorker
  * @memberof Workers
  * @name WASMWorker
  */
 self.onmessage = async (e) => {
-  performance.mark("start-script");
-  let { funcName, funcArgs = [], id, step, length, scriptName } = e.data;
-  let data = new Float32Array(e.data.data);
-  data = splits.split1DArray({ data: data, n: length });
-  let scripts;
-  let result = null;
-  if (scriptName) {
-    let { default: Module } = await import(`../../${scriptName}`);
-    scripts = await Module();
-  } else {
-    scripts = await getAllModules();
-  }
-  try {
-    if (scriptName !== undefined) {
-      performance.mark("start-function");
-      result = handleC(null, null, data, scripts);
-      performance.mark("end-script");
-    } else {
-      for (let scr in scripts) {
-        for (let module in scripts[scr]) {
-          if (funcName in scripts[scr][module]) {
-            //points to the current module
-            let mod = scripts[scr][module];
 
-            if (scr === "AS") {
-              let ref = mod[funcName];
-              result = handleAS(module, ref, data, mod, funcArgs);
-            } else if (scr === "C") {
-              result = handleC(module, funcName, data, mod);
-            }
-            //Any other webassembly module handles would go here
-            performance.mark("end-script");
-          }
-        }
-      }
+  performance.mark("start-script");
+  let { id, step, data: inputData, uniqueId, dbConfig } = e.data;
+
+  // Send status update
+  if (uniqueId) {
+    self.postMessage({
+      type: 'status',
+      itemId: uniqueId,
+      status: 'running'
+    });
+  }
+
+  let result = null;
+
+  try {
+    // Get the item settings from the database
+    const db = await openDatabase();
+    const settingsStore = db.transaction('settings', 'readonly').objectStore('settings');
+    const settings = await new Promise((resolve, reject) => {
+      const request = settingsStore.get(uniqueId);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    if (!settings) {
+      throw new Error(`Settings not found for item ${uniqueId}`);
     }
+
+    // Extract WASM-specific settings
+    const { moduleId, functionName, memoryPages } = settings.arguments;
+
+    // Get the module from IndexedDB
+    const module = await getModuleFromDB(moduleId);
+    if (!module) {
+      throw new Error(`Module ${moduleId} not found in database`);
+    }
+
+    // Process input data if provided
+    let processedData = null;
+    if (inputData) {
+      processedData = new Float32Array(inputData);
+      //processedData = splits.split1DArray({ data, n: data.length });
+    }
+
+    performance.mark("start-function");
+    result = handleC(null, functionName, processedData, module);
+    performance.mark("end-function");
+
     let getPerformance = getPerformanceMeasures();
+
+    // Store the result using the provided database config
+    if (dbConfig && uniqueId) {
+      const resultData = {
+        id: uniqueId,
+        data: result,
+        status: 'completed',
+        timestamp: new Date().toISOString()
+      };
+
+      const db = await openDatabase();
+      const resultsStore = db.transaction('results', 'readwrite').objectStore('results');
+      await new Promise((resolve, reject) => {
+        const request = resultsStore.put(resultData);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
 
     self.postMessage(
       {
         id,
         results: result,
         step,
-        funcName,
         ...getPerformance,
       },
       [result]
     );
-  } catch (error) {
-    if (!(error instanceof DOMException) && typeof scripts !== "undefined") {
-      console.error(
-        `There was an error executing:\nfunction: ${funcName}\nid: ${id} at the worker.`
-      );
-      throw error;
-    } else {
-      console.error(
-        "There was an error running the WebAssembly worker script. More info: "
-      );
-      throw error;
+
+    // Update status
+    if (uniqueId) {
+      self.postMessage({
+        type: 'status',
+        itemId: uniqueId,
+        status: 'completed'
+      });
     }
+  } catch (error) {
+    console.error(`Error executing WASM item ${uniqueId}:`, error);
+
+    // Update status with error
+    if (uniqueId) {
+      self.postMessage({
+        type: 'status',
+        itemId: uniqueId,
+        status: 'error',
+        error: error.message
+      });
+    }
+
+    self.postMessage({
+      type: 'error',
+      error: error.message,
+      id
+    });
   }
 };
 
 /**
- *
- * @param {String} moduleName
- * @param {Object} ref - Object used for running setting arguments in a funciton
- * @param {Array} data - data object to be used for the run
- * @param {Object} mod - module object used with function
- * @param {Array} funcArgs - array containing the additional arguments to be used in the function
- * @returns {ArrayBuffer} result object to be sent back from the worker
+ * Retrieves a module from IndexedDB using the provided database utility
+ * @param {string} moduleId - The ID of the module in the database
+ * @returns {Promise<WebAssembly.Module>} The instantiated module
  */
-const handleAS = (moduleName, ref, data, mod, funcArgs) => {
-  let views = new AScriptUtils(),
-    stgResult = [];
-  funcArgs === null ? (funcArgs = []) : funcArgs;
-  if (moduleName === "matrixUtils") {
-    //THIS NEEDS TO CHANGE!
-    // data = [
-    //   data.slice(0, data.length >> 1),
-    //   data.slice(data.length >> 1, data.length),
-    // ];
-    funcArgs = [...Array(4)].map((_, i) => Math.sqrt(data[0].length));
-    let mat1 = views.retainP(
-      views.lowerTypedArray(Float32Array, 4, 2, data[0], mod),
-      mod
-    );
-    let mat2 = views.lowerTypedArray(Float32Array, 4, 2, data[1], mod);
-    Object.keys(mod).includes("__setArgumentsLength")
-      ? mod.__setArgumentsLength(funcArgs.length)
-      : null;
-    try {
-      funcArgs.unshift(mat2), funcArgs.unshift(mat1);
-      performance.mark("start-function");
-      stgResult = views.liftTypedArray(
-        Float32Array,
-        ref(...funcArgs) >>> 0,
-        mod
-      );
-      performance.mark("end-function");
-    } finally {
-      views.releaseP(mat1, mod);
-    }
-  } else {
-    let arr = views.lowerTypedArray(Float32Array, 4, 2, data, mod);
-    mod.__setArgumentsLength(funcArgs.length === 0 ? 1 : funcArgs.length);
-    funcArgs.unshift(arr);
-    performance.mark("start-function");
-    stgResult = views.liftTypedArray(Float32Array, ref(...funcArgs) >>> 0, mod);
-    performance.mark("end-function");
+// async function getModuleFromDB(moduleId) {
+//     if (!moduleId) {
+//         throw new Error('No module ID provided');
+//     }
+
+async function getModuleFromDB(moduleId) {
+  if (!moduleId) throw new Error('No module ID provided');
+
+  const db = await openDatabase();
+  const store = db.transaction('wasmModules', 'readonly').objectStore('wasmModules');
+
+  const moduleData = await new Promise((resolve, reject) => {
+    const request = store.get(moduleId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+  if (!moduleData) throw new Error(`Module ${moduleId} not found in database`);
+
+  const memory = new WebAssembly.Memory({
+    initial: moduleData.memoryPages || 1,
+    maximum: moduleData.memoryPages || 1,
+  });
+
+  // Construct the base module object
+  const baseModule = {
+    wasmMemory: memory,
+    print: (text) => console.log(text),
+    printErr: (text) => console.error(text),
+  };
+
+  if (moduleData.wasmBlob) {
+    baseModule.wasmBinary = await moduleData.wasmBlob.arrayBuffer();
   }
-  return stgResult.buffer;
-};
+
+  // Load the JS glue code from blob
+  const jsCodeText = await moduleData.blob.text();
+  const blob = new Blob([jsCodeText], { type: 'application/javascript' });
+  const blobURL = URL.createObjectURL(blob);
+
+  // Inject baseModule globally in case of legacy style
+  globalThis.Module = baseModule;
+
+  try {
+    // Import the Emscripten glue code
+    importScripts(blobURL);
+
+    // Check if MODULARIZE-style (createModule function)
+    if (typeof createModule === 'function') {
+      const mod = await createModule(baseModule);
+      URL.revokeObjectURL(blobURL);
+      return mod;
+    }
+
+    // Otherwise, wait for non-MODULARIZE global `Module`
+    if (typeof Module !== 'undefined' && Module instanceof Object) {
+      if (typeof Module.then === 'function') {
+        const mod = await Module;
+        URL.revokeObjectURL(blobURL);
+        return mod;
+      }
+
+      // Wait for runtime init if needed
+      await new Promise((resolve) => {
+        if (Module.calledRun) {
+          resolve();
+        } else {
+          Module.onRuntimeInitialized = resolve;
+        }
+      });
+
+      URL.revokeObjectURL(blobURL);
+      return Module;
+    }
+
+    throw new Error('Could not detect Emscripten module style (MODULARIZE or legacy)');
+
+  } catch (err) {
+    URL.revokeObjectURL(blobURL);
+    console.error('Error loading module script:', err);
+    throw err;
+  }
+}
+//     try {
+//         const db = await openDatabase();
+//         const store = db.transaction('wasmModules', 'readonly').objectStore('wasmModules');
+
+//         const moduleData = await new Promise((resolve, reject) => {
+//             const request = store.get(moduleId);
+//             request.onsuccess = () => resolve(request.result);
+//             request.onerror = () => reject(request.error);
+//         });
+
+//         if (!moduleData) {
+//             throw new Error(`Module ${moduleId} not found in database`);
+//         }
+
+//         // Create base memory configuration
+//         const memory = new WebAssembly.Memory({
+//             initial: moduleData.memoryPages || 1,
+//             maximum: moduleData.memoryPages || 1
+//         });
+
+//         // Case 1: Pure WASM module
+//         if (moduleData.contentType === 'application/wasm') {
+//             const wasmBuffer = await moduleData.blob.arrayBuffer();
+//             const importObject = {
+//                 env: {
+//                     memory,
+//                     abort: (msg, file, line, column) => {
+//                         console.error(`WASM abort: ${msg} at ${file}:${line}:${column}`);
+//                     }
+//                 }
+//             };
+
+//             const instance = await WebAssembly.instantiate(wasmBuffer, importObject);
+//             return instance.instance.exports;
+//         }
+
+//         // Case 2 & 3: JS module (either with WASM or standalone)
+//         const jsCode = await moduleData.blob.text();
+
+//         // Create a base Module object that Emscripten expects
+//         const baseModule = {
+//             wasmMemory: memory,
+//             wasmBinary: null,
+//             print: (text) => console.log(text),
+//             printErr: (text) => console.error(text),
+//             locateFile: (path) => {
+//                 // If this is a WASM file and we have a wasmUrl, use it
+//                 if (path.endsWith('.wasm') && moduleData.wasmUrl) {
+//                     return moduleData.wasmUrl;
+//                 }
+//                 return path;
+//             }
+//         };
+
+//         // If we have a WASM blob, add it to the module
+//         if (moduleData.wasmBlob) {
+//             baseModule.wasmBinary = await moduleData.wasmBlob.arrayBuffer();
+//         }
+
+//         // Create script URL from the JS blob
+//         const scriptUrl = moduleData.url;
+
+//         // Create a module script that will run in the worker context
+//         const moduleScript = `
+//             let Module = ${JSON.stringify(baseModule)};
+//             ${jsCode}
+//             Module;
+//         `;
+
+//         // Execute the module script
+//         const moduleFunc = new Function('return ' + moduleScript);
+//         const Module = moduleFunc();
+
+//         // If this is an Emscripten module, it might need initialization
+//         if (typeof Module.then === 'function') {
+//             return await Module;
+//         }
+
+//         return Module;
+
+//     } catch (error) {
+//         console.error('Error getting WASM module:', error);
+//         throw error;
+//     }
+//   });
+// }
+
 
 /**
  * @method handleC
@@ -141,15 +312,30 @@ const handleC = (moduleName = null, functionName = null, data, module) => {
 
   const bytes = Float32Array.BYTES_PER_ELEMENT;
   let inputData = data;
-  let inputCount = data.length;
+  let inputCount = data ? data.length : 0;
 
   try {
+    // If no data is provided, just call the function with no arguments
+    if (!data || inputCount === 0) {
+      // Call the function without arguments
+      r_ptr = module[functionName || '_mainFunc']();
+      // Create a small result buffer
+      stgRes = new ArrayBuffer(4);
+      return stgRes;
+    }
+
     let len = inputData[0].length;
-    r_ptr = module._createMem(len * bytes);
+
+    // Check if we're dealing with a JS-WASM module or pure WASM
+    const isJsWasm = typeof module._malloc === 'function';
+    const createMemFunc = isJsWasm ? '_malloc' : '_createMem';
+    const destroyMemFunc = isJsWasm ? '_free' : '_destroy';
+
+    r_ptr = module[createMemFunc](len * bytes);
 
     // Allocate memory for input and output arrays
     for (let i = 0; i < inputCount; i++) {
-      ptrs.push(module._createMem(len * bytes));
+      ptrs.push(module[createMemFunc](len * bytes));
     }
 
     // Copy input data to memory
@@ -170,18 +356,19 @@ const handleC = (moduleName = null, functionName = null, data, module) => {
 
     // Copy result data from memory and clean up memory
     d = Array.from(new Float32Array(module.HEAPF32.buffer, r_ptr, len));
-    //create a new view from the data and pass it as a buffer
     outputData = new Float32Array(d);
     stgRes = new ArrayBuffer(outputData.buffer.byteLength);
     new Float32Array(stgRes).set(new Float32Array(outputData.buffer));
   } finally {
+    // Clean up allocated memory
     for (let k of ptrs) {
-      module._destroy(k);
+      module[destroyMemFunc](k);
     }
-    module._destroy(r_ptr);
-    outputData = [];
+    if (r_ptr) {
+      module[destroyMemFunc](r_ptr);
+    }
+    outputData = null;
     r_ptr = null;
-    // module._doMemCheck();
   }
   return stgRes;
 };
