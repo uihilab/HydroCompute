@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>core/utils/errors.js - Documentation</title>
+    <title>dbUtils - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,62 +29,100 @@ Used throughout the libary to assert the types of errors found</a></li><li><a hr
 
 <div id="main">
     
-    <h1 class="page-title">core/utils/errors.js</h1>
+    <h1 class="page-title">dbUtils</h1>
     
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @namespace ErrorTypes
- * Used throughout the libary to assert the types of errors found
- */
+        <h2>
+        dbUtils
+        </h2>
+        
+    
+</header>
 
-/**
- * @member ValueErr
- * @memberof ErrorTypes
- * @extends Error
- * @description Used whenever there is a value type error when running the engine
- */
-export class ValueErr extends Error {
-    constructor(message){
-        super(message);
-        Object.setPrototypeOf(this, ValueErr.prototype)
-    }
-}
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Shared database utility functions for IndexedDB operations
+Used by both JavaScript and Python workers to avoid code duplication</p></div>
+        
 
-/**
- * @member NotImplemented
- * @memberof ErrorTypes
- * @extends Error
- * @description Used whenever there is a DOM Exception for not found / not impleemented in the compute
- */
-export class NotImplemented extends Error {
-    constructor(message){
-        super(message)
-        Object.setPrototypeOf(this, NotImplemented.prototype)
-    }
-}
+        
 
-/**
- * @member FileNotFound
- * @memberof ErrorTypes
- * @extends Error
- * @description Used whenever there is an error raised because of not found file(s)
- */
-export class FileNotFound extends Error {
-    constructor(message){
-        super(message)
-        Object.setPrototypeOf(this, FileNotFound)
-    }
-}
 
-</code></pre>
-        </article>
-    </section>
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="core_utils_db-utils.js.html">core/utils/db-utils.js</a>, <a href="core_utils_db-utils.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
